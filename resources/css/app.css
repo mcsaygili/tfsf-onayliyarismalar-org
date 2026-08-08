@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/* Yer tutucu marka renkleri — nihai tasarım sistemi sonraki fazda kurulacak. */
+@theme {
+    --color-tfsf-navy: #002347;
+    --color-tfsf-red: #E1251B;
+}
