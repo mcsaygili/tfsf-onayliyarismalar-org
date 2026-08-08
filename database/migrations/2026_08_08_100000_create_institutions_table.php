@@ -12,17 +12,27 @@ return new class extends Migration
      * Eski şema sadece isim+durumdan ibaretti; burada gerçekçi bir
      * kurumsal profil için email/phone/website/address bilinçli olarak
      * eklendi (eski sistemin birebir taşınmadığı bir nokta).
+     *
+     * `name` nullable: kurum kaydı, self-servis kayıt akışında sadece
+     * e-posta+şifre ile oluşturuluyor — kurum adı ve diğer bilgiler giriş
+     * sonrası ayrı bir ekrandan doldurulacak (bkz. RegisteredController).
+     *
+     * `approved_at`: eski sistemde yoktu — bu fazda TÜM kayıtlar otomatik
+     * onaylı sayılıyor (kayıt anında now() atanıyor). İleride TFSF admin
+     * onayı gerektiren gerçek bir iş akışına dönüşecek; o zamana kadar
+     * null bırakılan bir kurum olmayacak ama alan hazır bekliyor.
      */
     public function up(): void
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('website')->nullable();
             $table->text('address')->nullable();
             $table->boolean('status')->default(true);
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });
     }

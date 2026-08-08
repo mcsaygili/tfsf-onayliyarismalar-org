@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureGuardEmailIsVerified;
 use App\Http\Middleware\ResolveGuardSessionCookie;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -24,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // bu yüzden append, prepend değil.
         $middleware->web(append: [
             SetLocale::class,
+        ]);
+
+        $middleware->alias([
+            'verified.guard' => EnsureGuardEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

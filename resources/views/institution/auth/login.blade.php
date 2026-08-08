@@ -34,5 +34,11 @@
         </div>
 
         <x-institution.button>{{ __('institution.login.submit') }} →</x-institution.button>
+
+        @if (Route::has('institution.register'))
+            <div class="ia-foot">
+                <a class="ia-link" href="{{ route('institution.register') }}">{{ __('institution.login.no_account') }}</a>
+            </div>
+        @endif
     </form>
 </x-institution.guest-layout>

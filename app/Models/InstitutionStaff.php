@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Notifications\Institution\ResetPasswordNotification;
+use App\Notifications\Institution\VerifyEmailNotification;
 use Database\Factories\InstitutionStaffFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -15,11 +17,12 @@ use Illuminate\Notifications\Notifiable;
 /**
  * Kurum personeli — guard: institution. Eski sistemdeki "Kurum Görevlisi" /
  * "Sekreterya" ayrımı kaldırıldı: her personel kaydı zorunlu olarak bir
- * kuruma bağlı (bkz. migration docblock'u).
+ * kuruma bağlı (bkz. migration docblock'u). `username` yok — kimlik
+ * doğrulama sistem genelinde e-posta üzerinden yürüyor.
  */
-#[Fillable(['institution_id', 'username', 'email', 'password', 'first_name', 'last_name', 'phone'])]
+#[Fillable(['institution_id', 'email', 'password', 'first_name', 'last_name', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
-class InstitutionStaff extends Authenticatable
+class InstitutionStaff extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<InstitutionStaffFactory> */
     use HasFactory, HasUuids, Notifiable;
@@ -29,6 +32,7 @@ class InstitutionStaff extends Authenticatable
         return [
             'password' => 'hashed',
             'status' => 'boolean',
+            'email_verified_at' => 'datetime',
         ];
     }
 
@@ -40,5 +44,10 @@ class InstitutionStaff extends Authenticatable
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
     }
 }

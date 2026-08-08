@@ -18,6 +18,17 @@ class InstitutionFactory extends Factory
             'name' => fake()->company(),
             'email' => fake()->unique()->companyEmail(),
             'status' => true,
+            'approved_at' => now(),
         ];
+    }
+
+    /**
+     * Henüz onaylanmamış (bkz. Institution::isApproved()).
+     */
+    public function unapproved(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'approved_at' => null,
+        ]);
     }
 }

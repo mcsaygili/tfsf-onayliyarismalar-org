@@ -12,7 +12,7 @@
 
         <div class="ia-field">
             <x-institution.label for="email" :value="__('institution.reset_password.email')" />
-            <x-institution.input id="email" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+            <x-institution.input id="email" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="email" />
             <x-institution.input-error :messages="$errors->get('email')" />
         </div>
 

@@ -19,19 +19,28 @@ return new class extends Migration
      * HER ZAMAN zorunlu. "Bu yarışmadan sorumlu kişi" artık kurumdan
      * bağımsız bir havuzdan değil, doğrudan ilgili kurumun personelinden
      * seçilecek (competitions alanı tasarlanırken ele alınacak).
+     *
+     * `username` YOK: sistem genelinde kullanıcı adı kullanılmıyor, tüm
+     * kimlik doğrulama e-posta üzerinden yürüyor.
+     *
+     * `first_name`/`last_name` nullable: self-servis kayıt sadece
+     * e-posta+şifre alıyor, kişisel bilgiler giriş sonrası dolduruluyor.
+     *
+     * `email_verified_at`: Üye (User) modeliyle aynı desen — kayıt
+     * sonrası e-posta doğrulaması zorunlu (bkz. EnsureGuardEmailIsVerified).
      */
     public function up(): void
     {
         Schema::create('institution_staff', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('institution_id')->constrained('institutions')->restrictOnDelete();
-            $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('phone')->nullable();
             $table->boolean('status')->default(true);
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

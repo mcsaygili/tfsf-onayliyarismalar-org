@@ -93,4 +93,22 @@ class InstitutionAuthenticationTest extends TestCase
         $this->assertNotNull($staff->institution_id);
         $this->assertInstanceOf(Institution::class, $staff->institution);
     }
+
+    /**
+     * Regresyon testi: Laravel'in yerleşik `guest` middleware'i
+     * (RedirectIfAuthenticated) zaten oturum açmış bir kullanıcıyı login/
+     * register'dan uzaklaştırırken varsayılan olarak bare `dashboard` route'unu
+     * arıyor — guard'dan bağımsız. Bu, institution guard'ında oturum açık bir
+     * kullanıcı /login'e gittiğinde yanlışlıkla Üye'nin (web guard) dashboard/
+     * login akışına düşmesine yol açıyordu (bkz. AppServiceProvider'daki
+     * RedirectIfAuthenticated::redirectUsing() düzeltmesi).
+     */
+    public function test_giris_yapmis_kurum_personeli_login_sayfasina_giderse_kendi_paneline_yonlenir(): void
+    {
+        $staff = $this->staff();
+
+        $response = $this->actingAs($staff, 'institution')->get(route('institution.login'));
+
+        $response->assertRedirect(route('institution.dashboard'));
+    }
 }

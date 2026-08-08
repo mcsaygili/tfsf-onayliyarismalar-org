@@ -15,6 +15,31 @@ return [
         'remember' => 'Beni hatırla',
         'forgot_password' => 'Şifrenizi mi unuttunuz?',
         'submit' => 'Giriş Yap',
+        'no_account' => 'Kurumunuzu henüz kaydetmediniz mi? Kayıt olun',
+    ],
+
+    'register' => [
+        'heading' => 'Kurum Kaydı',
+        'subheading' => 'Kurumunuzu birkaç saniyede kaydedin, kurum ve yetkili bilgilerini girişten sonra tamamlarsınız.',
+        'card_label' => 'Hesap Oluştur',
+        'card_title' => 'Kaydınızı başlatın',
+        'email' => 'E-posta',
+        'email_placeholder' => 'ornek@kurum.org',
+        'password' => 'Şifre',
+        'confirm_password' => 'Şifre (Tekrar)',
+        'submit' => 'Kayıt Ol',
+        'have_account' => '← Zaten hesabınız var mı? Giriş yapın',
+        'check_email' => 'Kurum kaydınız oluşturuldu. Hesabınızı etkinleştirmek için e-postanıza gönderilen bağlantıya tıklayın.',
+    ],
+
+    'verify_email' => [
+        'heading' => 'E-postanızı doğrulayın',
+        'subheading' => 'Devam etmeden önce e-posta adresinizi doğrulamanız gerekiyor.',
+        'card_label' => 'Son Adım',
+        'card_title' => 'Gelen kutunuzu kontrol edin',
+        'resend' => 'Doğrulama E-postasını Yeniden Gönder',
+        'resent' => 'Kayıt sırasında belirttiğiniz e-posta adresine yeni bir doğrulama bağlantısı gönderildi.',
+        'logout' => 'Çıkış Yap',
     ],
 
     'forgot_password' => [
@@ -41,5 +66,28 @@ return [
     ],
 
     'account_disabled' => 'Hesabınız kapalıdır.',
+
+    'nav' => [
+        'dashboard' => 'Panel',
+        'account' => 'Hesabım',
+        'logout' => 'Güvenli Çıkış',
+    ],
+
+    'profile' => [
+        'institution_section' => 'Kurum Bilgileri',
+        'institution_hint' => 'Yarışma düzenleyen kurumunuzla ilgili bilgiler.',
+        'institution_name' => 'Kurum Adı',
+        'institution_email' => 'Kurum E-postası',
+        'institution_phone' => 'Kurum Telefonu',
+        'institution_website' => 'Web Sitesi',
+        'institution_address' => 'Adres',
+        'staff_section' => 'Yetkili Bilgileri',
+        'staff_hint' => 'Kurum adına işlem yapacak yetkili kişinin bilgileri.',
+        'first_name' => 'Ad',
+        'last_name' => 'Soyad',
+        'phone' => 'Telefon',
+        'save' => 'Kaydet',
+        'updated' => 'Bilgileriniz güncellendi.',
+    ],
 
 ];
