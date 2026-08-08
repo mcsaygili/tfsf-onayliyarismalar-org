@@ -7,12 +7,12 @@
 
     <x-institution.session-status class="ia-rise ia-d3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('institution.password.email') }}" class="ia-rise ia-d3">
+    <form method="POST" action="{{ route('institution.password.email') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
         <div class="ia-field">
             <x-institution.label for="email" :value="__('institution.forgot_password.email')" />
-            <x-institution.input id="email" type="email" name="email" :value="old('email')" required autofocus :placeholder="__('institution.forgot_password.email_placeholder')" />
+            <x-institution.input id="email" type="email" name="email" :value="old('email')" autofocus autocomplete="off" :placeholder="__('institution.forgot_password.email_placeholder')" />
             <x-institution.input-error :messages="$errors->get('email')" />
         </div>
 
