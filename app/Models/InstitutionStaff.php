@@ -20,7 +20,7 @@ use Illuminate\Notifications\Notifiable;
  * kuruma bağlı (bkz. migration docblock'u). `username` yok — kimlik
  * doğrulama sistem genelinde e-posta üzerinden yürüyor.
  */
-#[Fillable(['institution_id', 'email', 'password', 'first_name', 'last_name', 'phone'])]
+#[Fillable(['institution_id', 'email', 'password', 'first_name', 'last_name', 'phone', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 class InstitutionStaff extends Authenticatable implements MustVerifyEmail
 {

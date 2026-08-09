@@ -1,17 +1,18 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Temsilci Paneli') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __('Giriş yaptınız, hoş geldiniz :name.', ['name' => auth('temsilci')->user()->first_name]) }}
+<x-temsilci.app-layout :title="__('temsilci.nav.dashboard')">
+    @if (blank($temsilci->first_name) || blank($temsilci->last_name))
+        <div class="ip-alert ip-alert-warning">
+            <x-temsilci.icon name="warning" />
+            <div>
+                <div class="ip-alert-title">{{ __('temsilci.dashboard.incomplete_title') }}</div>
+                <div class="ip-alert-text">
+                    {{ __('temsilci.dashboard.incomplete_text') }}
+                    <a href="{{ route('temsilci.profile.edit') }}">{{ __('temsilci.dashboard.incomplete_link') }}</a>
                 </div>
             </div>
         </div>
+    @endif
+
+    <div class="ip-card">
+        {{ __('Giriş yaptınız, hoş geldiniz :name.', ['name' => $temsilci->first_name ?? $temsilci->email]) }}
     </div>
-</x-app-layout>
+</x-temsilci.app-layout>

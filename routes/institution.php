@@ -9,6 +9,7 @@ use App\Http\Controllers\Institution\Auth\RegisteredController;
 use App\Http\Controllers\Institution\Auth\VerifyEmailController;
 use App\Http\Controllers\Institution\DashboardController;
 use App\Http\Controllers\Institution\ProfileController;
+use App\Http\Controllers\Institution\StaffController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +47,15 @@ Route::domain(config('domains.institution'))->group(function () {
     Route::middleware(['auth:institution', 'verified.guard:institution'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('institution.dashboard');
 
-        Route::get('account', [ProfileController::class, 'edit'])->name('institution.profile.edit');
-        Route::patch('account', [ProfileController::class, 'update'])->name('institution.profile.update');
+        Route::get('kurum-bilgileri', [ProfileController::class, 'edit'])->name('institution.profile.edit');
+        Route::patch('kurum-bilgileri', [ProfileController::class, 'update'])->name('institution.profile.update');
+
+        Route::prefix('yetkililer')->name('institution.staff.')->group(function () {
+            Route::get('/', [StaffController::class, 'index'])->name('index');
+            Route::get('yeni', [StaffController::class, 'create'])->name('create');
+            Route::post('/', [StaffController::class, 'store'])->name('store');
+            Route::get('{staff}/duzenle', [StaffController::class, 'edit'])->name('edit');
+            Route::patch('{staff}', [StaffController::class, 'update'])->name('update');
+        });
     });
 });

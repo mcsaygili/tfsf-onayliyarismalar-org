@@ -68,8 +68,10 @@ return [
     'account_disabled' => 'Hesabınız kapalıdır.',
 
     'nav' => [
-        'dashboard' => 'Panel',
+        'dashboard' => 'Gösterge Paneli',
         'account' => 'Hesabım',
+        'institution_info' => 'Kurum Bilgileri',
+        'staff' => 'Yetkili Bilgileri',
         'logout' => 'Güvenli Çıkış',
     ],
 
@@ -81,13 +83,43 @@ return [
         'institution_phone' => 'Kurum Telefonu',
         'institution_website' => 'Web Sitesi',
         'institution_address' => 'Adres',
-        'staff_section' => 'Yetkili Bilgileri',
-        'staff_hint' => 'Kurum adına işlem yapacak yetkili kişinin bilgileri.',
         'first_name' => 'Ad',
         'last_name' => 'Soyad',
         'phone' => 'Telefon',
         'save' => 'Kaydet',
         'updated' => 'Bilgileriniz güncellendi.',
+    ],
+
+    'staff' => [
+        'list_title' => 'Yetkili Bilgileri',
+        'list_hint' => 'Kurumunuz adına işlem yapabilecek yetkili kişiler. Birden fazla yetkili tanımlayabilirsiniz.',
+        'add_new' => '+ Yeni Yetkili Ekle',
+        'column_name' => 'Ad Soyad',
+        'column_email' => 'E-posta',
+        'column_phone' => 'Telefon',
+        'column_status' => 'Durum',
+        'status_active' => 'Aktif',
+        'status_inactive' => 'Pasif',
+        'edit_action' => 'Düzenle',
+        'empty' => 'Henüz kayıtlı bir yetkili yok.',
+        'pagination_info' => ':first–:last / :total kayıt',
+        'create_title' => 'Yeni Yetkili Ekle',
+        'create_hint' => 'Kurumunuz adına işlem yapabilecek yeni bir yetkili tanımlayın.',
+        'edit_title' => 'Yetkili Bilgilerini Düzenle',
+        'edit_hint' => 'Bu yetkilinin bilgilerini güncelleyin.',
+        'back_to_list' => 'Yetkili listesine dön',
+        'password' => 'Şifre',
+        'password_confirmation' => 'Şifre (Tekrar)',
+        'save_new' => 'Yetkili Ekle',
+        'created' => 'Yeni yetkili eklendi.',
+        'updated' => 'Yetkili bilgileri güncellendi.',
+    ],
+
+    'dashboard' => [
+        'incomplete_title' => 'Kurum bilgileriniz eksik',
+        'incomplete_text' => 'Kurum adı, e-postası ve telefonu zorunlu bilgilerdir.',
+        'incomplete_link' => 'Bilgilerinizi güncelleyiniz',
+        'total_staff' => 'Toplam Yetkili',
     ],
 
 ];

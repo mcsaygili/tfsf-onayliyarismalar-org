@@ -320,9 +320,141 @@
         }
         .ia-btn:hover { background: var(--ia-copper-bright); }
         .ia-btn:active { transform: translateY(1px); }
+        .ia-btn-secondary {
+            background: transparent;
+            color: var(--ia-muted);
+            border: 1px solid var(--ia-surface-border);
+        }
+        .ia-btn-secondary:hover { background: rgba(201,168,76,.06); color: var(--ia-cream); border-color: var(--ia-copper); }
+        .ia-btn-secondary svg { width: 14px; height: 14px; }
 
         .ip-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         @media (max-width: 640px) { .ip-grid-2 { grid-template-columns: 1fr; } }
+
+        /* ---- Liste araç çubuğu / tablo / rozet (ör. Yetkili Bilgileri) ---- */
+        .ip-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .ip-toolbar-title { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--ia-cream); }
+        .ip-toolbar-hint { font-size: .82rem; color: var(--ia-muted); margin-top: .2rem; }
+        .ia-btn.ip-btn-sm { padding: .55rem 1.1rem; font-size: .82rem; text-decoration: none; }
+
+        .ip-table-wrap { overflow-x: auto; border: 1px solid var(--ia-surface-border); border-radius: 10px; }
+        .ip-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+        .ip-table th {
+            text-align: left;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ia-muted-dim);
+            padding: .8rem 1rem;
+            border-bottom: 1px solid var(--ia-surface-border);
+            background: rgba(255,255,255,.02);
+        }
+        .ip-table td { padding: .85rem 1rem; border-bottom: 1px solid var(--ia-surface-border); color: var(--ia-muted); vertical-align: middle; }
+        .ip-table tr:last-child td { border-bottom: none; }
+        .ip-table td.ip-cell-name { color: var(--ia-cream); font-weight: 600; }
+        .ip-table-empty { padding: 2.5rem 1rem; text-align: center; color: var(--ia-muted-dim); font-size: .88rem; }
+
+        .ip-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .25rem .6rem;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+        .ip-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .ip-badge.is-active { color: #8fcf93; background: rgba(88,140,92,.14); }
+        .ip-badge.is-inactive { color: #e0857a; background: rgba(224,133,122,.12); }
+
+        .ip-row-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            color: var(--ia-muted);
+            border: 1px solid transparent;
+            transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+        }
+        .ip-row-icon-btn svg { width: 16px; height: 16px; }
+        .ip-row-icon-btn:hover { color: var(--ia-copper); background: rgba(201,168,76,.08); border-color: rgba(201,168,76,.25); }
+
+        .ip-pagination { margin-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .ip-pagination-info { font-size: .78rem; color: var(--ia-muted-dim); }
+        .ip-pagination-links { display: flex; align-items: center; gap: .3rem; }
+        .ip-pagination-links a, .ip-pagination-links span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 .5rem;
+            border-radius: 7px;
+            font-size: .8rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--ia-muted);
+            border: 1px solid transparent;
+        }
+        .ip-pagination-links a:hover { color: var(--ia-cream); background: rgba(201,168,76,.06); }
+        .ip-pagination-links span.is-current { color: #14161f; background: var(--ia-copper); }
+        .ip-pagination-links span.is-disabled { color: var(--ia-muted-dim); }
+
+        .ip-page-actions { display: flex; justify-content: flex-end; margin-bottom: 1.25rem; }
+
+        /* ---- On/Off switch (ör. Yetkili durumu) ---- */
+        .ip-switch { display: inline-flex; align-items: center; gap: .65rem; cursor: pointer; user-select: none; }
+        .ip-switch-checkbox { position: absolute; opacity: 0; width: 1px; height: 1px; overflow: hidden; }
+        .ip-switch-track {
+            width: 40px;
+            height: 22px;
+            border-radius: 999px;
+            background: var(--ia-bg);
+            border: 1px solid var(--ia-surface-border);
+            position: relative;
+            flex-shrink: 0;
+            transition: background-color .15s ease, border-color .15s ease;
+        }
+        .ip-switch-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--ia-muted-dim);
+            transition: transform .15s ease, background-color .15s ease;
+        }
+        .ip-switch-checkbox:checked ~ .ip-switch-track { background: rgba(201,168,76,.18); border-color: var(--ia-copper); }
+        .ip-switch-checkbox:checked ~ .ip-switch-track .ip-switch-thumb { transform: translateX(18px); background: var(--ia-copper); }
+        .ip-switch-checkbox:focus-visible ~ .ip-switch-track { box-shadow: 0 0 0 3px var(--ia-focus); }
+        .ip-switch-label { font-size: .92rem; font-weight: 600; color: var(--ia-cream); }
+
+        /* ---- Uyarı bandı (ör. eksik kurum bilgisi) ---- */
+        .ip-alert { display: flex; gap: .85rem; padding: 1rem 1.1rem; border-radius: 10px; margin-bottom: 1.5rem; }
+        .ip-alert svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: .1rem; }
+        .ip-alert-warning { background: rgba(224,178,122,.1); border: 1px solid rgba(224,178,122,.3); color: #e6c896; }
+        .ip-alert-title { font-family: 'Figtree', sans-serif; font-weight: 700; font-size: .9rem; margin-bottom: .2rem; color: var(--ia-cream); }
+        .ip-alert-text { font-size: .84rem; color: var(--ia-muted); }
+        .ip-alert-text a { color: var(--ia-copper); font-weight: 600; text-decoration: none; }
+        .ip-alert-text a:hover { color: var(--ia-copper-bright); }
+
+        /* ---- İstatistik kartları (ör. Gösterge Paneli) ---- */
+        .ip-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .ip-stat-card { display: flex; align-items: center; gap: .9rem; background: var(--ia-surface); border: 1px solid var(--ia-surface-border); border-radius: 12px; padding: 1.25rem 1.4rem; }
+        .ip-stat-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(201,168,76,.1); color: var(--ia-copper); display: grid; place-items: center; flex-shrink: 0; }
+        .ip-stat-icon svg { width: 20px; height: 20px; }
+        .ip-stat-value { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--ia-cream); line-height: 1; }
+        .ip-stat-label { font-size: .78rem; color: var(--ia-muted); margin-top: .3rem; }
     </style>
 </head>
 <body class="ip-shell">
@@ -337,12 +469,16 @@
 
         <nav class="ip-nav">
             <a href="{{ route('institution.dashboard') }}" class="ip-nav-item {{ request()->routeIs('institution.dashboard') ? 'is-active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
+                <x-institution.icon name="dashboard" />
                 {{ __('institution.nav.dashboard') }}
             </a>
             <a href="{{ route('institution.profile.edit') }}" class="ip-nav-item {{ request()->routeIs('institution.profile.*') ? 'is-active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3.25"/><path d="M4.5 20c1.4-3.8 4.3-5.75 7.5-5.75S18.1 16.2 19.5 20"/></svg>
-                {{ __('institution.nav.account') }}
+                <x-institution.icon name="institution" />
+                {{ __('institution.nav.institution_info') }}
+            </a>
+            <a href="{{ route('institution.staff.index') }}" class="ip-nav-item {{ request()->routeIs('institution.staff.*') ? 'is-active' : '' }}">
+                <x-institution.icon name="staff" />
+                {{ __('institution.nav.staff') }}
             </a>
         </nav>
 
@@ -364,21 +500,21 @@
                     <button type="button" class="ip-user-btn" @click="open = !open" :aria-expanded="open.toString()">
                         <span class="ip-avatar">{{ $initials }}</span>
                         <span class="ip-user-btn-name">{{ $displayName }}</span>
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.19l3.71-3.96a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                        <x-institution.icon name="chevron-down" />
                     </button>
 
                     <div class="ip-dropdown" x-show="open" x-cloak x-transition>
                         <div class="ip-dropdown-email">{{ $staff->email }}</div>
 
-                        <a href="{{ route('institution.profile.edit') }}" class="ip-dropdown-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3.25"/><path d="M4.5 20c1.4-3.8 4.3-5.75 7.5-5.75S18.1 16.2 19.5 20"/></svg>
+                        <a href="{{ route('institution.staff.edit', $staff) }}" class="ip-dropdown-item">
+                            <x-institution.icon name="account" />
                             {{ __('institution.nav.account') }}
                         </a>
 
                         <form method="POST" action="{{ route('institution.logout') }}">
                             @csrf
                             <button type="submit" class="ip-dropdown-item is-danger">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 4.5H6a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 006 19.5h3"/><path d="M14.5 15.5L19 12l-4.5-3.5"/><path d="M19 12H9"/></svg>
+                                <x-institution.icon name="logout" />
                                 {{ __('institution.nav.logout') }}
                             </button>
                         </form>

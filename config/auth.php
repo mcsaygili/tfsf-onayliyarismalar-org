@@ -42,12 +42,12 @@ return [
 
         'temsilci' => [
             'driver' => 'session',
-            'provider' => 'temsilciler',
+            'provider' => 'representatives',
         ],
 
         'juri' => [
             'driver' => 'session',
-            'provider' => 'juriler',
+            'provider' => 'jurors',
         ],
     ],
 
@@ -68,12 +68,12 @@ return [
             'model' => InstitutionStaff::class,
         ],
 
-        'temsilciler' => [
+        'representatives' => [
             'driver' => 'eloquent',
             'model' => Temsilci::class,
         ],
 
-        'juriler' => [
+        'jurors' => [
             'driver' => 'eloquent',
             'model' => Juri::class,
         ],
@@ -108,15 +108,15 @@ return [
         ],
 
         'temsilci' => [
-            'provider' => 'temsilciler',
-            'table' => 'temsilci_password_reset_tokens',
+            'provider' => 'representatives',
+            'table' => 'representative_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
 
         'juri' => [
-            'provider' => 'juriler',
-            'table' => 'juri_password_reset_tokens',
+            'provider' => 'jurors',
+            'table' => 'juror_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

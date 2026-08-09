@@ -1,17 +1,18 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Jüri Paneli') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __('Giriş yaptınız, hoş geldiniz :name.', ['name' => auth('juri')->user()->first_name]) }}
+<x-juri.app-layout :title="__('juri.nav.dashboard')">
+    @if (blank($juri->first_name) || blank($juri->last_name))
+        <div class="ip-alert ip-alert-warning">
+            <x-juri.icon name="warning" />
+            <div>
+                <div class="ip-alert-title">{{ __('juri.dashboard.incomplete_title') }}</div>
+                <div class="ip-alert-text">
+                    {{ __('juri.dashboard.incomplete_text') }}
+                    <a href="{{ route('juri.profile.edit') }}">{{ __('juri.dashboard.incomplete_link') }}</a>
                 </div>
             </div>
         </div>
+    @endif
+
+    <div class="ip-card">
+        {{ __('Giriş yaptınız, hoş geldiniz :name.', ['name' => $juri->first_name ?? $juri->email]) }}
     </div>
-</x-app-layout>
+</x-juri.app-layout>

@@ -1,13 +1,24 @@
 <?php
 
+use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Temsilci\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Temsilci\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Temsilci\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Temsilci\Auth\NewPasswordController;
 use App\Http\Controllers\Temsilci\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Temsilci\Auth\RegisteredController;
+use App\Http\Controllers\Temsilci\Auth\VerifyEmailController;
 use App\Http\Controllers\Temsilci\DashboardController;
+use App\Http\Controllers\Temsilci\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain(config('domains.temsilci'))->group(function () {
+    Route::get('language/{locale}', SetLanguageController::class)->name('temsilci.language');
+
     Route::middleware('guest:temsilci')->group(function () {
+        Route::get('register', [RegisteredController::class, 'create'])->name('temsilci.register');
+        Route::post('register', [RegisteredController::class, 'store']);
+
         Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('temsilci.login');
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
@@ -19,8 +30,23 @@ Route::domain(config('domains.temsilci'))->group(function () {
     });
 
     Route::middleware('auth:temsilci')->group(function () {
-        Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('temsilci.logout');
+        Route::get('verify-email', EmailVerificationPromptController::class)->name('temsilci.verification.notice');
 
+        Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('temsilci.verification.verify');
+
+        Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+            ->middleware('throttle:6,1')
+            ->name('temsilci.verification.send');
+
+        Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('temsilci.logout');
+    });
+
+    Route::middleware(['auth:temsilci', 'verified.guard:temsilci'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('temsilci.dashboard');
+
+        Route::get('temsilci-bilgilerim', [ProfileController::class, 'edit'])->name('temsilci.profile.edit');
+        Route::patch('temsilci-bilgilerim', [ProfileController::class, 'update'])->name('temsilci.profile.update');
     });
 });

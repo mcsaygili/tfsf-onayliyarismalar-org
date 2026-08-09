@@ -1,33 +1,44 @@
-<x-guest-layout>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<x-juri.guest-layout
+    :heading="__('juri.login.heading')"
+    :subheading="__('juri.login.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('juri.login.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('juri.login.card_title') }}</h2>
 
-    <div class="mb-4 text-sm font-medium text-gray-500">{{ __('Jüri Girişi') }}</div>
+    <x-juri.session-status class="ia-rise ia-d3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('juri.login') }}">
+    <form method="POST" action="{{ route('juri.login') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
-        <div>
-            <x-input-label for="email" :value="__('E-posta')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="ia-field">
+            <x-juri.label for="email" :value="__('juri.login.email')" />
+            <x-juri.input id="email" type="email" name="email" :value="old('email')" autofocus autocomplete="off" :placeholder="__('juri.login.email_placeholder')" />
+            <x-juri.input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Şifre')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="ia-field">
+            <x-juri.label for="password" :value="__('juri.login.password')" />
+            <x-juri.input id="password" type="password" name="password" autocomplete="off" placeholder="••••••••" />
+            <x-juri.input-error :messages="$errors->get('password')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="ia-row">
+            <label for="remember_me" class="ia-check">
+                <input id="remember_me" type="checkbox" name="remember">
+                {{ __('juri.login.remember') }}
+            </label>
+
             @if (Route::has('juri.password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('juri.password.request') }}">
-                    {{ __('Şifrenizi mi unuttunuz?') }}
-                </a>
+                <a class="ia-link" href="{{ route('juri.password.request') }}">{{ __('juri.login.forgot_password') }}</a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Giriş Yap') }}
-            </x-primary-button>
         </div>
+
+        <x-juri.button>{{ __('juri.login.submit') }} →</x-juri.button>
+
+        @if (Route::has('juri.register'))
+            <div class="ia-foot">
+                <a class="ia-link" href="{{ route('juri.register') }}">{{ __('juri.login.no_account') }}</a>
+            </div>
+        @endif
     </form>
-</x-guest-layout>
+</x-juri.guest-layout>

@@ -1,23 +1,25 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Şifrenizi mi unuttunuz? E-posta adresinizi bildirin, size yeni bir şifre belirlemeniz için bir bağlantı gönderelim.') }}
-    </div>
+<x-temsilci.guest-layout
+    :heading="__('temsilci.forgot_password.heading')"
+    :subheading="__('temsilci.forgot_password.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('temsilci.forgot_password.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('temsilci.forgot_password.card_title') }}</h2>
 
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-temsilci.session-status class="ia-rise ia-d3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('temsilci.password.email') }}">
+    <form method="POST" action="{{ route('temsilci.password.email') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
-        <div>
-            <x-input-label for="email" :value="__('E-posta')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="ia-field">
+            <x-temsilci.label for="email" :value="__('temsilci.forgot_password.email')" />
+            <x-temsilci.input id="email" type="email" name="email" :value="old('email')" autofocus autocomplete="off" :placeholder="__('temsilci.forgot_password.email_placeholder')" />
+            <x-temsilci.input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Şifre Sıfırlama Bağlantısı Gönder') }}
-            </x-primary-button>
+        <x-temsilci.button>{{ __('temsilci.forgot_password.submit') }} →</x-temsilci.button>
+
+        <div class="ia-foot">
+            <a class="ia-link" href="{{ route('temsilci.login') }}">{{ __('temsilci.forgot_password.back_to_login') }}</a>
         </div>
     </form>
-</x-guest-layout>
+</x-temsilci.guest-layout>
