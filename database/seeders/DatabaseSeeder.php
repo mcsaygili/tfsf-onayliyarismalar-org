@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ReferenceDataSeeder::class,
             EducationLevelSeeder::class,
             InstitutionTypeSeeder::class,
+            RegulationSectionSeeder::class,
         ]);
     }
 }

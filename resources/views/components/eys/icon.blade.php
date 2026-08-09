@@ -129,4 +129,12 @@
     @case('education')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M2.5 8.5L12 4l9.5 4.5L12 13 2.5 8.5z" stroke-linejoin="round"/><path d="M6.5 10.5v4.5c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5v-4.5" stroke-linejoin="round"/><path d="M21 8.5v6" stroke-linecap="round"/></svg>
         @break
+
+    @case('document')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M6.5 3.5h8l4 4v13a1 1 0 01-1 1h-11a1 1 0 01-1-1v-16a1 1 0 011-1z" stroke-linejoin="round"/><path d="M14.5 3.5v4h4" stroke-linejoin="round"/><path d="M8.5 12.5h7M8.5 15.5h7M8.5 18h4.5" stroke-linecap="round"/></svg>
+        @break
+
+    @case('list-check')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M3.5 6l1.5 1.5L8 4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 13l1.5 1.5L8 11.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 20l1.5 1.5L8 18.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.5 6h9M11.5 13h9M11.5 20h9" stroke-linecap="round"/></svg>
+        @break
 @endswitch

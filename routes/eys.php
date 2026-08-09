@@ -16,6 +16,8 @@ use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
 use App\Http\Controllers\Eys\PermissionController;
+use App\Http\Controllers\Eys\RegulationItemController;
+use App\Http\Controllers\Eys\RegulationSectionController;
 use App\Http\Controllers\Eys\RoleController;
 use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
@@ -121,6 +123,24 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{institutionType}/duzenle', [InstitutionTypeController::class, 'edit'])->name('edit');
             Route::patch('{institutionType}', [InstitutionTypeController::class, 'update'])->name('update');
             Route::delete('{institutionType}', [InstitutionTypeController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('sartname-bolumleri')->name('eys.regulation-sections.')->middleware('permission:eys.regulation_sections.manage')->group(function () {
+            Route::get('/', [RegulationSectionController::class, 'index'])->name('index');
+            Route::get('yeni', [RegulationSectionController::class, 'create'])->name('create');
+            Route::post('/', [RegulationSectionController::class, 'store'])->name('store');
+            Route::get('{regulationSection}/duzenle', [RegulationSectionController::class, 'edit'])->name('edit');
+            Route::patch('{regulationSection}', [RegulationSectionController::class, 'update'])->name('update');
+            Route::delete('{regulationSection}', [RegulationSectionController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('sartname-maddeleri')->name('eys.regulation-items.')->middleware('permission:eys.regulation_items.manage')->group(function () {
+            Route::get('/', [RegulationItemController::class, 'index'])->name('index');
+            Route::get('yeni', [RegulationItemController::class, 'create'])->name('create');
+            Route::post('/', [RegulationItemController::class, 'store'])->name('store');
+            Route::get('{regulationItem}/duzenle', [RegulationItemController::class, 'edit'])->name('edit');
+            Route::patch('{regulationItem}', [RegulationItemController::class, 'update'])->name('update');
+            Route::delete('{regulationItem}', [RegulationItemController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('kurum')->name('eys.institution.')->middleware(['team:Institution', 'permission:institution.dashboard.view'])->group(function () {

@@ -44,6 +44,14 @@ return [
                     'label' => 'Kurum Türü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'regulation_sections' => [
+                    'label' => 'Şartname Bölümü Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
+                'regulation_items' => [
+                    'label' => 'Şartname Maddesi Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'file_manager' => [
                     'label' => 'Dosya Yöneticisi',
                     'actions' => ['view', 'create', 'delete', 'manage'],

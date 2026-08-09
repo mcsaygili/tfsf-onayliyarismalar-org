@@ -872,6 +872,22 @@
                     {{ __('eys.nav.file_manager') }}
                 </a>
             @endcan
+
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage'])
+                <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
+                @can('eys.regulation_sections.manage')
+                    <a href="{{ route('eys.regulation-sections.index') }}" class="ip-nav-item {{ request()->routeIs('eys.regulation-sections.*') ? 'is-active' : '' }}">
+                        <x-eys.icon name="document" />
+                        {{ __('eys.nav.regulation_sections') }}
+                    </a>
+                @endcan
+                @can('eys.regulation_items.manage')
+                    <a href="{{ route('eys.regulation-items.index') }}" class="ip-nav-item {{ request()->routeIs('eys.regulation-items.*') ? 'is-active' : '' }}">
+                        <x-eys.icon name="list-check" />
+                        {{ __('eys.nav.regulation_items') }}
+                    </a>
+                @endcan
+            @endcanany
         </nav>
 
         <div class="ip-sidebar-foot">TFSF · v{{ config('app.version', '0.1') }}</div>
