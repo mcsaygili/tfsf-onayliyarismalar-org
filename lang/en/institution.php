@@ -71,6 +71,7 @@ return [
         'dashboard' => 'Dashboard',
         'account' => 'My Account',
         'institution_info' => 'Institution Details',
+        'password' => 'Password',
         'staff' => 'Staff',
         'logout' => 'Secure Logout',
     ],
@@ -88,6 +89,16 @@ return [
         'phone' => 'Phone',
         'save' => 'Save',
         'updated' => 'Your details have been updated.',
+    ],
+
+    'password' => [
+        'section_title' => 'Password',
+        'section_hint' => 'Ensure your account is using a long, random password to stay secure.',
+        'current_password' => 'Current Password',
+        'new_password' => 'New Password',
+        'confirm_password' => 'Confirm Password',
+        'save' => 'Save',
+        'updated' => 'Your password has been updated.',
     ],
 
     'staff' => [

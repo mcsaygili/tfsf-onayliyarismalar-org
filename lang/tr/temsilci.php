@@ -70,6 +70,7 @@ return [
     'nav' => [
         'dashboard' => 'Gösterge Paneli',
         'profile' => 'Temsilci Bilgileri',
+        'password' => 'Şifre İşlemleri',
         'logout' => 'Güvenli Çıkış',
     ],
 
@@ -82,6 +83,16 @@ return [
         'phone' => 'Telefon',
         'save' => 'Kaydet',
         'updated' => 'Bilgileriniz güncellendi.',
+    ],
+
+    'password' => [
+        'section_title' => 'Şifre İşlemleri',
+        'section_hint' => 'Hesabınızın güvenliği için uzun, rastgele bir şifre kullandığınızdan emin olun.',
+        'current_password' => 'Mevcut Şifre',
+        'new_password' => 'Yeni Şifre',
+        'confirm_password' => 'Şifre (Tekrar)',
+        'save' => 'Kaydet',
+        'updated' => 'Şifreniz güncellendi.',
     ],
 
     'dashboard' => [

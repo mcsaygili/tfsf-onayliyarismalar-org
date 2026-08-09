@@ -5,6 +5,7 @@ namespace Tests\Feature\Institution;
 use App\Models\Institution;
 use App\Models\InstitutionStaff;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -71,6 +72,55 @@ class ProfileTest extends TestCase
         $staff = InstitutionStaff::factory()->for($institution)->unverified()->create();
 
         $response = $this->actingAs($staff, 'institution')->get(route('institution.profile.edit'));
+
+        $response->assertRedirect(route('institution.verification.notice'));
+    }
+
+    public function test_sifre_islemleri_sayfasi_dogrulanmis_personel_icin_goruntulenebilir(): void
+    {
+        $institution = Institution::factory()->create();
+        $staff = InstitutionStaff::factory()->for($institution)->create();
+
+        $response = $this->actingAs($staff, 'institution')->get(route('institution.password.edit'));
+
+        $response->assertOk();
+    }
+
+    public function test_personel_sifresini_guncelleyebilir(): void
+    {
+        $institution = Institution::factory()->create();
+        $staff = InstitutionStaff::factory()->for($institution)->create();
+
+        $response = $this->actingAs($staff, 'institution')->from(route('institution.password.edit'))->put(route('institution.password.update'), [
+            'current_password' => 'password',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertRedirect(route('institution.password.edit'));
+        $this->assertTrue(Hash::check('yeni-guclu-sifre', $staff->fresh()->password));
+    }
+
+    public function test_yanlis_mevcut_sifreyle_personel_sifresi_guncellenemez(): void
+    {
+        $institution = Institution::factory()->create();
+        $staff = InstitutionStaff::factory()->for($institution)->create();
+
+        $response = $this->actingAs($staff, 'institution')->put(route('institution.password.update'), [
+            'current_password' => 'yanlis-sifre',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertSessionHasErrorsIn('updatePassword', ['current_password']);
+    }
+
+    public function test_dogrulanmamis_personel_sifre_sayfasina_erisemez(): void
+    {
+        $institution = Institution::factory()->create();
+        $staff = InstitutionStaff::factory()->for($institution)->unverified()->create();
+
+        $response = $this->actingAs($staff, 'institution')->get(route('institution.password.edit'));
 
         $response->assertRedirect(route('institution.verification.notice'));
     }

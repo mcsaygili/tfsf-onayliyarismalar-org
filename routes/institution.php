@@ -8,6 +8,7 @@ use App\Http\Controllers\Institution\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Institution\Auth\RegisteredController;
 use App\Http\Controllers\Institution\Auth\VerifyEmailController;
 use App\Http\Controllers\Institution\DashboardController;
+use App\Http\Controllers\Institution\PasswordController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StaffController;
 use App\Http\Controllers\SetLanguageController;
@@ -49,6 +50,9 @@ Route::domain(config('domains.institution'))->group(function () {
 
         Route::get('kurum-bilgileri', [ProfileController::class, 'edit'])->name('institution.profile.edit');
         Route::patch('kurum-bilgileri', [ProfileController::class, 'update'])->name('institution.profile.update');
+
+        Route::get('kurum-sifrem', [PasswordController::class, 'edit'])->name('institution.password.edit');
+        Route::put('kurum-sifrem', [PasswordController::class, 'update'])->name('institution.password.update');
 
         Route::prefix('yetkililer')->name('institution.staff.')->group(function () {
             Route::get('/', [StaffController::class, 'index'])->name('index');

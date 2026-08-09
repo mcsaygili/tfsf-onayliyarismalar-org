@@ -70,6 +70,7 @@ return [
     'nav' => [
         'dashboard' => 'Dashboard',
         'profile' => 'Representative Details',
+        'password' => 'Password',
         'logout' => 'Secure Logout',
     ],
 
@@ -82,6 +83,16 @@ return [
         'phone' => 'Phone',
         'save' => 'Save',
         'updated' => 'Your details have been updated.',
+    ],
+
+    'password' => [
+        'section_title' => 'Password',
+        'section_hint' => 'Ensure your account is using a long, random password to stay secure.',
+        'current_password' => 'Current Password',
+        'new_password' => 'New Password',
+        'confirm_password' => 'Confirm Password',
+        'save' => 'Save',
+        'updated' => 'Your password has been updated.',
     ],
 
     'dashboard' => [

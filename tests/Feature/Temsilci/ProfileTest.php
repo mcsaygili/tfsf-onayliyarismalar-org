@@ -4,6 +4,7 @@ namespace Tests\Feature\Temsilci;
 
 use App\Models\Temsilci;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -54,6 +55,51 @@ class ProfileTest extends TestCase
         $temsilci = Temsilci::factory()->unverified()->create();
 
         $response = $this->actingAs($temsilci, 'temsilci')->get(route('temsilci.profile.edit'));
+
+        $response->assertRedirect(route('temsilci.verification.notice'));
+    }
+
+    public function test_sifre_islemleri_sayfasi_dogrulanmis_temsilci_icin_goruntulenebilir(): void
+    {
+        $temsilci = Temsilci::factory()->create();
+
+        $response = $this->actingAs($temsilci, 'temsilci')->get(route('temsilci.password.edit'));
+
+        $response->assertOk();
+    }
+
+    public function test_temsilci_sifresini_guncelleyebilir(): void
+    {
+        $temsilci = Temsilci::factory()->create();
+
+        $response = $this->actingAs($temsilci, 'temsilci')->from(route('temsilci.password.edit'))->put(route('temsilci.password.update'), [
+            'current_password' => 'password',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertRedirect(route('temsilci.password.edit'));
+        $this->assertTrue(Hash::check('yeni-guclu-sifre', $temsilci->fresh()->password));
+    }
+
+    public function test_yanlis_mevcut_sifreyle_temsilci_sifresi_guncellenemez(): void
+    {
+        $temsilci = Temsilci::factory()->create();
+
+        $response = $this->actingAs($temsilci, 'temsilci')->put(route('temsilci.password.update'), [
+            'current_password' => 'yanlis-sifre',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertSessionHasErrorsIn('updatePassword', ['current_password']);
+    }
+
+    public function test_dogrulanmamis_temsilci_sifre_sayfasina_erisemez(): void
+    {
+        $temsilci = Temsilci::factory()->unverified()->create();
+
+        $response = $this->actingAs($temsilci, 'temsilci')->get(route('temsilci.password.edit'));
 
         $response->assertRedirect(route('temsilci.verification.notice'));
     }

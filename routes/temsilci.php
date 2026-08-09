@@ -9,6 +9,7 @@ use App\Http\Controllers\Temsilci\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Temsilci\Auth\RegisteredController;
 use App\Http\Controllers\Temsilci\Auth\VerifyEmailController;
 use App\Http\Controllers\Temsilci\DashboardController;
+use App\Http\Controllers\Temsilci\PasswordController;
 use App\Http\Controllers\Temsilci\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,5 +49,8 @@ Route::domain(config('domains.temsilci'))->group(function () {
 
         Route::get('temsilci-bilgilerim', [ProfileController::class, 'edit'])->name('temsilci.profile.edit');
         Route::patch('temsilci-bilgilerim', [ProfileController::class, 'update'])->name('temsilci.profile.update');
+
+        Route::get('temsilci-sifrem', [PasswordController::class, 'edit'])->name('temsilci.password.edit');
+        Route::put('temsilci-sifrem', [PasswordController::class, 'update'])->name('temsilci.password.update');
     });
 });

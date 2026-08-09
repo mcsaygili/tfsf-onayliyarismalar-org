@@ -71,6 +71,7 @@ return [
         'dashboard' => 'Gösterge Paneli',
         'account' => 'Hesabım',
         'institution_info' => 'Kurum Bilgileri',
+        'password' => 'Şifre İşlemleri',
         'staff' => 'Yetkili Bilgileri',
         'logout' => 'Güvenli Çıkış',
     ],
@@ -88,6 +89,16 @@ return [
         'phone' => 'Telefon',
         'save' => 'Kaydet',
         'updated' => 'Bilgileriniz güncellendi.',
+    ],
+
+    'password' => [
+        'section_title' => 'Şifre İşlemleri',
+        'section_hint' => 'Hesabınızın güvenliği için uzun, rastgele bir şifre kullandığınızdan emin olun.',
+        'current_password' => 'Mevcut Şifre',
+        'new_password' => 'Yeni Şifre',
+        'confirm_password' => 'Şifre (Tekrar)',
+        'save' => 'Kaydet',
+        'updated' => 'Şifreniz güncellendi.',
     ],
 
     'staff' => [
