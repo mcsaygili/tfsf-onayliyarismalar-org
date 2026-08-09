@@ -64,8 +64,33 @@
                 <x-uye.input-error :messages="$errors->get('gender')" />
             </div>
             <div class="ia-field" style="margin-bottom: 0;">
-                <x-uye.label for="date_of_birth" :value="__('uye.profile.date_of_birth')" />
-                <x-uye.input id="date_of_birth" type="date" name="date_of_birth" :value="old('date_of_birth', $user->date_of_birth?->format('Y-m-d'))" autocomplete="off" />
+                <x-uye.label for="date_of_birth_display" :value="__('uye.profile.date_of_birth')" />
+                {{-- Alpine'ın @js() ile üretilen JS ifadesi, x-component etiketlerinin
+                     attribute string'i içinde derlenmiyor (Blade @click/@keydown gibi
+                     Alpine event syntax'ıyla çakışmasın diye burayı literal bırakıyor)
+                     — bu yüzden burada düz <input> kullanılıyor. --}}
+                <input
+                    id="date_of_birth"
+                    type="text"
+                    name="date_of_birth"
+                    class="ia-input"
+                    value="{{ old('date_of_birth', $user->date_of_birth?->format('Y-m-d')) }}"
+                    autocomplete="off"
+                    x-data
+                    x-init="
+                        const fp = flatpickr($el, {
+                            locale: @js(app()->getLocale() === 'tr' ? 'tr' : 'default'),
+                            dateFormat: 'Y-m-d',
+                            altInput: true,
+                            altInputClass: 'ia-input',
+                            altFormat: @js(app()->getLocale() === 'tr' ? 'd.m.Y' : 'F j, Y'),
+                            maxDate: 'today',
+                            allowInput: true,
+                            disableMobile: true,
+                        });
+                        fp.altInput.id = 'date_of_birth_display';
+                    "
+                >
                 <x-uye.input-error :messages="$errors->get('date_of_birth')" />
             </div>
         </div>
