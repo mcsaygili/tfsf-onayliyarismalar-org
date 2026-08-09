@@ -369,7 +369,7 @@
         .flatpickr-month { color: var(--ia-cream) !important; fill: var(--ia-cream) !important; height: auto; }
         .flatpickr-current-month { font-size: .95rem; padding: 0; }
         .flatpickr-current-month .cur-month { color: var(--ia-cream) !important; font-weight: 700; }
-        .flatpickr-current-month .flatpickr-monthDropdown-months { color: var(--ia-cream) !important; background: transparent; font-weight: 700; border: none; appearance: none; }
+        .flatpickr-current-month .flatpickr-monthDropdown-months { color: var(--ia-cream) !important; background: transparent; font-weight: 700; }
         .flatpickr-current-month .flatpickr-monthDropdown-months option { background: var(--ia-bg-soft); color: var(--ia-cream); }
         .flatpickr-current-month input.cur-year { color: var(--ia-cream) !important; background: transparent; font-weight: 700; }
         .flatpickr-prev-month, .flatpickr-next-month { color: var(--ia-muted) !important; fill: var(--ia-muted) !important; }
