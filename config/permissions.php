@@ -56,19 +56,39 @@ return [
         ],
 
         'Institution' => [
-            'components' => [],
+            'components' => [
+                'dashboard' => [
+                    'label' => 'Gösterge Paneli',
+                    'actions' => ['view'],
+                ],
+            ],
         ],
 
         'Temsilci' => [
-            'components' => [],
+            'components' => [
+                'dashboard' => [
+                    'label' => 'Gösterge Paneli',
+                    'actions' => ['view'],
+                ],
+            ],
         ],
 
         'Juri' => [
-            'components' => [],
+            'components' => [
+                'dashboard' => [
+                    'label' => 'Gösterge Paneli',
+                    'actions' => ['view'],
+                ],
+            ],
         ],
 
         'Uye' => [
-            'components' => [],
+            'components' => [
+                'dashboard' => [
+                    'label' => 'Gösterge Paneli',
+                    'actions' => ['view'],
+                ],
+            ],
         ],
     ],
 

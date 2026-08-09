@@ -10,6 +10,7 @@ use App\Http\Controllers\Eys\EducationLevelController;
 use App\Http\Controllers\Eys\FileManagerController;
 use App\Http\Controllers\Eys\InstitutionTypeController;
 use App\Http\Controllers\Eys\MailClientController;
+use App\Http\Controllers\Eys\ModuleDashboardController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\RoleController;
 use App\Http\Controllers\Eys\UserController;
@@ -115,6 +116,22 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{institutionType}/duzenle', [InstitutionTypeController::class, 'edit'])->name('edit');
             Route::patch('{institutionType}', [InstitutionTypeController::class, 'update'])->name('update');
             Route::delete('{institutionType}', [InstitutionTypeController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('kurum')->name('eys.institution.')->middleware(['team:Institution', 'permission:institution.dashboard.view'])->group(function () {
+            Route::get('/', [ModuleDashboardController::class, 'institution'])->name('dashboard');
+        });
+
+        Route::prefix('temsilci')->name('eys.temsilci.')->middleware(['team:Temsilci', 'permission:representative.dashboard.view'])->group(function () {
+            Route::get('/', [ModuleDashboardController::class, 'temsilci'])->name('dashboard');
+        });
+
+        Route::prefix('juri')->name('eys.juri.')->middleware(['team:Juri', 'permission:jury.dashboard.view'])->group(function () {
+            Route::get('/', [ModuleDashboardController::class, 'juri'])->name('dashboard');
+        });
+
+        Route::prefix('uye')->name('eys.uye.')->middleware(['team:Uye', 'permission:member.dashboard.view'])->group(function () {
+            Route::get('/', [ModuleDashboardController::class, 'uye'])->name('dashboard');
         });
 
         Route::prefix('mail-istemcisi')->name('eys.mail-client.')->middleware('permission:eys.mail_client.view')->group(function () {

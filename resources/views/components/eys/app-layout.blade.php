@@ -5,6 +5,38 @@
     $initials = $eysUser->first_name
         ? strtoupper(mb_substr($eysUser->first_name, 0, 1).mb_substr($eysUser->last_name ?? '', 0, 1))
         : strtoupper(mb_substr($eysUser->email, 0, 1));
+
+    // Sidebar'daki MODÜLLER dropdown'ları her zaman "Eys" team context'inde
+    // render edilir (bkz. routes/eys.php'nin dış 'team:Eys' middleware'i),
+    // bu yüzden her modülün kendi "dashboard.view" izni o modülün TEAM'ine
+    // geçici olarak geçilerek kontrol edilir, sonrasında context geri alınır.
+    $permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);
+    $moduleDashboardAccess = [];
+    foreach (\App\Enums\Module::cases() as $m) {
+        if ($m === \App\Enums\Module::Eys) {
+            continue;
+        }
+        $permissionRegistrar->setPermissionsTeamId($m->value);
+        // Spatie'nin roles/permissions ilişkileri model üzerinde cache'lendiği
+        // için team değişse bile eski team'in rolleri döner — her switch'te
+        // ilişkiyi düşürüp taze sorgu yapılmasını sağlıyoruz.
+        $eysUser->unsetRelation('roles')->unsetRelation('permissions');
+        $moduleDashboardAccess[$m->name] = $eysUser->can($m->key().'.dashboard.view');
+    }
+    // Bu layout'taki geri kalan TÜM @can() kontrolleri (YÖNETİM bölümü)
+    // 'eys.*' izinlerini kontrol ediyor ve Eys team'i varsayıyor — bir modül
+    // gösterge paneli sayfasında (team:Institution vb. middleware'i team'i
+    // değiştirmiş olabilir) bile bu varsayım korunmalı, o yüzden team'i
+    // burada kalıcı olarak Eys'e sabitliyoruz.
+    $permissionRegistrar->setPermissionsTeamId(\App\Enums\Module::Eys->value);
+    $eysUser->unsetRelation('roles')->unsetRelation('permissions');
+
+    $moduleDashboardRoutes = [
+        'Institution' => 'eys.institution.dashboard',
+        'Temsilci' => 'eys.temsilci.dashboard',
+        'Juri' => 'eys.juri.dashboard',
+        'Uye' => 'eys.uye.dashboard',
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="ip-html">
@@ -716,14 +748,25 @@
             @endphp
             @foreach (\App\Enums\Module::cases() as $module)
                 @continue($module === \App\Enums\Module::Eys)
-                <div x-data="{ o: false }">
+                @php
+                    $dashboardRouteName = $moduleDashboardRoutes[$module->name] ?? null;
+                    $canViewModuleDashboard = $moduleDashboardAccess[$module->name] ?? false;
+                @endphp
+                <div x-data="{ o: {{ $dashboardRouteName && request()->routeIs($dashboardRouteName) ? 'true' : 'false' }} }">
                     <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                         <x-eys.icon :name="$moduleIcons[$module->name] ?? 'dashboard'" />
                         <span class="ip-nav-group-label">{{ $module->label() }}</span>
                         <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
                     </button>
                     <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
-                        <div class="ip-nav-empty">{{ __('eys.nav.soon') }}</div>
+                        @if ($canViewModuleDashboard && $dashboardRouteName)
+                            <a href="{{ route($dashboardRouteName) }}" class="ip-nav-item {{ request()->routeIs($dashboardRouteName) ? 'is-active' : '' }}">
+                                <x-eys.icon name="dashboard" />
+                                {{ __('eys.nav.module_dashboard') }}
+                            </a>
+                        @else
+                            <div class="ip-nav-empty">{{ __('eys.nav.soon') }}</div>
+                        @endif
                     </div>
                 </div>
             @endforeach

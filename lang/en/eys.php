@@ -74,6 +74,14 @@ return [
         'section_modules' => 'Modules',
         'section_management' => 'Management',
         'soon' => 'Coming soon',
+        'module_dashboard' => 'Dashboard',
+    ],
+
+    'modules' => [
+        'total_institutions' => 'Total Institution Count',
+        'total_representatives' => 'Total Representative Count',
+        'total_jurors' => 'Total Juror Count',
+        'total_members' => 'Total Member Count',
     ],
 
     'module_names' => [

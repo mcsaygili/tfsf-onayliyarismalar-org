@@ -74,6 +74,14 @@ return [
         'section_modules' => 'Modüller',
         'section_management' => 'Yönetim',
         'soon' => 'Yakında',
+        'module_dashboard' => 'Gösterge Paneli',
+    ],
+
+    'modules' => [
+        'total_institutions' => 'Toplam Kurum Sayısı',
+        'total_representatives' => 'Toplam Temsilci Sayısı',
+        'total_jurors' => 'Toplam Jüri Sayısı',
+        'total_members' => 'Toplam Üye Sayısı',
     ],
 
     'module_names' => [
