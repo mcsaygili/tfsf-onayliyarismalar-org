@@ -40,7 +40,7 @@
             @endif
         </div>
 
-        <div class="ia-field" style="margin-bottom: 0;">
+        <div class="ia-field">
             <x-uye.label for="education_level_id" :value="__('uye.profile.education_level')" />
             <select id="education_level_id" name="education_level_id" class="ia-input">
                 <option value="">{{ __('uye.profile.education_level_none') }}</option>
@@ -49,6 +49,25 @@
                 @endforeach
             </select>
             <x-uye.input-error :messages="$errors->get('education_level_id')" />
+        </div>
+
+        <div class="ip-grid-2" style="margin-bottom: 0;">
+            <div class="ia-field" style="margin-bottom: 0;">
+                <x-uye.label for="gender" :value="__('uye.profile.gender')" />
+                @php $gender = old('gender', $user->gender); @endphp
+                <select id="gender" name="gender" class="ia-input">
+                    <option value="">{{ __('uye.profile.gender_none') }}</option>
+                    <option value="male" @selected($gender === 'male')>{{ __('uye.profile.gender_male') }}</option>
+                    <option value="female" @selected($gender === 'female')>{{ __('uye.profile.gender_female') }}</option>
+                    <option value="unspecified" @selected($gender === 'unspecified')>{{ __('uye.profile.gender_unspecified') }}</option>
+                </select>
+                <x-uye.input-error :messages="$errors->get('gender')" />
+            </div>
+            <div class="ia-field" style="margin-bottom: 0;">
+                <x-uye.label for="date_of_birth" :value="__('uye.profile.date_of_birth')" />
+                <x-uye.input id="date_of_birth" type="date" name="date_of_birth" :value="old('date_of_birth', $user->date_of_birth?->format('Y-m-d'))" autocomplete="off" />
+                <x-uye.input-error :messages="$errors->get('date_of_birth')" />
+            </div>
         </div>
 
         <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">

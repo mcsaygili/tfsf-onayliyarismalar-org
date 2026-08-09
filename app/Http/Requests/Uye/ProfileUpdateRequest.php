@@ -26,6 +26,8 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'education_level_id' => ['nullable', 'uuid', 'exists:education_levels,id'],
+            'gender' => ['nullable', Rule::in(['male', 'female', 'unspecified'])],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
         ];
     }
 }

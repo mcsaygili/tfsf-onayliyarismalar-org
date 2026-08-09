@@ -113,6 +113,66 @@ class ProfileTest extends TestCase
         $response->assertSessionHasErrors(['education_level_id']);
     }
 
+    public function test_cinsiyet_ve_dogum_tarihi_belirtilmeden_bilgiler_guncellenebilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertNull($user->fresh()->gender);
+        $this->assertNull($user->fresh()->date_of_birth);
+    }
+
+    public function test_cinsiyet_ve_dogum_tarihi_guncellenebilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'gender' => 'female',
+            'date_of_birth' => '1990-05-15',
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertSame('female', $user->fresh()->gender);
+        $this->assertSame('1990-05-15', $user->fresh()->date_of_birth->format('Y-m-d'));
+    }
+
+    public function test_gecersiz_cinsiyet_reddedilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'gender' => 'diger',
+        ]);
+
+        $response->assertSessionHasErrors(['gender']);
+    }
+
+    public function test_gelecek_bir_dogum_tarihi_reddedilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'date_of_birth' => now()->addDay()->format('Y-m-d'),
+        ]);
+
+        $response->assertSessionHasErrors(['date_of_birth']);
+    }
+
     public function test_e_posta_degisince_dogrulama_sifirlanir(): void
     {
         $user = User::factory()->create();

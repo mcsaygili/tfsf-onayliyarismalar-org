@@ -347,6 +347,7 @@
             transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
         }
         textarea.ia-input { resize: vertical; min-height: 5rem; }
+        input[type="date"].ia-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .6; }
         .ia-input::placeholder { color: var(--ia-muted-dim); }
         .ia-input:focus {
             outline: none;
