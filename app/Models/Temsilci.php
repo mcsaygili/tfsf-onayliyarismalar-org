@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -20,7 +21,7 @@ use Illuminate\Notifications\Notifiable;
  * city_id/region_id/dernek_bilgi_id, referans veri modülü gelene kadar
  * bilinçli olarak Fillable dışında (bkz. migration docblock'u).
  */
-#[Fillable(['email', 'password', 'first_name', 'last_name', 'phone'])]
+#[Fillable(['email', 'password', 'first_name', 'last_name', 'phone', 'status', 'education_level_id'])]
 #[Hidden(['password', 'remember_token'])]
 class Temsilci extends Authenticatable implements MustVerifyEmail
 {
@@ -36,6 +37,11 @@ class Temsilci extends Authenticatable implements MustVerifyEmail
             'status' => 'boolean',
             'email_verified_at' => 'datetime',
         ];
+    }
+
+    public function educationLevel(): BelongsTo
+    {
+        return $this->belongsTo(EducationLevel::class);
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void

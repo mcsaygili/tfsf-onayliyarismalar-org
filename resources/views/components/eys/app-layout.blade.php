@@ -8,10 +8,12 @@
 
     // Sidebar'daki MODÜLLER dropdown'ları her zaman "Eys" team context'inde
     // render edilir (bkz. routes/eys.php'nin dış 'team:Eys' middleware'i),
-    // bu yüzden her modülün kendi "dashboard.view" izni o modülün TEAM'ine
-    // geçici olarak geçilerek kontrol edilir, sonrasında context geri alınır.
+    // bu yüzden her modülün kendi izinleri o modülün TEAM'ine geçici olarak
+    // geçilerek kontrol edilir, sonrasında context geri alınır. Route::has()
+    // kontrolleri, bu modüllerin CRUD ekranları aşamalı olarak eklenirken
+    // (bkz. proje geçmişi) henüz kurulmamış bir route'a link vermemek için.
     $permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);
-    $moduleDashboardAccess = [];
+    $moduleLinks = [];
     foreach (\App\Enums\Module::cases() as $m) {
         if ($m === \App\Enums\Module::Eys) {
             continue;
@@ -21,7 +23,49 @@
         // için team değişse bile eski team'in rolleri döner — her switch'te
         // ilişkiyi düşürüp taze sorgu yapılmasını sağlıyoruz.
         $eysUser->unsetRelation('roles')->unsetRelation('permissions');
-        $moduleDashboardAccess[$m->name] = $eysUser->can($m->key().'.dashboard.view');
+
+        $links = [];
+        if (\Illuminate\Support\Facades\Route::has('eys.'.strtolower($m->name).'.dashboard') && $eysUser->can($m->key().'.dashboard.view')) {
+            $links[] = [
+                'route' => 'eys.'.strtolower($m->name).'.dashboard',
+                'label' => __('eys.nav.module_dashboard'),
+                'icon' => 'dashboard',
+                'activePatterns' => ['eys.'.strtolower($m->name).'.dashboard'],
+            ];
+        }
+        if ($m === \App\Enums\Module::Institution && \Illuminate\Support\Facades\Route::has('eys.institutions.index') && $eysUser->can('institution.institutions.manage')) {
+            $links[] = [
+                'route' => 'eys.institutions.index',
+                'label' => __('eys.institution.title'),
+                'icon' => 'institution',
+                'activePatterns' => ['eys.institutions.*', 'eys.institution-staff.*'],
+            ];
+        }
+        if ($m === \App\Enums\Module::Temsilci && \Illuminate\Support\Facades\Route::has('eys.temsilciler.index') && $eysUser->can('representative.representatives.manage')) {
+            $links[] = [
+                'route' => 'eys.temsilciler.index',
+                'label' => __('eys.temsilci.title'),
+                'icon' => 'temsilci',
+                'activePatterns' => ['eys.temsilciler.*'],
+            ];
+        }
+        if ($m === \App\Enums\Module::Juri && \Illuminate\Support\Facades\Route::has('eys.juriler.index') && $eysUser->can('jury.jurors.manage')) {
+            $links[] = [
+                'route' => 'eys.juriler.index',
+                'label' => __('eys.juri.title'),
+                'icon' => 'juri',
+                'activePatterns' => ['eys.juriler.*'],
+            ];
+        }
+        if ($m === \App\Enums\Module::Uye && \Illuminate\Support\Facades\Route::has('eys.uyeler.index') && $eysUser->can('member.members.manage')) {
+            $links[] = [
+                'route' => 'eys.uyeler.index',
+                'label' => __('eys.uye.title'),
+                'icon' => 'uye',
+                'activePatterns' => ['eys.uyeler.*'],
+            ];
+        }
+        $moduleLinks[$m->name] = $links;
     }
     // Bu layout'taki geri kalan TÜM @can() kontrolleri (YÖNETİM bölümü)
     // 'eys.*' izinlerini kontrol ediyor ve Eys team'i varsayıyor — bir modül
@@ -30,13 +74,6 @@
     // burada kalıcı olarak Eys'e sabitliyoruz.
     $permissionRegistrar->setPermissionsTeamId(\App\Enums\Module::Eys->value);
     $eysUser->unsetRelation('roles')->unsetRelation('permissions');
-
-    $moduleDashboardRoutes = [
-        'Institution' => 'eys.institution.dashboard',
-        'Temsilci' => 'eys.temsilci.dashboard',
-        'Juri' => 'eys.juri.dashboard',
-        'Uye' => 'eys.uye.dashboard',
-    ];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="ip-html">
@@ -749,24 +786,24 @@
             @foreach (\App\Enums\Module::cases() as $module)
                 @continue($module === \App\Enums\Module::Eys)
                 @php
-                    $dashboardRouteName = $moduleDashboardRoutes[$module->name] ?? null;
-                    $canViewModuleDashboard = $moduleDashboardAccess[$module->name] ?? false;
+                    $links = $moduleLinks[$module->name] ?? [];
+                    $isModuleOpen = collect($links)->contains(fn ($l) => request()->routeIs(...$l['activePatterns']));
                 @endphp
-                <div x-data="{ o: {{ $dashboardRouteName && request()->routeIs($dashboardRouteName) ? 'true' : 'false' }} }">
+                <div x-data="{ o: {{ $isModuleOpen ? 'true' : 'false' }} }">
                     <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                         <x-eys.icon :name="$moduleIcons[$module->name] ?? 'dashboard'" />
                         <span class="ip-nav-group-label">{{ $module->label() }}</span>
                         <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
                     </button>
                     <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
-                        @if ($canViewModuleDashboard && $dashboardRouteName)
-                            <a href="{{ route($dashboardRouteName) }}" class="ip-nav-item {{ request()->routeIs($dashboardRouteName) ? 'is-active' : '' }}">
-                                <x-eys.icon name="dashboard" />
-                                {{ __('eys.nav.module_dashboard') }}
+                        @forelse ($links as $link)
+                            <a href="{{ route($link['route']) }}" class="ip-nav-item {{ request()->routeIs(...$link['activePatterns']) ? 'is-active' : '' }}">
+                                <x-eys.icon :name="$link['icon']" />
+                                {{ $link['label'] }}
                             </a>
-                        @else
+                        @empty
                             <div class="ip-nav-empty">{{ __('eys.nav.soon') }}</div>
-                        @endif
+                        @endforelse
                     </div>
                 </div>
             @endforeach

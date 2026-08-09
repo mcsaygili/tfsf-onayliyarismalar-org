@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * varlık değil, InstitutionStaff'ın (guard: institution) bağlı olduğu
  * organizasyon.
  */
-#[Fillable(['name', 'email', 'phone', 'website', 'address', 'status', 'approved_at'])]
+#[Fillable(['name', 'email', 'phone', 'website', 'address', 'status', 'approved_at', 'institution_type_id'])]
 class Institution extends Model
 {
     /** @use HasFactory<InstitutionFactory> */
@@ -31,6 +32,11 @@ class Institution extends Model
     public function staff(): HasMany
     {
         return $this->hasMany(InstitutionStaff::class);
+    }
+
+    public function institutionType(): BelongsTo
+    {
+        return $this->belongsTo(InstitutionType::class);
     }
 
     /**

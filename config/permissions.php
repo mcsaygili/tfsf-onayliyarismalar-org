@@ -61,6 +61,14 @@ return [
                     'label' => 'Gösterge Paneli',
                     'actions' => ['view'],
                 ],
+                'institutions' => [
+                    'label' => 'Kurum Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
+                'institution_staff' => [
+                    'label' => 'Kurum Yetkilisi Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
             ],
         ],
 
@@ -69,6 +77,10 @@ return [
                 'dashboard' => [
                     'label' => 'Gösterge Paneli',
                     'actions' => ['view'],
+                ],
+                'representatives' => [
+                    'label' => 'Temsilci Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
             ],
         ],
@@ -79,6 +91,10 @@ return [
                     'label' => 'Gösterge Paneli',
                     'actions' => ['view'],
                 ],
+                'jurors' => [
+                    'label' => 'Jüri Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
             ],
         ],
 
@@ -87,6 +103,10 @@ return [
                 'dashboard' => [
                     'label' => 'Gösterge Paneli',
                     'actions' => ['view'],
+                ],
+                'members' => [
+                    'label' => 'Üye Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
             ],
         ],

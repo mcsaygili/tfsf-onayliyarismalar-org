@@ -8,11 +8,16 @@ use App\Http\Controllers\Eys\CountryController;
 use App\Http\Controllers\Eys\DashboardController;
 use App\Http\Controllers\Eys\EducationLevelController;
 use App\Http\Controllers\Eys\FileManagerController;
+use App\Http\Controllers\Eys\InstitutionController;
+use App\Http\Controllers\Eys\InstitutionStaffController;
 use App\Http\Controllers\Eys\InstitutionTypeController;
+use App\Http\Controllers\Eys\JuriController;
 use App\Http\Controllers\Eys\MailClientController;
+use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\RoleController;
+use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
 use App\Http\Controllers\Eys\UserRoleController;
 use App\Http\Controllers\SetLanguageController;
@@ -132,6 +137,51 @@ Route::domain(config('domains.eys'))->group(function () {
 
         Route::prefix('uye')->name('eys.uye.')->middleware(['team:Uye', 'permission:member.dashboard.view'])->group(function () {
             Route::get('/', [ModuleDashboardController::class, 'uye'])->name('dashboard');
+        });
+
+        Route::prefix('kurumlar')->name('eys.institutions.')->middleware(['team:Institution', 'permission:institution.institutions.manage'])->group(function () {
+            Route::get('/', [InstitutionController::class, 'index'])->name('index');
+            Route::get('yeni', [InstitutionController::class, 'create'])->name('create');
+            Route::post('/', [InstitutionController::class, 'store'])->name('store');
+            Route::get('{institution}/duzenle', [InstitutionController::class, 'edit'])->name('edit');
+            Route::patch('{institution}', [InstitutionController::class, 'update'])->name('update');
+            Route::delete('{institution}', [InstitutionController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('kurumlar/{institution}/yetkililer')->name('eys.institution-staff.')->middleware(['team:Institution', 'permission:institution.institution_staff.manage'])->group(function () {
+            Route::get('/', [InstitutionStaffController::class, 'index'])->name('index');
+            Route::get('yeni', [InstitutionStaffController::class, 'create'])->name('create');
+            Route::post('/', [InstitutionStaffController::class, 'store'])->name('store');
+            Route::get('{staff}/duzenle', [InstitutionStaffController::class, 'edit'])->name('edit');
+            Route::patch('{staff}', [InstitutionStaffController::class, 'update'])->name('update');
+            Route::delete('{staff}', [InstitutionStaffController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('temsilciler')->name('eys.temsilciler.')->middleware(['team:Temsilci', 'permission:representative.representatives.manage'])->group(function () {
+            Route::get('/', [TemsilciController::class, 'index'])->name('index');
+            Route::get('yeni', [TemsilciController::class, 'create'])->name('create');
+            Route::post('/', [TemsilciController::class, 'store'])->name('store');
+            Route::get('{temsilci}/duzenle', [TemsilciController::class, 'edit'])->name('edit');
+            Route::patch('{temsilci}', [TemsilciController::class, 'update'])->name('update');
+            Route::delete('{temsilci}', [TemsilciController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('juriler')->name('eys.juriler.')->middleware(['team:Juri', 'permission:jury.jurors.manage'])->group(function () {
+            Route::get('/', [JuriController::class, 'index'])->name('index');
+            Route::get('yeni', [JuriController::class, 'create'])->name('create');
+            Route::post('/', [JuriController::class, 'store'])->name('store');
+            Route::get('{juri}/duzenle', [JuriController::class, 'edit'])->name('edit');
+            Route::patch('{juri}', [JuriController::class, 'update'])->name('update');
+            Route::delete('{juri}', [JuriController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('uyeler')->name('eys.uyeler.')->middleware(['team:Uye', 'permission:member.members.manage'])->group(function () {
+            Route::get('/', [MemberController::class, 'index'])->name('index');
+            Route::get('yeni', [MemberController::class, 'create'])->name('create');
+            Route::post('/', [MemberController::class, 'store'])->name('store');
+            Route::get('{uye}/duzenle', [MemberController::class, 'edit'])->name('edit');
+            Route::patch('{uye}', [MemberController::class, 'update'])->name('update');
+            Route::delete('{uye}', [MemberController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('mail-istemcisi')->name('eys.mail-client.')->middleware('permission:eys.mail_client.view')->group(function () {
