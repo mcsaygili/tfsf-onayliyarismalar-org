@@ -8,6 +8,7 @@ use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Juri\Auth\RegisteredController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
+use App\Http\Controllers\Juri\PasswordController;
 use App\Http\Controllers\Juri\ProfileController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
@@ -48,5 +49,8 @@ Route::domain(config('domains.juri'))->group(function () {
 
         Route::get('juri-bilgilerim', [ProfileController::class, 'edit'])->name('juri.profile.edit');
         Route::patch('juri-bilgilerim', [ProfileController::class, 'update'])->name('juri.profile.update');
+
+        Route::get('juri-sifrem', [PasswordController::class, 'edit'])->name('juri.password.edit');
+        Route::put('juri-sifrem', [PasswordController::class, 'update'])->name('juri.password.update');
     });
 });

@@ -118,6 +118,41 @@
             border-left-color: var(--ia-copper);
         }
 
+        /* ---- Aç/kapa alt menü (ör. Jüri Bilgileri) ---- */
+        .ip-nav-group-btn {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            width: 100%;
+            padding: .6rem .7rem;
+            border-radius: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--ia-muted);
+            font-family: 'Figtree', sans-serif;
+            font-size: .86rem;
+            font-weight: 600;
+            text-align: left;
+            transition: background-color .15s ease, color .15s ease;
+        }
+        .ip-nav-group-btn:hover { color: var(--ia-cream); background: rgba(201,168,76,.06); }
+        .ip-nav-group-btn svg:first-child { width: 17px; height: 17px; flex-shrink: 0; opacity: .85; }
+        .ip-nav-group-btn.is-active { color: var(--ia-copper); }
+        .ip-nav-group-label { flex: 1; }
+        .ip-nav-group-chevron { width: 14px !important; height: 14px !important; opacity: .55; transition: transform .15s ease; }
+        .ip-nav-group-btn[aria-expanded="true"] .ip-nav-group-chevron { transform: rotate(90deg); }
+
+        .ip-nav-group-body {
+            margin: .2rem 0 .35rem 1.15rem;
+            padding-left: .75rem;
+            border-left: 1px solid var(--ia-surface-border);
+            display: flex;
+            flex-direction: column;
+            gap: .15rem;
+        }
+        .ip-nav-group-body .ip-nav-item { font-size: .82rem; padding: .45rem .6rem; }
+
         .ip-sidebar-foot {
             margin-top: auto;
             padding-top: 1.5rem;
@@ -472,10 +507,21 @@
                 <x-juri.icon name="dashboard" />
                 {{ __('juri.nav.dashboard') }}
             </a>
-            <a href="{{ route('juri.profile.edit') }}" class="ip-nav-item {{ request()->routeIs('juri.profile.*') ? 'is-active' : '' }}">
-                <x-juri.icon name="account" />
-                {{ __('juri.nav.profile') }}
-            </a>
+            <div x-data="{ o: {{ request()->routeIs('juri.profile.*') || request()->routeIs('juri.password.edit') ? 'true' : 'false' }} }">
+                <button type="button" class="ip-nav-group-btn {{ request()->routeIs('juri.profile.*') || request()->routeIs('juri.password.edit') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
+                    <x-juri.icon name="account" />
+                    <span class="ip-nav-group-label">{{ __('juri.nav.profile') }}</span>
+                    <x-juri.icon name="chevron-right" class="ip-nav-group-chevron" />
+                </button>
+                <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
+                    <a href="{{ route('juri.profile.edit') }}" class="ip-nav-item {{ request()->routeIs('juri.profile.*') ? 'is-active' : '' }}">
+                        {{ __('juri.nav.profile') }}
+                    </a>
+                    <a href="{{ route('juri.password.edit') }}" class="ip-nav-item {{ request()->routeIs('juri.password.edit') ? 'is-active' : '' }}">
+                        {{ __('juri.nav.password') }}
+                    </a>
+                </div>
+            </div>
         </nav>
 
         <div class="ip-sidebar-foot">TFSF · v{{ config('app.version', '0.1') }}</div>

@@ -4,6 +4,7 @@ namespace Tests\Feature\Juri;
 
 use App\Models\Juri;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -55,6 +56,51 @@ class ProfileTest extends TestCase
         $juri = Juri::factory()->unverified()->create();
 
         $response = $this->actingAs($juri, 'juri')->get(route('juri.profile.edit'));
+
+        $response->assertRedirect(route('juri.verification.notice'));
+    }
+
+    public function test_sifre_islemleri_sayfasi_dogrulanmis_juri_icin_goruntulenebilir(): void
+    {
+        $juri = Juri::factory()->create();
+
+        $response = $this->actingAs($juri, 'juri')->get(route('juri.password.edit'));
+
+        $response->assertOk();
+    }
+
+    public function test_juri_sifresini_guncelleyebilir(): void
+    {
+        $juri = Juri::factory()->create();
+
+        $response = $this->actingAs($juri, 'juri')->from(route('juri.password.edit'))->put(route('juri.password.update'), [
+            'current_password' => 'password',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertRedirect(route('juri.password.edit'));
+        $this->assertTrue(Hash::check('yeni-guclu-sifre', $juri->fresh()->password));
+    }
+
+    public function test_yanlis_mevcut_sifreyle_juri_sifresi_guncellenemez(): void
+    {
+        $juri = Juri::factory()->create();
+
+        $response = $this->actingAs($juri, 'juri')->put(route('juri.password.update'), [
+            'current_password' => 'yanlis-sifre',
+            'password' => 'yeni-guclu-sifre',
+            'password_confirmation' => 'yeni-guclu-sifre',
+        ]);
+
+        $response->assertSessionHasErrorsIn('updatePassword', ['current_password']);
+    }
+
+    public function test_dogrulanmamis_juri_sifre_sayfasina_erisemez(): void
+    {
+        $juri = Juri::factory()->unverified()->create();
+
+        $response = $this->actingAs($juri, 'juri')->get(route('juri.password.edit'));
 
         $response->assertRedirect(route('juri.verification.notice'));
     }
