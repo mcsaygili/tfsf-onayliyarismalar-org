@@ -1,51 +1,53 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+<x-uye.guest-layout
+    :heading="__('uye.register.heading')"
+    :subheading="__('uye.register.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('uye.register.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('uye.register.card_title') }}</h2>
+
+    <form method="POST" action="{{ route('register') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
-        <div>
-            <x-input-label for="first_name" :value="__('Ad')" />
-            <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus />
-            <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="first_name" :value="__('uye.register.first_name')" />
+            <x-uye.input id="first_name" type="text" name="first_name" :value="old('first_name')" autofocus autocomplete="off" />
+            <x-uye.input-error :messages="$errors->get('first_name')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="last_name" :value="__('Soyad')" />
-            <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')" required />
-            <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="last_name" :value="__('uye.register.last_name')" />
+            <x-uye.input id="last_name" type="text" name="last_name" :value="old('last_name')" autocomplete="off" />
+            <x-uye.input-error :messages="$errors->get('last_name')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="username" :value="__('Kullanıcı Adı')" />
-            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('username')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="username" :value="__('uye.register.username')" />
+            <x-uye.input id="username" type="text" name="username" :value="old('username')" autocomplete="off" />
+            <x-uye.input-error :messages="$errors->get('username')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('E-posta')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="email" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="email" :value="__('uye.register.email')" />
+            <x-uye.input id="email" type="email" name="email" :value="old('email')" autocomplete="off" :placeholder="__('uye.register.email_placeholder')" />
+            <x-uye.input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Şifre')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="password" :value="__('uye.register.password')" />
+            <x-uye.input id="password" type="password" name="password" autocomplete="off" placeholder="••••••••" />
+            <x-uye.input-error :messages="$errors->get('password')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Şifre (Tekrar)')" />
-            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="password_confirmation" :value="__('uye.register.confirm_password')" />
+            <x-uye.input id="password_confirmation" type="password" name="password_confirmation" autocomplete="off" placeholder="••••••••" />
+            <x-uye.input-error :messages="$errors->get('password_confirmation')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Zaten hesabınız var mı?') }}
-            </a>
+        <x-uye.button>{{ __('uye.register.submit') }} →</x-uye.button>
 
-            <x-primary-button class="ms-4">
-                {{ __('Kayıt Ol') }}
-            </x-primary-button>
+        <div class="ia-foot">
+            <a class="ia-link" href="{{ route('login') }}">{{ __('uye.register.have_account') }}</a>
         </div>
     </form>
-</x-guest-layout>
+</x-uye.guest-layout>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Uye\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Uye\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Uye\Auth\EmailVerificationNotificationController;
@@ -13,9 +14,14 @@ use App\Http\Controllers\Uye\Auth\VerifyEmailController;
 use App\Http\Controllers\Uye\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Kök/public domain — Üye (fotoğrafçı) self-servis alanı. Diğer 3 grubun
+// uye. subdomain — Üye (fotoğrafçı) self-servis alanı. Diğer 3 grubun
 // aksine tek grup burada: kendi kaydını oluşturabiliyor (bkz. plan §Kapsam).
+// Route adları guard adıyla ÖNEKLENMİYOR (bare `login`/`register`/`dashboard`)
+// — Üye framework'ün varsayılan `web` guard'ı, bootstrap/app.php'deki
+// redirectGuestsTo() default dalı da bu bare isimlere göre kuruldu.
 Route::domain(config('domains.uye'))->group(function () {
+    Route::get('language/{locale}', SetLanguageController::class)->name('language');
+
     Route::get('/', function () {
         return view('welcome');
     })->name('home');

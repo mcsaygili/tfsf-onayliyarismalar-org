@@ -45,6 +45,6 @@ class RegisteredUserController extends Controller
         // Kayıt sonrası otomatik giriş yapılmıyor — aktivasyon Laravel'in
         // e-posta doğrulama (email_verified_at) akışıyla sağlanıyor, eski
         // sistemdeki activation_expire_date/code_email'in modern karşılığı.
-        return redirect()->route('login')->with('status', __('Hesabınızı etkinleştirmek için e-postanıza gönderilen bağlantıya tıklayın.'));
+        return redirect()->route('login')->with('status', __('uye.register.check_email'));
     }
 }

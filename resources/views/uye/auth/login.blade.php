@@ -1,44 +1,44 @@
-<x-guest-layout>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<x-uye.guest-layout
+    :heading="__('uye.login.heading')"
+    :subheading="__('uye.login.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('uye.login.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('uye.login.card_title') }}</h2>
 
-    <form method="POST" action="{{ route('login') }}">
+    <x-uye.session-status class="ia-rise ia-d3" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
-        <div>
-            <x-input-label for="email" :value="__('E-posta')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="email" :value="__('uye.login.email')" />
+            <x-uye.input id="email" type="email" name="email" :value="old('email')" autofocus autocomplete="off" :placeholder="__('uye.login.email_placeholder')" />
+            <x-uye.input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Şifre')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="password" :value="__('uye.login.password')" />
+            <x-uye.input id="password" type="password" name="password" autocomplete="off" placeholder="••••••••" />
+            <x-uye.input-error :messages="$errors->get('password')" />
         </div>
 
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Beni hatırla') }}</span>
+        <div class="ia-row">
+            <label for="remember_me" class="ia-check">
+                <input id="remember_me" type="checkbox" name="remember">
+                {{ __('uye.login.remember') }}
             </label>
+
+            @if (Route::has('password.request'))
+                <a class="ia-link" href="{{ route('password.request') }}">{{ __('uye.login.forgot_password') }}</a>
+            @endif
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('register') }}">
-                {{ __('Hesabınız yok mu? Kayıt olun') }}
-            </a>
+        <x-uye.button>{{ __('uye.login.submit') }} →</x-uye.button>
 
-            <div class="flex items-center">
-                @if (Route::has('password.request'))
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                        {{ __('Şifrenizi mi unuttunuz?') }}
-                    </a>
-                @endif
-
-                <x-primary-button class="ms-3">
-                    {{ __('Giriş Yap') }}
-                </x-primary-button>
+        @if (Route::has('register'))
+            <div class="ia-foot">
+                <a class="ia-link" href="{{ route('register') }}">{{ __('uye.login.no_account') }}</a>
             </div>
-        </div>
+        @endif
     </form>
-</x-guest-layout>
+</x-uye.guest-layout>

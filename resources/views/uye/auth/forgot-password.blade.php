@@ -1,29 +1,28 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Şifrenizi mi unuttunuz? Sorun değil. E-posta adresinizi bildirin, size yeni bir şifre belirlemeniz için bir bağlantı gönderelim.') }}
-    </div>
+<x-uye.guest-layout
+    :heading="__('uye.forgot_password.heading')"
+    :subheading="__('uye.forgot_password.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('uye.forgot_password.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('uye.forgot_password.card_title') }}</h2>
 
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-uye.session-status class="ia-rise ia-d3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" class="ia-rise ia-d3" novalidate autocomplete="off">
         @csrf
 
-        <div>
-            <x-input-label for="email" :value="__('E-posta')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="ia-field">
+            <x-uye.label for="email" :value="__('uye.forgot_password.email')" />
+            <x-uye.input id="email" type="email" name="email" :value="old('email')" autofocus autocomplete="off" :placeholder="__('uye.forgot_password.email_placeholder')" />
+            <x-uye.input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-            @if (Route::has('password.sms.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('password.sms.request') }}">
-                    {{ __('SMS ile sıfırlamak istiyorum') }}
-                </a>
-            @endif
+        <x-uye.button>{{ __('uye.forgot_password.submit') }} →</x-uye.button>
 
-            <x-primary-button>
-                {{ __('Şifre Sıfırlama Bağlantısı Gönder') }}
-            </x-primary-button>
+        <div class="ia-foot">
+            <a class="ia-link" href="{{ route('login') }}">{{ __('uye.forgot_password.back_to_login') }}</a>
+            @if (Route::has('password.sms.request'))
+                <a class="ia-link" href="{{ route('password.sms.request') }}">{{ __('uye.forgot_password.sms_alternative') }}</a>
+            @endif
         </div>
     </form>
-</x-guest-layout>
+</x-uye.guest-layout>

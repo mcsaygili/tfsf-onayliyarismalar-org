@@ -1,29 +1,27 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Kaydınız için teşekkürler! Başlamadan önce, size az önce gönderdiğimiz bağlantıya tıklayarak e-posta adresinizi doğrular mısınız? E-postayı almadıysanız, size memnuniyetle bir tane daha gönderebiliriz.') }}
-    </div>
+<x-uye.guest-layout
+    :heading="__('uye.verify_email.heading')"
+    :subheading="__('uye.verify_email.subheading')"
+>
+    <div class="ia-card-label ia-rise ia-d3">{{ __('uye.verify_email.card_label') }}</div>
+    <h2 class="ia-card-title ia-rise ia-d3">{{ __('uye.verify_email.card_title') }}</h2>
+
+    <p class="ia-rise ia-d3" style="font-size: .85rem; line-height: 1.6; margin-bottom: 1.5rem;">{{ __('uye.verify_email.intro') }}</p>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('Kayıt sırasında belirttiğiniz e-posta adresine yeni bir doğrulama bağlantısı gönderildi.') }}
-        </div>
+        <x-uye.session-status class="ia-rise ia-d3" :status="__('uye.verify_email.resent')" />
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="ia-rise ia-d3">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-            <div>
-                <x-primary-button>
-                    {{ __('Doğrulama E-postasını Yeniden Gönder') }}
-                </x-primary-button>
-            </div>
+            <x-uye.button>{{ __('uye.verify_email.resend') }}</x-uye.button>
         </form>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Çıkış Yap') }}
-            </button>
-        </form>
+        <div class="ia-foot">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="ia-link" style="background:none;border:none;padding:0;cursor:pointer;">{{ __('uye.verify_email.logout') }}</button>
+            </form>
+        </div>
     </div>
-</x-guest-layout>
+</x-uye.guest-layout>
