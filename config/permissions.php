@@ -40,6 +40,10 @@ return [
                     'label' => 'Öğrenim Durumu Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'institution_types' => [
+                    'label' => 'Kurum Türü Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'file_manager' => [
                     'label' => 'Dosya Yöneticisi',
                     'actions' => ['view', 'create', 'delete', 'manage'],

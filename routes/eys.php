@@ -8,6 +8,7 @@ use App\Http\Controllers\Eys\CountryController;
 use App\Http\Controllers\Eys\DashboardController;
 use App\Http\Controllers\Eys\EducationLevelController;
 use App\Http\Controllers\Eys\FileManagerController;
+use App\Http\Controllers\Eys\InstitutionTypeController;
 use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\RoleController;
@@ -105,6 +106,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{educationLevel}/duzenle', [EducationLevelController::class, 'edit'])->name('edit');
             Route::patch('{educationLevel}', [EducationLevelController::class, 'update'])->name('update');
             Route::delete('{educationLevel}', [EducationLevelController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('kurum-turleri')->name('eys.institution-types.')->middleware('permission:eys.institution_types.manage')->group(function () {
+            Route::get('/', [InstitutionTypeController::class, 'index'])->name('index');
+            Route::get('yeni', [InstitutionTypeController::class, 'create'])->name('create');
+            Route::post('/', [InstitutionTypeController::class, 'store'])->name('store');
+            Route::get('{institutionType}/duzenle', [InstitutionTypeController::class, 'edit'])->name('edit');
+            Route::patch('{institutionType}', [InstitutionTypeController::class, 'update'])->name('update');
+            Route::delete('{institutionType}', [InstitutionTypeController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('mail-istemcisi')->name('eys.mail-client.')->middleware('permission:eys.mail_client.view')->group(function () {
