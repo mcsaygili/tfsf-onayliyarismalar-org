@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EysUser;
 use App\Models\InstitutionStaff;
 use App\Models\Juri;
 use App\Models\Temsilci;
@@ -49,6 +50,11 @@ return [
             'driver' => 'session',
             'provider' => 'jurors',
         ],
+
+        'eys' => [
+            'driver' => 'session',
+            'provider' => 'eys_users',
+        ],
     ],
 
     /*
@@ -76,6 +82,11 @@ return [
         'jurors' => [
             'driver' => 'eloquent',
             'model' => Juri::class,
+        ],
+
+        'eys_users' => [
+            'driver' => 'eloquent',
+            'model' => EysUser::class,
         ],
     ],
 
@@ -117,6 +128,13 @@ return [
         'juri' => [
             'provider' => 'jurors',
             'table' => 'juror_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'eys' => [
+            'provider' => 'eys_users',
+            'table' => 'eys_users_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

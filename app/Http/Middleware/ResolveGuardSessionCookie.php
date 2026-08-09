@@ -26,6 +26,7 @@ class ResolveGuardSessionCookie
             config('domains.institution') => 'institution_session',
             config('domains.temsilci') => 'temsilci_session',
             config('domains.juri') => 'juri_session',
+            config('domains.eys') => 'eys_session',
             config('domains.uye') => 'uye_session',
         ];
 

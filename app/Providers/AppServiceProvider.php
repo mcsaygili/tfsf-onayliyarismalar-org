@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\SmsSender;
+use App\Services\Resend\SvixSignatureVerifier;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\NetgsmSmsSender;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
@@ -25,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
                 default => new LogSmsSender($cfg['from'] ?? 'TFSF'),
             };
         });
+
+        $this->app->singleton(SvixSignatureVerifier::class, fn () => new SvixSignatureVerifier(
+            config('services.resend.webhook_secret')
+        ));
     }
 
     /**
@@ -42,11 +47,30 @@ class AppServiceProvider extends ServiceProvider
         // düşmesine yol açıyordu (bkz. EnsureGuardEmailIsVerified'daki aynı
         // sınıf hatanın VerifyEmail eşdeğeri). Burada hangi guard'ın oturum
         // açık olduğuna göre doğru dashboard'a yönlendiriyoruz.
+        //
+        // NOT: `Authenticate` (auth middleware) tarafının eşdeğer düzeltmesi
+        // burada DEĞİL, bootstrap/app.php'deki withMiddleware() içinde
+        // ($middleware->redirectGuestsTo(...)) — bkz. o dosyadaki docblock.
+        // Framework, ApplicationBuilder::withMiddleware() içinde HttpKernel
+        // resolve edildiğinde otomatik olarak `Authenticate::redirectUsing(fn
+        // () => route('login'))` varsayılanını kuruyor; bu resolve, bazı
+        // çalışma bağlamlarında (tinker, test ortamı) bu provider'ın boot()
+        // metodundan SONRA gerçekleşebiliyor ve burada set edilecek bir
+        // callback'i sessizce ezebiliyor. `redirectGuestsTo()` ise doğrudan
+        // aynı senkron closure içinde, varsayılandan hemen sonra çalıştığı
+        // için bu yarış durumuna karşı bağışık.
         RedirectIfAuthenticated::redirectUsing(fn () => match (true) {
             Auth::guard('institution')->check() => route('institution.dashboard'),
             Auth::guard('temsilci')->check() => route('temsilci.dashboard'),
             Auth::guard('juri')->check() => route('juri.dashboard'),
+            Auth::guard('eys')->check() => route('eys.dashboard'),
             default => route('dashboard'),
         });
+
+        // App\Listeners\LogSentMail zaten burada elle kaydedilmiyor —
+        // Laravel'in olay otomatik keşfi, `handle(MessageSent $event)`
+        // imzasından onu kendiliğinden bağlıyor (bkz. app/Listeners/LogSentMail.php).
+        // Elle bir de Event::listen() eklemek, her gönderimi İKİ KEZ
+        // loglamaya yol açıyordu — bu düzeltmenin sebebi buydu.
     }
 }

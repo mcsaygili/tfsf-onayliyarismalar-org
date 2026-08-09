@@ -27,8 +27,8 @@ return [
     'institution' => env('DOMAIN_INSTITUTION', 'kurum.'.$base),
     'temsilci' => env('DOMAIN_TEMSILCI', 'temsilci.'.$base),
     'juri' => env('DOMAIN_JURI', 'juri.'.$base),
+    'eys' => env('DOMAIN_EYS', 'eys.'.$base),
 
-    // Faz dışı (Administrator/EYS, Sonuc modülleri bu fazda yok):
-    // 'eys' => env('DOMAIN_EYS', 'eys.'.$base),
+    // Faz dışı (Sonuc modülü bu fazda yok):
     // 'sonuc' => env('DOMAIN_SONUC', 'sonuc.'.$base),
 ];
