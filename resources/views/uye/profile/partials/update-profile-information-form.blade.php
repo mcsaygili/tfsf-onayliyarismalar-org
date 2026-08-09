@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="ia-field" style="margin-bottom: 0;">
+        <div class="ia-field">
             <x-uye.label for="email" :value="__('uye.profile.email')" />
             <x-uye.input id="email" type="email" name="email" :value="old('email', $user->email)" autocomplete="off" />
             <x-uye.input-error :messages="$errors->get('email')" />
@@ -38,6 +38,17 @@
                     <p style="margin-top: .4rem; font-size: .82rem; color: #a9d2ac;">{{ __('uye.profile.verification_resent') }}</p>
                 @endif
             @endif
+        </div>
+
+        <div class="ia-field" style="margin-bottom: 0;">
+            <x-uye.label for="education_level_id" :value="__('uye.profile.education_level')" />
+            <select id="education_level_id" name="education_level_id" class="ia-input">
+                <option value="">{{ __('uye.profile.education_level_none') }}</option>
+                @foreach ($educationLevels as $level)
+                    <option value="{{ $level->id }}" @selected(old('education_level_id', $user->education_level_id) === $level->id)>{{ $level->getTranslation()?->name }}</option>
+                @endforeach
+            </select>
+            <x-uye.input-error :messages="$errors->get('education_level_id')" />
         </div>
 
         <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">

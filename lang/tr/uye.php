@@ -90,6 +90,8 @@ return [
         'first_name' => 'Ad',
         'last_name' => 'Soyad',
         'email' => 'E-posta',
+        'education_level' => 'Eğitim Durumu',
+        'education_level_none' => 'Seçilmedi',
         'save' => 'Kaydet',
         'saved' => 'Kaydedildi.',
         'email_unverified' => 'E-posta adresiniz doğrulanmamış.',

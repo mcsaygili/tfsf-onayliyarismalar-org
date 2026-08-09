@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Uye;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Uye\ProfileUpdateRequest;
+use App\Models\EducationLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ class ProfileController extends Controller
     {
         return view('uye.profile.edit', [
             'user' => $request->user(),
+            'educationLevels' => EducationLevel::active()->ordered()->with('translations')->get(),
         ]);
     }
 

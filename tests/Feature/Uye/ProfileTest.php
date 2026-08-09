@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Uye;
 
+use App\Models\EducationLevel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -65,6 +67,50 @@ class ProfileTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['first_name', 'last_name']);
+    }
+
+    public function test_egitim_durumu_belirtilmeden_bilgiler_guncellenebilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertNull($user->fresh()->education_level_id);
+    }
+
+    public function test_egitim_durumu_secilebilir(): void
+    {
+        $user = User::factory()->create();
+        $level = EducationLevel::create(['status' => true, 'sort_order' => 10]);
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'education_level_id' => $level->id,
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertSame($level->id, $user->fresh()->education_level_id);
+    }
+
+    public function test_gecersiz_egitim_durumu_reddedilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->patch(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'education_level_id' => (string) Str::uuid(),
+        ]);
+
+        $response->assertSessionHasErrors(['education_level_id']);
     }
 
     public function test_e_posta_degisince_dogrulama_sifirlanir(): void

@@ -90,6 +90,8 @@ return [
         'first_name' => 'First Name',
         'last_name' => 'Last Name',
         'email' => 'Email',
+        'education_level' => 'Education Level',
+        'education_level_none' => 'Not selected',
         'save' => 'Save',
         'saved' => 'Saved.',
         'email_unverified' => 'Your email address is unverified.',
