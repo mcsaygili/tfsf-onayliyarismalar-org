@@ -624,4 +624,55 @@ return [
         'no_context' => 'Erişebileceğiniz bir kapsam yok.',
     ],
 
+    'competitions' => [
+        'title' => 'Yarışma Başvuruları',
+        'untitled' => 'İsimsiz Başvuru',
+        'column_name' => 'Yarışma Adı',
+        'column_institution' => 'Kurum',
+        'column_status' => 'Durum',
+        'column_submitted_at' => 'Gönderim Tarihi',
+        'filter_status' => 'Durum',
+        'filter_all_status' => 'Tüm Durumlar',
+        'review_action' => 'İncele',
+        'empty' => 'Henüz bir yarışma başvurusu yok.',
+        'pagination_info' => ':first–:last / :total kayıt',
+
+        'status' => [
+            'draft' => 'Taslak',
+            'pending_review' => 'Onay Bekliyor',
+            'needs_info' => 'Ek Bilgi Bekleniyor',
+            'approved' => 'Onaylandı',
+            'rejected' => 'Reddedildi',
+        ],
+
+        'fields' => [
+            'name' => 'Yarışma Adı',
+            'partners' => 'Düzenleyen Kurum Paydaş ve İşbirlikçileri',
+            'subject' => 'Yarışmanın Konusu',
+            'purpose' => 'Yarışmanın Amacı',
+        ],
+
+        'latest_message_title' => 'Son inceleme notu',
+        'review_title' => 'İnceleme',
+        'confirm_approve' => 'Bu başvuruyu onaylamak istediğinizden emin misiniz? Onaylanan yarışma yayına girer.',
+        'action_approve' => 'Onayla',
+        'action_reject' => 'Reddet',
+        'action_request_info' => 'Ek Bilgi Talep Et',
+        'message_placeholder' => 'Kuruma iletilecek not…',
+        'approved' => 'Başvuru onaylandı ve yayına alındı.',
+        'rejected' => 'Başvuru reddedildi.',
+        'info_requested' => 'Kurumdan ek bilgi talep edildi.',
+
+        'history_title' => 'Süreç Geçmişi',
+        'no_history' => 'Henüz bir işlem yapılmadı.',
+        'log_actions' => [
+            'submitted' => 'Onaya gönderildi',
+            'resubmitted' => 'Yeniden onaya gönderildi',
+            'approved' => 'Onaylandı',
+            'rejected' => 'Reddedildi',
+            'info_requested' => 'Ek bilgi talep edildi',
+            'field_updated' => 'Bilgiler güncellendi',
+        ],
+    ],
+
 ];

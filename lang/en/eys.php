@@ -624,4 +624,55 @@ return [
         'no_context' => 'You have no accessible scope.',
     ],
 
+    'competitions' => [
+        'title' => 'Competition Applications',
+        'untitled' => 'Untitled Application',
+        'column_name' => 'Competition Name',
+        'column_institution' => 'Institution',
+        'column_status' => 'Status',
+        'column_submitted_at' => 'Submitted At',
+        'filter_status' => 'Status',
+        'filter_all_status' => 'All Statuses',
+        'review_action' => 'Review',
+        'empty' => 'No competition applications yet.',
+        'pagination_info' => ':first–:last of :total',
+
+        'status' => [
+            'draft' => 'Draft',
+            'pending_review' => 'Pending Review',
+            'needs_info' => 'More Info Needed',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+        ],
+
+        'fields' => [
+            'name' => 'Competition Name',
+            'partners' => "Organizing Institution's Partners and Collaborators",
+            'subject' => 'Competition Subject',
+            'purpose' => 'Competition Purpose',
+        ],
+
+        'latest_message_title' => 'Latest review note',
+        'review_title' => 'Review',
+        'confirm_approve' => 'Are you sure you want to approve this application? The approved competition will go live.',
+        'action_approve' => 'Approve',
+        'action_reject' => 'Reject',
+        'action_request_info' => 'Request More Info',
+        'message_placeholder' => 'Note to send to the institution…',
+        'approved' => 'Application approved and published.',
+        'rejected' => 'Application rejected.',
+        'info_requested' => 'More information requested from the institution.',
+
+        'history_title' => 'Process History',
+        'no_history' => 'No actions yet.',
+        'log_actions' => [
+            'submitted' => 'Submitted for approval',
+            'resubmitted' => 'Resubmitted for approval',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'info_requested' => 'More info requested',
+            'field_updated' => 'Details updated',
+        ],
+    ],
+
 ];

@@ -34,6 +34,11 @@ class Institution extends Model
         return $this->hasMany(InstitutionStaff::class);
     }
 
+    public function competitions(): HasMany
+    {
+        return $this->hasMany(Competition::class);
+    }
+
     public function institutionType(): BelongsTo
     {
         return $this->belongsTo(InstitutionType::class);

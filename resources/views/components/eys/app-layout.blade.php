@@ -41,6 +41,14 @@
                 'activePatterns' => ['eys.institutions.*', 'eys.institution-staff.*'],
             ];
         }
+        if ($m === \App\Enums\Module::Institution && \Illuminate\Support\Facades\Route::has('eys.competitions.index') && $eysUser->can('institution.competitions.manage')) {
+            $links[] = [
+                'route' => 'eys.competitions.index',
+                'label' => __('eys.competitions.title'),
+                'icon' => 'competitions',
+                'activePatterns' => ['eys.competitions.*'],
+            ];
+        }
         if ($m === \App\Enums\Module::Temsilci && \Illuminate\Support\Facades\Route::has('eys.temsilciler.index') && $eysUser->can('representative.representatives.manage')) {
             $links[] = [
                 'route' => 'eys.temsilciler.index',
@@ -627,6 +635,11 @@
         .ip-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
         .ip-badge.is-active { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-inactive { color: #e0857a; background: rgba(224,133,122,.12); }
+        .ip-badge.is-draft { color: #9aa0ac; background: rgba(154,160,172,.12); }
+        .ip-badge.is-pending { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-needs-info { color: #6fb3d9; background: rgba(111,179,217,.14); }
+        .ip-badge.is-approved { color: #8fcf93; background: rgba(88,140,92,.14); }
+        .ip-badge.is-rejected { color: #e0857a; background: rgba(224,133,122,.12); }
 
         .ip-row-icon-btn {
             display: inline-flex;

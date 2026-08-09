@@ -137,4 +137,8 @@
     @case('list-check')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M3.5 6l1.5 1.5L8 4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 13l1.5 1.5L8 11.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 20l1.5 1.5L8 18.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.5 6h9M11.5 13h9M11.5 20h9" stroke-linecap="round"/></svg>
         @break
+
+    @case('competitions')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M7 4.5h10V9a5 5 0 01-10 0V4.5z"/><path d="M7 5.5H4.75a1 1 0 00-1 1v.75a3 3 0 003 3M17 5.5h2.25a1 1 0 011 1v.75a3 3 0 01-3 3"/><path d="M12 14v3.5M9.25 19.5h5.5"/></svg>
+        @break
 @endswitch

@@ -4,6 +4,7 @@ use App\Http\Controllers\Eys\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Eys\Auth\NewPasswordController;
 use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Eys\CityController;
+use App\Http\Controllers\Eys\CompetitionReviewController;
 use App\Http\Controllers\Eys\CountryController;
 use App\Http\Controllers\Eys\DashboardController;
 use App\Http\Controllers\Eys\EducationLevelController;
@@ -175,6 +176,14 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{staff}/duzenle', [InstitutionStaffController::class, 'edit'])->name('edit');
             Route::patch('{staff}', [InstitutionStaffController::class, 'update'])->name('update');
             Route::delete('{staff}', [InstitutionStaffController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('yarismalar')->name('eys.competitions.')->middleware(['team:Institution', 'permission:institution.competitions.manage'])->group(function () {
+            Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
+            Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
+            Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
+            Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');
+            Route::post('{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
         });
 
         Route::prefix('temsilciler')->name('eys.temsilciler.')->middleware(['team:Temsilci', 'permission:representative.representatives.manage'])->group(function () {

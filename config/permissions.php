@@ -77,6 +77,10 @@ return [
                     'label' => 'Kurum Yetkilisi Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'competitions' => [
+                    'label' => 'Yarışma Başvurusu Yönetimi',
+                    'actions' => ['view', 'manage', 'approve', 'reject', 'request_info'],
+                ],
             ],
         ],
 
@@ -126,6 +130,9 @@ return [
         'edit' => 'Düzenleme',
         'delete' => 'Silme',
         'manage' => 'Tam Yönetim',
+        'approve' => 'Onaylama',
+        'reject' => 'Reddetme',
+        'request_info' => 'Bilgi Talebi',
     ],
 
     'default_roles' => [

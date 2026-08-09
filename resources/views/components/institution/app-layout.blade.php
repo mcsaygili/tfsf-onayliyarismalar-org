@@ -408,6 +408,52 @@
         .ip-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
         .ip-badge.is-active { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-inactive { color: #e0857a; background: rgba(224,133,122,.12); }
+        .ip-badge.is-draft { color: #9aa0ac; background: rgba(154,160,172,.12); }
+        .ip-badge.is-pending { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-needs-info { color: #6fb3d9; background: rgba(111,179,217,.14); }
+        .ip-badge.is-approved { color: #8fcf93; background: rgba(88,140,92,.14); }
+        .ip-badge.is-rejected { color: #e0857a; background: rgba(224,133,122,.12); }
+
+        /* ---- Sihirbaz adım göstergesi (ör. Yarışma Ekleme) ---- */
+        .ip-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--ia-surface-border);
+        }
+        .ip-step {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .35rem .7rem .35rem .35rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--ia-muted-dim);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+        }
+        .ip-step-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: .68rem;
+            font-weight: 700;
+            border: 1px solid var(--ia-surface-border);
+            color: var(--ia-muted-dim);
+            flex-shrink: 0;
+        }
+        .ip-step.is-done { color: var(--ia-muted); }
+        .ip-step.is-done .ip-step-dot { background: rgba(143,207,147,.16); border-color: transparent; color: #8fcf93; }
+        .ip-step.is-current { color: var(--ia-cream); background: rgba(201,168,76,.1); border-color: rgba(201,168,76,.35); }
+        .ip-step.is-current .ip-step-dot { background: var(--ia-copper); border-color: transparent; color: #14161f; }
+        .ip-step.is-locked { color: var(--ia-muted-dim); cursor: default; opacity: .55; }
 
         .ip-row-icon-btn {
             display: inline-flex;
@@ -525,6 +571,10 @@
             <a href="{{ route('institution.staff.index') }}" class="ip-nav-item {{ request()->routeIs('institution.staff.*') ? 'is-active' : '' }}">
                 <x-institution.icon name="staff" />
                 {{ __('institution.nav.staff') }}
+            </a>
+            <a href="{{ route('institution.competitions.index') }}" class="ip-nav-item {{ request()->routeIs('institution.competitions.*') ? 'is-active' : '' }}">
+                <x-institution.icon name="competitions" />
+                {{ __('institution.nav.competitions') }}
             </a>
         </nav>
 

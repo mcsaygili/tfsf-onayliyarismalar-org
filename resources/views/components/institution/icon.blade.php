@@ -45,4 +45,8 @@
     @case('chevron-right')
         <svg viewBox="0 0 20 20" fill="currentColor" {{ $attributes }}><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.19 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
         @break
+
+    @case('competitions')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M7 4.5h10V9a5 5 0 01-10 0V4.5z"/><path d="M7 5.5H4.75a1 1 0 00-1 1v.75a3 3 0 003 3M17 5.5h2.25a1 1 0 011 1v.75a3 3 0 01-3 3"/><path d="M12 14v3.5M9.25 19.5h5.5"/></svg>
+        @break
 @endswitch

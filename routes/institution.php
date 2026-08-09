@@ -7,6 +7,8 @@ use App\Http\Controllers\Institution\Auth\NewPasswordController;
 use App\Http\Controllers\Institution\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Institution\Auth\RegisteredController;
 use App\Http\Controllers\Institution\Auth\VerifyEmailController;
+use App\Http\Controllers\Institution\CompetitionController;
+use App\Http\Controllers\Institution\CompetitionStepController;
 use App\Http\Controllers\Institution\DashboardController;
 use App\Http\Controllers\Institution\PasswordController;
 use App\Http\Controllers\Institution\ProfileController;
@@ -60,6 +62,17 @@ Route::domain(config('domains.institution'))->group(function () {
             Route::post('/', [StaffController::class, 'store'])->name('store');
             Route::get('{staff}/duzenle', [StaffController::class, 'edit'])->name('edit');
             Route::patch('{staff}', [StaffController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('yarismalarim')->name('institution.competitions.')->group(function () {
+            Route::get('/', [CompetitionController::class, 'index'])->name('index');
+            Route::post('/', [CompetitionController::class, 'store'])->name('store');
+            Route::post('{competition}/gonder', [CompetitionController::class, 'submit'])->name('submit');
+
+            Route::get('{competition}/adim/{step}', [CompetitionStepController::class, 'show'])
+                ->whereNumber('step')->name('step.show');
+            Route::put('{competition}/adim/{step}', [CompetitionStepController::class, 'update'])
+                ->whereNumber('step')->name('step.update');
         });
     });
 });

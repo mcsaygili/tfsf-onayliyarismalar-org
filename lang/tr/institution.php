@@ -73,6 +73,7 @@ return [
         'institution_info' => 'Kurum Bilgileri',
         'password' => 'Şifre İşlemleri',
         'staff' => 'Yetkili Bilgileri',
+        'competitions' => 'Yarışmalarım',
         'logout' => 'Güvenli Çıkış',
     ],
 
@@ -131,6 +132,58 @@ return [
         'incomplete_text' => 'Kurum adı, e-postası ve telefonu zorunlu bilgilerdir.',
         'incomplete_link' => 'Bilgilerinizi güncelleyiniz',
         'total_staff' => 'Toplam Yetkili',
+    ],
+
+    'competitions' => [
+        'list_title' => 'Yarışmalarım',
+        'list_hint' => 'Yarışma başvurularınızı buradan oluşturur ve takip edersiniz.',
+        'add_new' => '+ Yeni Başvuru',
+        'untitled' => 'İsimsiz Başvuru',
+        'column_name' => 'Yarışma Adı',
+        'column_status' => 'Durum',
+        'column_updated' => 'Son Güncelleme',
+        'open_action' => 'Aç',
+        'empty' => 'Henüz bir yarışma başvurunuz yok.',
+        'pagination_info' => ':first–:last / :total kayıt',
+
+        'status' => [
+            'draft' => 'Taslak',
+            'pending_review' => 'Onay Bekliyor',
+            'needs_info' => 'Ek Bilgi Bekleniyor',
+            'approved' => 'Onaylandı',
+            'rejected' => 'Reddedildi',
+        ],
+
+        'steps' => [
+            1 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, paydaşları, konusu ve amacı.'],
+            2 => ['label' => 'Adım 2'],
+            3 => ['label' => 'Adım 3'],
+            4 => ['label' => 'Adım 4'],
+            5 => ['label' => 'Adım 5'],
+            6 => ['label' => 'Adım 6'],
+            7 => ['label' => 'Adım 7'],
+            8 => ['label' => 'Adım 8'],
+            9 => ['label' => 'Adım 9'],
+            10 => ['label' => 'Adım 10'],
+        ],
+
+        'fields' => [
+            'name' => 'Yarışma Adı',
+            'partners' => 'Düzenleyen Kurum Paydaş ve İşbirlikçileri',
+            'subject' => 'Yarışmanın Konusu',
+            'purpose' => 'Yarışmanın Amacı',
+        ],
+
+        'save_draft' => 'Taslak Olarak Kaydet',
+        'next_step' => 'İleri',
+        'draft_saved' => 'Taslak kaydedildi.',
+        'coming_soon' => 'Bu adım yakında eklenecek.',
+        'needs_info_title' => 'Ek bilgi talep edildi',
+        'ready_to_submit_title' => 'Onaya göndermeye hazır',
+        'ready_to_submit_hint' => 'Doldurduğunuz bilgiler onay için EYS\'ye gönderilecek.',
+        'submit_for_approval' => 'Onaya Gönder',
+        'submitted' => 'Başvurunuz onaya gönderildi.',
+        'cannot_submit_incomplete' => 'Onaya göndermeden önce zorunlu alanları tamamlamanız gerekiyor.',
     ],
 
 ];

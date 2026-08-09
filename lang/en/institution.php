@@ -73,6 +73,7 @@ return [
         'institution_info' => 'Institution Details',
         'password' => 'Password',
         'staff' => 'Staff',
+        'competitions' => 'My Competitions',
         'logout' => 'Secure Logout',
     ],
 
@@ -131,6 +132,58 @@ return [
         'incomplete_text' => 'Institution name, email, and phone are required.',
         'incomplete_link' => 'Update your details',
         'total_staff' => 'Total Staff',
+    ],
+
+    'competitions' => [
+        'list_title' => 'My Competitions',
+        'list_hint' => 'Create and track your competition applications here.',
+        'add_new' => '+ New Application',
+        'untitled' => 'Untitled Application',
+        'column_name' => 'Competition Name',
+        'column_status' => 'Status',
+        'column_updated' => 'Last Updated',
+        'open_action' => 'Open',
+        'empty' => "You don't have any competition applications yet.",
+        'pagination_info' => ':first–:last of :total',
+
+        'status' => [
+            'draft' => 'Draft',
+            'pending_review' => 'Pending Review',
+            'needs_info' => 'More Info Needed',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+        ],
+
+        'steps' => [
+            1 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, partners, subject, and purpose.'],
+            2 => ['label' => 'Step 2'],
+            3 => ['label' => 'Step 3'],
+            4 => ['label' => 'Step 4'],
+            5 => ['label' => 'Step 5'],
+            6 => ['label' => 'Step 6'],
+            7 => ['label' => 'Step 7'],
+            8 => ['label' => 'Step 8'],
+            9 => ['label' => 'Step 9'],
+            10 => ['label' => 'Step 10'],
+        ],
+
+        'fields' => [
+            'name' => 'Competition Name',
+            'partners' => "Organizing Institution's Partners and Collaborators",
+            'subject' => 'Competition Subject',
+            'purpose' => 'Competition Purpose',
+        ],
+
+        'save_draft' => 'Save as Draft',
+        'next_step' => 'Next',
+        'draft_saved' => 'Draft saved.',
+        'coming_soon' => 'This step will be added soon.',
+        'needs_info_title' => 'More information requested',
+        'ready_to_submit_title' => 'Ready to submit',
+        'ready_to_submit_hint' => 'What you\'ve entered will be sent to EYS for approval.',
+        'submit_for_approval' => 'Submit for Approval',
+        'submitted' => 'Your application has been submitted for approval.',
+        'cannot_submit_incomplete' => 'You need to complete the required fields before submitting.',
     ],
 
 ];
