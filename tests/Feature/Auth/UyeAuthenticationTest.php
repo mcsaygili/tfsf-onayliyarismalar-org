@@ -24,6 +24,11 @@ class UyeAuthenticationTest extends TestCase
         $this->get(route('login'))->assertOk();
     }
 
+    public function test_giris_yapmamis_ziyaretci_anasayfada_login_e_yonlenir(): void
+    {
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
+    }
+
     public function test_uye_dogru_bilgilerle_giris_yapabilir(): void
     {
         $user = User::factory()->create();
@@ -56,7 +61,7 @@ class UyeAuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post(route('logout'));
 
         $this->assertGuest('web');
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
     }
 
     public function test_uye_giris_yapinca_diger_3_guard_halen_authenticate_degil(): void

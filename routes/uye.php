@@ -22,10 +22,6 @@ use Illuminate\Support\Facades\Route;
 Route::domain(config('domains.uye'))->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('language');
 
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('home');
-
     Route::middleware('guest')->group(function () {
         Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
         Route::post('register', [RegisteredUserController::class, 'store']);
@@ -63,7 +59,7 @@ Route::domain(config('domains.uye'))->group(function () {
     });
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/dashboard', function () {
+        Route::get('/', function () {
             return view('uye.dashboard');
         })->name('dashboard');
 
