@@ -19,6 +19,16 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function passwordEdit(): View
+    {
+        return view('uye.profile.password');
+    }
+
+    public function accountEdit(): View
+    {
+        return view('uye.profile.account');
+    }
+
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -47,6 +57,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return Redirect::route('login');
     }
 }

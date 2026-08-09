@@ -70,4 +70,45 @@ return [
         'back_to_login' => '← Girişe dön',
     ],
 
+    'nav' => [
+        'dashboard' => 'Gösterge Paneli',
+        'profile' => 'Üye Bilgilerim',
+        'privacy' => 'Gizlilik Ayarları',
+        'password' => 'Şifre İşlemleri',
+        'account' => 'Hesap İşlemlerim',
+        'soon' => 'Yakında',
+        'logout' => 'Güvenli Çıkış',
+    ],
+
+    'dashboard' => [
+        'welcome' => 'Giriş yaptınız, hoş geldiniz :name.',
+    ],
+
+    'profile' => [
+        'section_title' => 'Üye Bilgilerim',
+        'section_hint' => 'Hesabınızın profil bilgilerini ve e-posta adresinizi güncelleyin.',
+        'first_name' => 'Ad',
+        'last_name' => 'Soyad',
+        'email' => 'E-posta',
+        'save' => 'Kaydet',
+        'saved' => 'Kaydedildi.',
+        'email_unverified' => 'E-posta adresiniz doğrulanmamış.',
+        'resend_verification' => 'Doğrulama e-postasını yeniden göndermek için tıklayın.',
+        'verification_resent' => 'E-posta adresinize yeni bir doğrulama bağlantısı gönderildi.',
+
+        'password_section_title' => 'Şifreyi Güncelle',
+        'password_section_hint' => 'Hesabınızın güvenliği için uzun, rastgele bir şifre kullandığınızdan emin olun.',
+        'current_password' => 'Mevcut Şifre',
+        'new_password' => 'Yeni Şifre',
+        'confirm_password' => 'Şifre (Tekrar)',
+
+        'danger_section_title' => 'Hesabı Sil',
+        'danger_section_hint' => 'Hesabınız silindiğinde tüm verileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.',
+        'delete_account' => 'Hesabı Sil',
+        'delete_confirm_title' => 'Hesabınızı silmek istediğinizden emin misiniz?',
+        'delete_confirm_text' => 'Bu işlem geri alınamaz. Onaylamak için şifrenizi girin.',
+        'delete_password_placeholder' => 'Şifre',
+        'cancel' => 'İptal',
+    ],
+
 ];

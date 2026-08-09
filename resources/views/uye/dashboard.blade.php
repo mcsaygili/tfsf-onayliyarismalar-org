@@ -1,17 +1,5 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Üye Paneli') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __('Giriş yaptınız, hoş geldiniz :name.', ['name' => auth()->user()->first_name]) }}
-                </div>
-            </div>
-        </div>
+<x-uye.app-layout :title="__('uye.nav.dashboard')">
+    <div class="ip-card">
+        {{ __('uye.dashboard.welcome', ['name' => auth()->user()->first_name ?? auth()->user()->email]) }}
     </div>
-</x-app-layout>
+</x-uye.app-layout>

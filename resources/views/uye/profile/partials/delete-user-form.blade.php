@@ -1,55 +1,32 @@
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Hesabı Sil') }}
-        </h2>
+<div class="ip-card" x-data="{ open: false }">
+    <div class="ip-section-title">{{ __('uye.profile.danger_section_title') }}</div>
+    <div class="ip-section-hint" style="margin-bottom: 1rem;">{{ __('uye.profile.danger_section_hint') }}</div>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Hesabınız silindiğinde tüm verileri kalıcı olarak silinecektir. Hesabınızı silmeden önce lütfen saklamak istediğiniz verileri indirin.') }}
-        </p>
-    </header>
+    <button type="button" class="ia-btn ia-btn-danger" @click="open = true">
+        <x-uye.icon name="trash" />
+        {{ __('uye.profile.delete_account') }}
+    </button>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Hesabı Sil') }}</x-danger-button>
+    <div class="ip-modal-overlay" x-show="open" x-cloak x-transition.opacity @keydown.escape.window="open = false">
+        <div class="ip-modal" role="alertdialog" aria-modal="true" @click.outside="open = false">
+            <div class="ip-section-title">{{ __('uye.profile.delete_confirm_title') }}</div>
+            <p class="ip-modal-message">{{ __('uye.profile.delete_confirm_text') }}</p>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-            @csrf
-            @method('delete')
+            <form method="post" action="{{ route('profile.destroy') }}">
+                @csrf
+                @method('delete')
 
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Hesabınızı silmek istediğinizden emin misiniz?') }}
-            </h2>
+                <div class="ia-field" style="margin-bottom: 0;">
+                    <x-uye.label for="delete_password" value="{{ __('uye.profile.delete_password_placeholder') }}" class="sr-only" />
+                    <x-uye.input id="delete_password" name="password" type="password" :placeholder="__('uye.profile.delete_password_placeholder')" />
+                    <x-uye.input-error :messages="$errors->userDeletion->get('password')" />
+                </div>
 
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Hesabınız silindiğinde tüm verileri kalıcı olarak silinecektir. Hesabınızı kalıcı olarak silmek istediğinizi onaylamak için lütfen şifrenizi girin.') }}
-            </p>
-
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Şifre') }}" class="sr-only" />
-
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Şifre') }}"
-                />
-
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('İptal') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Hesabı Sil') }}
-                </x-danger-button>
-            </div>
-        </form>
-    </x-modal>
-</section>
+                <div class="ip-modal-actions">
+                    <button type="button" class="ia-btn ia-btn-secondary" @click="open = false">{{ __('uye.profile.cancel') }}</button>
+                    <button type="submit" class="ia-btn ia-btn-danger">{{ __('uye.profile.delete_account') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

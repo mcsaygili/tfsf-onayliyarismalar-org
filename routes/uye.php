@@ -63,8 +63,13 @@ Route::domain(config('domains.uye'))->group(function () {
             return view('uye.dashboard');
         })->name('dashboard');
 
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+            Route::patch('/', [ProfileController::class, 'update'])->name('update');
+            Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+
+            Route::get('sifre', [ProfileController::class, 'passwordEdit'])->name('password.edit');
+            Route::get('hesap', [ProfileController::class, 'accountEdit'])->name('account.edit');
+        });
     });
 });

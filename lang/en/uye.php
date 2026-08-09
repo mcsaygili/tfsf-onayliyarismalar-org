@@ -70,4 +70,45 @@ return [
         'back_to_login' => '← Back to login',
     ],
 
+    'nav' => [
+        'dashboard' => 'Dashboard',
+        'profile' => 'My Profile',
+        'privacy' => 'Privacy Settings',
+        'password' => 'Password',
+        'account' => 'Account',
+        'soon' => 'Soon',
+        'logout' => 'Log Out',
+    ],
+
+    'dashboard' => [
+        'welcome' => "You're signed in, welcome :name.",
+    ],
+
+    'profile' => [
+        'section_title' => 'My Profile',
+        'section_hint' => 'Update your profile information and email address.',
+        'first_name' => 'First Name',
+        'last_name' => 'Last Name',
+        'email' => 'Email',
+        'save' => 'Save',
+        'saved' => 'Saved.',
+        'email_unverified' => 'Your email address is unverified.',
+        'resend_verification' => 'Click here to re-send the verification email.',
+        'verification_resent' => 'A new verification link has been sent to your email address.',
+
+        'password_section_title' => 'Update Password',
+        'password_section_hint' => 'Ensure your account is using a long, random password to stay secure.',
+        'current_password' => 'Current Password',
+        'new_password' => 'New Password',
+        'confirm_password' => 'Confirm Password',
+
+        'danger_section_title' => 'Delete Account',
+        'danger_section_hint' => 'Once your account is deleted, all of its data will be permanently deleted. This cannot be undone.',
+        'delete_account' => 'Delete Account',
+        'delete_confirm_title' => 'Are you sure you want to delete your account?',
+        'delete_confirm_text' => 'This cannot be undone. Please enter your password to confirm.',
+        'delete_password_placeholder' => 'Password',
+        'cancel' => 'Cancel',
+    ],
+
 ];
