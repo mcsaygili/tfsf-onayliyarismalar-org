@@ -43,10 +43,10 @@
                                 <a href="{{ route('eys.roles.edit', $role) }}" class="ip-row-icon-btn" title="{{ __('eys.users.edit_action') }}" aria-label="{{ __('eys.users.edit_action') }}">
                                     <x-eys.icon name="edit" />
                                 </a>
-                                <form method="POST" action="{{ route('eys.roles.destroy', $role) }}" style="display: inline;" onsubmit="return confirm(@js(__('eys.role.delete_confirm')));">
+                                <form method="POST" action="{{ route('eys.roles.destroy', $role) }}" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="ip-row-icon-btn" title="{{ __('eys.role.delete_action') }}" aria-label="{{ __('eys.role.delete_action') }}">
+                                    <button type="button" class="ip-row-icon-btn" title="{{ __('eys.role.delete_action') }}" aria-label="{{ __('eys.role.delete_action') }}" onclick="eysConfirm(@js(__('eys.role.delete_confirm')), this.closest('form'))">
                                         <x-eys.icon name="trash" />
                                     </button>
                                 </form>

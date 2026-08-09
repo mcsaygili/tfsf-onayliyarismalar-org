@@ -144,18 +144,6 @@
         </div>
     </div>
 
-    {{-- Onay kutusu --}}
-    <div x-show="confirmBox.open" x-cloak class="fm-overlay" @keydown.escape.window="confirmBox.open=false">
-        <div class="fm-overlay-bg" @click="confirmBox.open=false"></div>
-        <div class="fm-dialog">
-            <p style="font-size: .85rem; color: var(--ia-muted); margin-bottom: 1rem;" x-text="confirmBox.msg"></p>
-            <div class="fm-dialog-actions">
-                <button type="button" @click="confirmBox.open=false" class="ia-btn">{{ __('eys.file_manager.cancel') }}</button>
-                <button type="button" @click="confirmYes()" class="ia-btn">{{ __('eys.file_manager.delete') }}</button>
-            </div>
-        </div>
-    </div>
-
     {{-- Lightbox --}}
     <div x-show="lightbox.open" x-cloak class="fm-lightbox" @click="lightbox.open=false" @keydown.escape.window="lightbox.open=false">
         <button type="button" @click="lightbox.open=false" class="fm-lightbox-close">&times;</button>
@@ -188,10 +176,4 @@
         </div>
     </div>
 
-    {{-- Toast bildirimleri --}}
-    <div class="fm-toasts">
-        <template x-for="t in toasts" :key="t.id">
-            <div class="fm-toast" :class="t.type === 'error' ? 'is-error' : (t.type === 'info' ? 'is-info' : '')" x-text="t.msg"></div>
-        </template>
-    </div>
 </div>

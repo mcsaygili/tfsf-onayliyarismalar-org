@@ -15,6 +15,9 @@ return [
         'add' => 'Add',
         'update' => 'Update',
         'back' => 'Back',
+        'confirm' => 'Confirm',
+        'cancel' => 'Cancel',
+        'action_cancelled' => 'Action cancelled.',
     ],
 
     'login' => [

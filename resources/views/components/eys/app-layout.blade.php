@@ -20,6 +20,66 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <script>
+        /**
+         * Uygulama genelinde tek tip onay modalı + toast bildirim mimarisi.
+         * window.eysConfirm(message, target) — target bir <form> ise onaylanınca
+         * gönderilir, fonksiyon ise onaylanınca çağrılır (bkz. Dosya Yöneticisi).
+         * window.eysToast(type, message) — type: success|error|info.
+         */
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('toast', {
+                items: [],
+                push(type, message) {
+                    if (!message) return;
+                    const id = Date.now() + Math.random();
+                    this.items.push({ id, type, message });
+                    setTimeout(() => {
+                        this.items = this.items.filter((t) => t.id !== id);
+                    }, 4000);
+                },
+            });
+
+            Alpine.store('confirmModal', {
+                open: false,
+                message: '',
+                onConfirm: null,
+                show(message, onConfirm) {
+                    this.message = message;
+                    this.onConfirm = onConfirm;
+                    this.open = true;
+                },
+                async confirm() {
+                    const fn = this.onConfirm;
+                    this.open = false;
+                    this.onConfirm = null;
+                    if (fn) await fn();
+                },
+                cancel() {
+                    this.open = false;
+                    this.onConfirm = null;
+                    window.eysToast('info', @js(__('eys.common.action_cancelled')));
+                },
+            });
+        });
+
+        window.eysToast = (type, message) => Alpine.store('toast').push(type, message);
+
+        window.eysConfirm = (message, target) => {
+            Alpine.store('confirmModal').show(message, () => {
+                if (target instanceof HTMLFormElement) {
+                    target.requestSubmit();
+                } else if (typeof target === 'function') {
+                    return target();
+                }
+            });
+        };
+
+        @if (session('status'))
+            document.addEventListener('DOMContentLoaded', () => window.eysToast('success', @js(session('status'))));
+        @endif
+    </script>
+
     <style>
         [x-cloak] { display: none !important; }
 
@@ -302,15 +362,65 @@
         /* Liste sayfalarındaki 3 panel (başlık, filtre, tablo) arası boşluk. */
         .ip-panel-stack { display: flex; flex-direction: column; gap: 1.5rem; }
 
-        .ip-status {
-            margin-bottom: 1.25rem;
-            padding: .75rem .9rem;
-            border: 1px solid rgba(120, 190, 130, .3);
-            background: rgba(88, 140, 92, .1);
-            color: #a9d2ac;
-            font-size: .85rem;
-            border-radius: 8px;
+        /* ---- Onay modalı — silme/güncelleme gibi geri alınamaz işlemler
+           öncesi tek tip onay penceresi. Sadece "Onay"/"İptal" ile
+           kapanır; arka plana tıklama veya Escape ile kapanmaz. ---- */
+        .ip-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 7, 12, .72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1.5rem;
         }
+        .ip-modal {
+            background: var(--ia-bg-soft);
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 14px;
+            padding: 1.75rem;
+            width: 100%;
+            max-width: 26rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+        }
+        .ip-modal-message {
+            color: var(--ia-cream);
+            font-size: .92rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .ip-modal-actions { display: flex; justify-content: flex-end; gap: .75rem; }
+
+        /* ---- Toast bildirimleri — tüm kayıt/güncelleme/silme akışlarının
+           ortak geri bildirim mimarisi. Ekranın altında, ortada birikir. ---- */
+        .ip-toast-stack {
+            position: fixed;
+            left: 50%;
+            bottom: 1.5rem;
+            transform: translateX(-50%);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .6rem;
+            pointer-events: none;
+        }
+        .ip-toast {
+            pointer-events: auto;
+            min-width: 16rem;
+            max-width: 26rem;
+            background: var(--ia-bg-soft);
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 10px;
+            padding: .75rem 1.1rem;
+            font-size: .85rem;
+            color: var(--ia-cream);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+        }
+        .ip-toast.is-success { border-color: rgba(120, 190, 130, .35); background: rgba(88, 140, 92, .16); color: #c8e8ca; }
+        .ip-toast.is-error { border-color: rgba(224, 133, 122, .4); background: rgba(224, 133, 122, .14); color: #f0c2ba; }
+        .ip-toast.is-info { border-color: var(--ia-surface-border); background: var(--ia-surface); color: var(--ia-muted); }
 
         .ip-section-title {
             font-family: 'Figtree', sans-serif;
@@ -580,10 +690,6 @@
         .fm-lightbox img { max-height: 82vh; max-width: 100%; border-radius: 8px; }
         .fm-lightbox p { margin-top: .75rem; color: rgba(255,255,255,.8); font-size: .85rem; }
         .fm-lightbox-close { position: absolute; top: 1rem; right: 1.25rem; color: rgba(255,255,255,.7); font-size: 1.8rem; line-height: 1; background: none; border: none; cursor: pointer; }
-        .fm-toasts { position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 220; display: flex; flex-direction: column; gap: .5rem; }
-        .fm-toast { padding: .6rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 600; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); background: #3a7d5c; }
-        .fm-toast.is-error { background: #b3543f; }
-        .fm-toast.is-info { background: var(--ia-copper); }
         .fm-context-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
     </style>
 </head>
@@ -724,12 +830,24 @@
         </header>
 
         <main class="ip-content">
-            @if (session('status'))
-                <div class="ip-status">{{ session('status') }}</div>
-            @endif
-
             {{ $slot }}
         </main>
+    </div>
+
+    <div x-data class="ip-modal-overlay" x-show="$store.confirmModal.open" x-cloak x-transition.opacity>
+        <div class="ip-modal" role="alertdialog" aria-modal="true">
+            <p class="ip-modal-message" x-text="$store.confirmModal.message"></p>
+            <div class="ip-modal-actions">
+                <button type="button" class="ia-btn" @click="$store.confirmModal.cancel()">{{ __('eys.common.cancel') }}</button>
+                <button type="button" class="ia-btn" @click="$store.confirmModal.confirm()">{{ __('eys.common.confirm') }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-data class="ip-toast-stack">
+        <template x-for="t in $store.toast.items" :key="t.id">
+            <div class="ip-toast" :class="'is-' + t.type" x-text="t.message" x-transition></div>
+        </template>
     </div>
 
     @stack('scripts')

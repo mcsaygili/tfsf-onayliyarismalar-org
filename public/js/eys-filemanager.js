@@ -22,8 +22,6 @@ document.addEventListener('alpine:init', () => {
         lightbox: { open: false, url: '', name: '' },
         details: { open: false, file: null },
         dialog: { open: false, mode: 'folder', name: '', target: null },
-        confirmBox: { open: false, msg: '', fn: null },
-        toasts: [],
         dragover: false,
 
         init() {
@@ -214,12 +212,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         askConfirm(msg, fn) {
-            this.confirmBox = { open: true, msg, fn };
-        },
-        async confirmYes() {
-            const fn = this.confirmBox.fn;
-            this.confirmBox.open = false;
-            if (fn) await fn();
+            window.eysConfirm(msg, fn);
         },
         removeItem(item) {
             this.askConfirm(window.FM.lang.confirm_delete.replace(':name', item.name), async () => {
@@ -285,11 +278,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         toast(type, msg) {
-            const id = Date.now() + Math.random();
-            this.toasts.push({ id, type, msg });
-            setTimeout(() => {
-                this.toasts = this.toasts.filter((t) => t.id !== id);
-            }, 3500);
+            window.eysToast(type, msg);
         },
 
         fmtSize(b) {

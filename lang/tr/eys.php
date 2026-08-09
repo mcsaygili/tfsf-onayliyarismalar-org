@@ -15,6 +15,9 @@ return [
         'add' => 'Ekle',
         'update' => 'Güncelle',
         'back' => 'Geri Dön',
+        'confirm' => 'Onay',
+        'cancel' => 'İptal',
+        'action_cancelled' => 'İşlem iptal edildi.',
     ],
 
     'login' => [
