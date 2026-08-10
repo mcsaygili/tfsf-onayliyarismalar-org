@@ -64,6 +64,10 @@ return [
                     'label' => 'Mail İstemcisi',
                     'actions' => ['view', 'manage'],
                 ],
+                'system_settings' => [
+                    'label' => 'Sistem Ayarları',
+                    'actions' => ['view', 'manage'],
+                ],
             ],
         ],
 

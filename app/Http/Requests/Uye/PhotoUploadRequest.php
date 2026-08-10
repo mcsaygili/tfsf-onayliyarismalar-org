@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Uye;
 
+use App\Models\PortfolioSetting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -28,7 +29,7 @@ class PhotoUploadRequest extends FormRequest
     {
         $validator->after(function (Validator $validator) {
             if (! $this->user()->canUploadMorePhotos()) {
-                $validator->errors()->add('photo', __('uye.portfolio.limit_reached'));
+                $validator->errors()->add('photo', __('uye.portfolio.limit_reached', ['max' => PortfolioSetting::current()->max_photos_per_user]));
             }
         });
     }

@@ -122,10 +122,10 @@ return [
 
     'portfolio' => [
         'section_title' => 'Fotoğraf Portfolyom',
-        'section_hint' => 'Kişisel fotoğraf koleksiyonunuzu oluşturun (en fazla 30 fotoğraf).',
+        'section_hint' => 'Kişisel fotoğraf koleksiyonunuzu oluşturun (en fazla :max fotoğraf).',
         'count_label' => ':count / :max fotoğraf',
         'add_photo' => '+ Yeni Fotoğraf Ekle',
-        'limit_reached' => 'En fazla 30 fotoğraf yükleyebilirsiniz.',
+        'limit_reached' => 'En fazla :max fotoğraf yükleyebilirsiniz.',
         'empty_state' => 'Henüz fotoğraf eklemediniz.',
 
         'view_toggle_label' => 'Görünüm',

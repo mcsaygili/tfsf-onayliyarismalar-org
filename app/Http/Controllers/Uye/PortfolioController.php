@@ -7,6 +7,7 @@ use App\Http\Requests\Uye\PhotoUpdateRequest;
 use App\Http\Requests\Uye\PhotoUploadRequest;
 use App\Models\Photo;
 use App\Models\PhotoCategory;
+use App\Models\PortfolioSetting;
 use App\Support\Photo\ExifReader;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -18,10 +19,10 @@ use Intervention\Image\ImageManager;
 
 /**
  * Üye (fotoğrafçı) kişisel fotoğraf portfolyosu — en fazla
- * Photo::MAX_PER_USER fotoğraf (bkz. proje planı "Üye Paneli — Fotoğraf
- * Portfolyosu"). ProfileController'daki gibi her işlem sadece
- * $request->user() üzerinden yürür; authorizeOwner() sahiplik kontrolü
- * StaffController::authorizeSameInstitution() deseninin kopyası.
+ * PortfolioSetting::current()->max_photos_per_user fotoğraf (EYS "Sistem
+ * Ayarları > Portfolyo Ayarları" üzerinden dinamik yönetilir). ProfileController'daki
+ * gibi her işlem sadece $request->user() üzerinden yürür; authorizeOwner()
+ * sahiplik kontrolü StaffController::authorizeSameInstitution() deseninin kopyası.
  */
 class PortfolioController extends Controller
 {
@@ -46,6 +47,7 @@ class PortfolioController extends Controller
             'photos' => $photos,
             'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
             'canUploadMore' => $request->user()->canUploadMorePhotos(),
+            'maxPhotos' => PortfolioSetting::current()->max_photos_per_user,
             'filter' => [
                 'category_id' => $request->input('category_id', ''),
                 'q' => $request->input('q', ''),

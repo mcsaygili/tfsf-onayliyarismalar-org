@@ -4,10 +4,10 @@
             <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                 <div>
                     <div class="ip-section-title">{{ __('uye.portfolio.section_title') }}</div>
-                    <div class="ip-section-hint" style="margin-bottom: 0;">{{ __('uye.portfolio.section_hint') }}</div>
+                    <div class="ip-section-hint" style="margin-bottom: 0;">{{ __('uye.portfolio.section_hint', ['max' => $maxPhotos]) }}</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: .9rem;">
-                    <span style="font-size: .85rem; color: var(--ia-muted-dim);">{{ __('uye.portfolio.count_label', ['count' => $photos->count(), 'max' => \App\Models\Photo::MAX_PER_USER]) }}</span>
+                    <span style="font-size: .85rem; color: var(--ia-muted-dim);">{{ __('uye.portfolio.count_label', ['count' => $photos->count(), 'max' => $maxPhotos]) }}</span>
                     <div class="ip-view-toggle" role="group" aria-label="{{ __('uye.portfolio.view_toggle_label') }}">
                         <button type="button" class="ip-view-toggle-btn" :class="{ 'is-active': view === 'grid' }" @click="view = 'grid'" :aria-pressed="view === 'grid'" title="{{ __('uye.portfolio.view_grid') }}">
                             <x-uye.icon name="grid" />

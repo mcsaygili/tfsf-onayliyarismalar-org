@@ -891,6 +891,23 @@
                     {{ __('eys.nav.file_manager') }}
                 </a>
             @endcan
+            @canany(['eys.system_settings.manage'])
+                <div x-data="{ o: {{ request()->routeIs('eys.system-settings.*') ? 'true' : 'false' }} }">
+                    <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
+                        <x-eys.icon name="settings" />
+                        <span class="ip-nav-group-label">{{ __('eys.nav.system_settings') }}</span>
+                        <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
+                    </button>
+                    <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
+                        @can('eys.system_settings.manage')
+                            <a href="{{ route('eys.system-settings.portfolio') }}" class="ip-nav-item {{ request()->routeIs('eys.system-settings.portfolio*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="camera" />
+                                {{ __('eys.nav.portfolio_settings') }}
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+            @endcanany
 
             @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>

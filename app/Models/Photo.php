@@ -28,8 +28,6 @@ class Photo extends Model
     /** @use HasFactory<PhotoFactory> */
     use HasFactory, HasUuids;
 
-    public const MAX_PER_USER = 30;
-
     protected function casts(): array
     {
         return [

@@ -59,7 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function canUploadMorePhotos(): bool
     {
-        return $this->photos()->count() < Photo::MAX_PER_USER;
+        return $this->photos()->count() < PortfolioSetting::current()->max_photos_per_user;
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void

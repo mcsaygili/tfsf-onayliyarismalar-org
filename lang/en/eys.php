@@ -70,6 +70,8 @@ return [
         'photo_categories' => 'Photo Categories',
         'mail_client' => 'Mail Client',
         'file_manager' => 'File Manager',
+        'system_settings' => 'System Settings',
+        'portfolio_settings' => 'Portfolio Settings',
         'logout' => 'Secure Logout',
         'section_general' => 'General',
         'section_modules' => 'Modules',
@@ -557,6 +559,15 @@ return [
         'delete_confirm' => 'Are you sure you want to delete this photo category?',
         'save' => 'Save',
         'save_new' => 'Add Photo Category',
+    ],
+
+    'system_settings' => [
+        'portfolio_title' => 'Portfolio Settings',
+        'portfolio_hint' => 'Manage the maximum number of photos members can upload to their personal photo portfolio.',
+        'max_photos_per_user' => 'Max Photos Per Member',
+        'max_photos_per_user_hint' => 'Members cannot upload more than this number of photos.',
+        'save' => 'Save',
+        'portfolio_updated' => 'Portfolio settings updated.',
     ],
 
     'mail_client' => [

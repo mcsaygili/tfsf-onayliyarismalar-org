@@ -145,4 +145,8 @@
     @case('camera')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 8.5a1.5 1.5 0 011.5-1.5h1.6l1-1.6a1 1 0 01.85-.4h6.1a1 1 0 01.85.4l1 1.6h1.6A1.5 1.5 0 0120 8.5v9A1.5 1.5 0 0118.5 19h-13A1.5 1.5 0 014 17.5v-9z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
         @break
+
+    @case('settings')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M20.5 12h-2M5.5 12h-2M17.66 6.34l-1.42 1.42M7.76 16.24l-1.42 1.42M17.66 17.66l-1.42-1.42M7.76 7.76L6.34 6.34" stroke-linecap="round"/></svg>
+        @break
 @endswitch

@@ -70,6 +70,8 @@ return [
         'photo_categories' => 'Fotoğraf Kategorileri',
         'mail_client' => 'Mail İstemcisi',
         'file_manager' => 'Dosya Yöneticisi',
+        'system_settings' => 'Sistem Ayarları',
+        'portfolio_settings' => 'Portfolyo Ayarları',
         'logout' => 'Güvenli Çıkış',
         'section_general' => 'Genel',
         'section_modules' => 'Modüller',
@@ -557,6 +559,15 @@ return [
         'delete_confirm' => 'Bu fotoğraf kategorisini silmek istediğinize emin misiniz?',
         'save' => 'Kaydet',
         'save_new' => 'Fotoğraf Kategorisi Ekle',
+    ],
+
+    'system_settings' => [
+        'portfolio_title' => 'Portfolyo Ayarları',
+        'portfolio_hint' => 'Üyelerin kişisel fotoğraf portfolyosunda yükleyebileceği en fazla fotoğraf sayısını yönetin.',
+        'max_photos_per_user' => 'Üye Başına En Fazla Fotoğraf',
+        'max_photos_per_user_hint' => 'Üyeler bu sayıdan fazla fotoğraf yükleyemez.',
+        'save' => 'Kaydet',
+        'portfolio_updated' => 'Portfolyo ayarları güncellendi.',
     ],
 
     'mail_client' => [

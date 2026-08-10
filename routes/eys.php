@@ -21,6 +21,7 @@ use App\Http\Controllers\Eys\PhotoCategoryController;
 use App\Http\Controllers\Eys\RegulationItemController;
 use App\Http\Controllers\Eys\RegulationSectionController;
 use App\Http\Controllers\Eys\RoleController;
+use App\Http\Controllers\Eys\SystemSettingsController;
 use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
 use App\Http\Controllers\Eys\UserRoleController;
@@ -256,6 +257,11 @@ Route::domain(config('domains.eys'))->group(function () {
                 Route::post('api/delete', [FileManagerController::class, 'delete'])->name('delete');
                 Route::post('api/bulk-delete', [FileManagerController::class, 'bulkDelete'])->name('bulkDelete');
             });
+        });
+
+        Route::prefix('sistem-ayarlari')->name('eys.system-settings.')->middleware('permission:eys.system_settings.manage')->group(function () {
+            Route::get('portfolyo', [SystemSettingsController::class, 'portfolio'])->name('portfolio');
+            Route::patch('portfolyo', [SystemSettingsController::class, 'updatePortfolio'])->name('portfolio.update');
         });
     });
 });

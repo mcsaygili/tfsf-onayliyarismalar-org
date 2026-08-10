@@ -4,6 +4,7 @@ namespace Tests\Feature\Uye;
 
 use App\Models\Photo;
 use App\Models\PhotoCategory;
+use App\Models\PortfolioSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -96,6 +97,24 @@ class PortfolioTest extends TestCase
 
         $response->assertSessionHasErrors('photo');
         $this->assertSame(30, $user->photos()->count());
+    }
+
+    public function test_eys_uzerinden_degistirilen_limit_yuklemede_uygulanir(): void
+    {
+        Storage::fake('public');
+        PortfolioSetting::current()->update(['max_photos_per_user' => 2]);
+        $user = User::factory()->create();
+        Photo::factory()->for($user)->count(2)->create();
+
+        $response = $this->actingAs($user)->post(route('portfolio.store'), [
+            'photo' => $this->plainUpload('third.jpg'),
+            'title' => 'Üçüncü Fotoğraf',
+            'location' => 'X',
+            'taken_at' => '2024-01-01',
+        ]);
+
+        $response->assertSessionHasErrors('photo');
+        $this->assertSame(2, $user->photos()->count());
     }
 
     public function test_silme_hem_db_kaydini_hem_disk_dosyasini_temizler(): void
