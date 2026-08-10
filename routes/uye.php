@@ -11,6 +11,7 @@ use App\Http\Controllers\Uye\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Uye\Auth\RegisteredUserController;
 use App\Http\Controllers\Uye\Auth\SmsPasswordResetController;
 use App\Http\Controllers\Uye\Auth\VerifyEmailController;
+use App\Http\Controllers\Uye\PortfolioController;
 use App\Http\Controllers\Uye\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,6 +71,13 @@ Route::domain(config('domains.uye'))->group(function () {
 
             Route::get('sifre', [ProfileController::class, 'passwordEdit'])->name('password.edit');
             Route::get('hesap', [ProfileController::class, 'accountEdit'])->name('account.edit');
+        });
+
+        Route::prefix('portfolyo')->name('portfolio.')->group(function () {
+            Route::get('/', [PortfolioController::class, 'index'])->name('index');
+            Route::post('/', [PortfolioController::class, 'store'])->name('store');
+            Route::patch('{photo}', [PortfolioController::class, 'update'])->name('update');
+            Route::delete('{photo}', [PortfolioController::class, 'destroy'])->name('destroy');
         });
     });
 });

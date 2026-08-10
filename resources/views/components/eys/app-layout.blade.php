@@ -838,8 +838,8 @@
                     {{ __('eys.permission.title') }}
                 </a>
             @endcan
-            @canany(['eys.countries.manage', 'eys.cities.manage', 'eys.education_levels.manage', 'eys.institution_types.manage'])
-                <div x-data="{ o: {{ request()->routeIs('eys.countries.*') || request()->routeIs('eys.cities.*') || request()->routeIs('eys.education-levels.*') || request()->routeIs('eys.institution-types.*') ? 'true' : 'false' }} }">
+            @canany(['eys.countries.manage', 'eys.cities.manage', 'eys.education_levels.manage', 'eys.institution_types.manage', 'eys.photo_categories.manage'])
+                <div x-data="{ o: {{ request()->routeIs('eys.countries.*') || request()->routeIs('eys.cities.*') || request()->routeIs('eys.education-levels.*') || request()->routeIs('eys.institution-types.*') || request()->routeIs('eys.photo-categories.*') ? 'true' : 'false' }} }">
                     <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                         <x-eys.icon name="layers" />
                         <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
@@ -868,6 +868,12 @@
                             <a href="{{ route('eys.institution-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.institution-types.*') ? 'is-active' : '' }}">
                                 <x-eys.icon name="institution" />
                                 {{ __('eys.nav.institution_types') }}
+                            </a>
+                        @endcan
+                        @can('eys.photo_categories.manage')
+                            <a href="{{ route('eys.photo-categories.index') }}" class="ip-nav-item {{ request()->routeIs('eys.photo-categories.*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="camera" />
+                                {{ __('eys.nav.photo_categories') }}
                             </a>
                         @endcan
                     </div>

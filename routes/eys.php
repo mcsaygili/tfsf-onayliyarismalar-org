@@ -17,6 +17,7 @@ use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
 use App\Http\Controllers\Eys\PermissionController;
+use App\Http\Controllers\Eys\PhotoCategoryController;
 use App\Http\Controllers\Eys\RegulationItemController;
 use App\Http\Controllers\Eys\RegulationSectionController;
 use App\Http\Controllers\Eys\RoleController;
@@ -124,6 +125,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{institutionType}/duzenle', [InstitutionTypeController::class, 'edit'])->name('edit');
             Route::patch('{institutionType}', [InstitutionTypeController::class, 'update'])->name('update');
             Route::delete('{institutionType}', [InstitutionTypeController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('fotograf-kategorileri')->name('eys.photo-categories.')->middleware('permission:eys.photo_categories.manage')->group(function () {
+            Route::get('/', [PhotoCategoryController::class, 'index'])->name('index');
+            Route::get('yeni', [PhotoCategoryController::class, 'create'])->name('create');
+            Route::post('/', [PhotoCategoryController::class, 'store'])->name('store');
+            Route::get('{photoCategory}/duzenle', [PhotoCategoryController::class, 'edit'])->name('edit');
+            Route::patch('{photoCategory}', [PhotoCategoryController::class, 'update'])->name('update');
+            Route::delete('{photoCategory}', [PhotoCategoryController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('sartname-bolumleri')->name('eys.regulation-sections.')->middleware('permission:eys.regulation_sections.manage')->group(function () {

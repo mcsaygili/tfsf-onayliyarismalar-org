@@ -44,6 +44,10 @@ return [
                     'label' => 'Kurum Türü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'photo_categories' => [
+                    'label' => 'Fotoğraf Kategorisi Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'regulation_sections' => [
                     'label' => 'Şartname Bölümü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],

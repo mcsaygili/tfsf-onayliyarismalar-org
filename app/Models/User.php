@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -49,6 +50,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function educationLevel(): BelongsTo
     {
         return $this->belongsTo(EducationLevel::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(Photo::class);
+    }
+
+    public function canUploadMorePhotos(): bool
+    {
+        return $this->photos()->count() < Photo::MAX_PER_USER;
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void

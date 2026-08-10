@@ -141,4 +141,8 @@
     @case('competitions')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M7 4.5h10V9a5 5 0 01-10 0V4.5z"/><path d="M7 5.5H4.75a1 1 0 00-1 1v.75a3 3 0 003 3M17 5.5h2.25a1 1 0 011 1v.75a3 3 0 01-3 3"/><path d="M12 14v3.5M9.25 19.5h5.5"/></svg>
         @break
+
+    @case('camera')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 8.5a1.5 1.5 0 011.5-1.5h1.6l1-1.6a1 1 0 01.85-.4h6.1a1 1 0 01.85.4l1 1.6h1.6A1.5 1.5 0 0120 8.5v9A1.5 1.5 0 0118.5 19h-13A1.5 1.5 0 014 17.5v-9z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+        @break
 @endswitch

@@ -37,4 +37,20 @@
     @case('chevron-right')
         <svg viewBox="0 0 20 20" fill="currentColor" {{ $attributes }}><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.19 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
         @break
+
+    @case('camera')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 8.5a1.5 1.5 0 011.5-1.5h1.6l1-1.6a1 1 0 01.85-.4h6.1a1 1 0 01.85.4l1 1.6h1.6A1.5 1.5 0 0120 8.5v9A1.5 1.5 0 0118.5 19h-13A1.5 1.5 0 014 17.5v-9z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+        @break
+
+    @case('upload')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M12 15.5V4.5M12 4.5l-4 4M12 4.5l4 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 15.5v3a1.5 1.5 0 001.5 1.5h12a1.5 1.5 0 001.5-1.5v-3" stroke-linecap="round"/></svg>
+        @break
+
+    @case('grid')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><rect x="14.5" y="14.5" width="6" height="6" rx="1"/></svg>
+        @break
+
+    @case('list')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M8.5 6.5h11.5M8.5 12h11.5M8.5 17.5h11.5" stroke-linecap="round"/><path d="M4 6.5h.01M4 12h.01M4 17.5h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        @break
 @endswitch

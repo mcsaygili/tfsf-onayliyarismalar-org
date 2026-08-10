@@ -422,6 +422,7 @@
         }
         .ia-btn-danger:hover { background: #e89b91; }
         .ia-btn-danger svg { width: 15px; height: 15px; }
+        .ia-btn.ip-btn-sm { padding: .55rem 1.1rem; font-size: .82rem; text-decoration: none; }
 
         .ip-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         @media (max-width: 640px) { .ip-grid-2 { grid-template-columns: 1fr; } }
@@ -462,6 +463,89 @@
         .ip-alert-text { font-size: .84rem; color: var(--ia-muted); }
         .ip-alert-text a { color: var(--ia-copper); font-weight: 600; text-decoration: none; }
         .ip-alert-text a:hover { color: var(--ia-copper-bright); }
+
+        /* ---- Rozet (ör. EXIF Eksik) ---- */
+        .ip-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .25rem .6rem;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+        .ip-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .ip-badge.is-warning { color: #d9a441; background: rgba(217,164,65,.14); }
+
+        /* ---- Fotoğraf Portfolyosu ---- */
+        .ip-view-toggle { display: inline-flex; border: 1px solid var(--ia-surface-border); border-radius: 7px; overflow: hidden; }
+        .ip-view-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.1rem;
+            height: 2.1rem;
+            background: transparent;
+            border: none;
+            color: var(--ia-muted-dim);
+            cursor: pointer;
+            transition: background-color .15s ease, color .15s ease;
+        }
+        .ip-view-toggle-btn:not(:last-child) { border-right: 1px solid var(--ia-surface-border); }
+        .ip-view-toggle-btn svg { width: 16px; height: 16px; }
+        .ip-view-toggle-btn:hover { color: var(--ia-cream); }
+        .ip-view-toggle-btn.is-active { background: rgba(201,168,76,.12); color: var(--ia-copper); }
+
+        .ip-photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .ip-photo-card {
+            background: var(--ia-surface);
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .15s ease, border-color .15s ease;
+            text-align: left;
+            padding: 0;
+            display: block;
+            width: 100%;
+        }
+        .ip-photo-card:hover { transform: translateY(-2px); border-color: var(--ia-copper); }
+        .ip-photo-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--ia-bg); }
+        .ip-photo-card .ip-photo-meta { padding: .7rem .8rem; }
+        .ip-photo-card .ip-photo-title { color: var(--ia-cream); font-weight: 600; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ip-photo-card .ip-photo-sub { color: var(--ia-muted-dim); font-size: .76rem; margin-top: .2rem; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+
+        .ip-table-wrap { overflow-x: auto; border: 1px solid var(--ia-surface-border); border-radius: 10px; }
+        .ip-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+        .ip-table th {
+            text-align: left;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ia-muted-dim);
+            padding: .8rem 1rem;
+            border-bottom: 1px solid var(--ia-surface-border);
+            background: rgba(255,255,255,.02);
+        }
+        .ip-table td { padding: .7rem 1rem; border-bottom: 1px solid var(--ia-surface-border); color: var(--ia-muted); vertical-align: middle; }
+        .ip-table tr:last-child td { border-bottom: none; }
+        .ip-table tr { cursor: pointer; transition: background-color .15s ease; }
+        .ip-table tbody tr:hover { background: rgba(201,168,76,.05); }
+        .ip-table td.ip-cell-name { color: var(--ia-cream); font-weight: 600; }
+        .ip-table td.ip-cell-thumb { width: 56px; }
+        .ip-table td.ip-cell-thumb img { width: 42px; height: 42px; object-fit: cover; border-radius: 6px; display: block; background: var(--ia-bg); }
+        .ip-table-empty { padding: 2.5rem 1rem; text-align: center; color: var(--ia-muted-dim); font-size: .88rem; }
+
+        .ip-modal.is-wide { max-width: 42rem; max-height: 90vh; overflow-y: auto; }
+
+        .ip-exif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1.2rem; font-size: .84rem; }
+        .ip-exif-grid dt { color: var(--ia-muted-dim); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }
+        .ip-exif-grid dd { color: var(--ia-muted); margin: 0 0 .6rem; }
     </style>
 </head>
 <body class="ip-shell">
@@ -478,6 +562,10 @@
             <a href="{{ route('dashboard') }}" class="ip-nav-item {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">
                 <x-uye.icon name="dashboard" />
                 {{ __('uye.nav.dashboard') }}
+            </a>
+            <a href="{{ route('portfolio.index') }}" class="ip-nav-item {{ request()->routeIs('portfolio.*') ? 'is-active' : '' }}">
+                <x-uye.icon name="camera" />
+                {{ __('uye.nav.portfolio') }}
             </a>
             <div x-data="{ o: {{ request()->routeIs('profile.*') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('profile.*') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
