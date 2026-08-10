@@ -29,7 +29,7 @@ class PortfolioController extends Controller
     public function index(Request $request): View
     {
         $photos = $request->user()->photos()
-            ->with('category.translations')
+            ->with(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations'])
             ->when($request->filled('category_id'), fn ($q) => $q->where('photo_category_id', $request->input('category_id')))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
@@ -48,12 +48,21 @@ class PortfolioController extends Controller
             'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
             'canUploadMore' => $request->user()->canUploadMorePhotos(),
             'maxPhotos' => PortfolioSetting::current()->max_photos_per_user,
+            'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
             'filter' => [
                 'category_id' => $request->input('category_id', ''),
                 'q' => $request->input('q', ''),
                 'date_from' => $request->input('date_from', ''),
                 'date_to' => $request->input('date_to', ''),
             ],
+        ]);
+    }
+
+    public function create(Request $request): View
+    {
+        return view('uye.portfolio.create', [
+            'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
+            'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
         ]);
     }
 
@@ -82,7 +91,7 @@ class PortfolioController extends Controller
 
         $tags = $this->parseTags($request->input('tags'));
 
-        $request->user()->photos()->create(array_merge($exif, [
+        $photo = $request->user()->photos()->create(array_merge($exif, [
             'photo_category_id' => $request->input('photo_category_id'),
             'title' => $request->input('title'),
             'location' => $request->input('location'),
@@ -97,7 +106,22 @@ class PortfolioController extends Controller
             'file_size_bytes' => $file->getSize(),
         ]));
 
-        return back()->with('status', __('uye.portfolio.uploaded'));
+        $photo->equipment()->sync($request->input('equipment', []));
+
+        return redirect()->route('portfolio.index')->with('status', __('uye.portfolio.uploaded'));
+    }
+
+    public function edit(Request $request, Photo $photo): View
+    {
+        $this->authorizeOwner($photo, $request);
+
+        $photo->load(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations']);
+
+        return view('uye.portfolio.edit', [
+            'photo' => $photo,
+            'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
+            'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
+        ]);
     }
 
     public function update(PhotoUpdateRequest $request, Photo $photo): RedirectResponse
@@ -116,7 +140,9 @@ class PortfolioController extends Controller
             'description' => $request->input('description'),
         ]);
 
-        return back()->with('status', __('uye.portfolio.updated'));
+        $photo->equipment()->sync($request->input('equipment', []));
+
+        return redirect()->route('portfolio.index')->with('status', __('uye.portfolio.updated'));
     }
 
     public function destroy(Request $request, Photo $photo): RedirectResponse
@@ -126,7 +152,7 @@ class PortfolioController extends Controller
         Storage::disk('public')->delete(array_filter([$photo->disk_path, $photo->thumb_path]));
         $photo->delete();
 
-        return back()->with('status', __('uye.portfolio.deleted'));
+        return redirect()->route('portfolio.index')->with('status', __('uye.portfolio.deleted'));
     }
 
     /** @return array<int, string> */

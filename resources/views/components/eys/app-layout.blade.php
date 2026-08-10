@@ -879,6 +879,35 @@
                     </div>
                 </div>
             @endcanany
+            @canany(['eys.equipment_types.manage', 'eys.equipment_brands.manage', 'eys.equipment_models.manage'])
+                <div x-data="{ o: {{ request()->routeIs('eys.equipment-types.*') || request()->routeIs('eys.equipment-brands.*') || request()->routeIs('eys.equipment-models.*') ? 'true' : 'false' }} }">
+                    <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
+                        <x-eys.icon name="equipment" />
+                        <span class="ip-nav-group-label">{{ __('eys.nav.equipment_catalog') }}</span>
+                        <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
+                    </button>
+                    <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
+                        @can('eys.equipment_types.manage')
+                            <a href="{{ route('eys.equipment-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.equipment-types.*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="layers" />
+                                {{ __('eys.nav.equipment_types') }}
+                            </a>
+                        @endcan
+                        @can('eys.equipment_brands.manage')
+                            <a href="{{ route('eys.equipment-brands.index') }}" class="ip-nav-item {{ request()->routeIs('eys.equipment-brands.*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="tag" />
+                                {{ __('eys.nav.equipment_brands') }}
+                            </a>
+                        @endcan
+                        @can('eys.equipment_models.manage')
+                            <a href="{{ route('eys.equipment-models.index') }}" class="ip-nav-item {{ request()->routeIs('eys.equipment-models.*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="grid" />
+                                {{ __('eys.nav.equipment_models') }}
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+            @endcanany
             @can('eys.mail_client.view')
                 <a href="{{ route('eys.mail-client.dashboard') }}" class="ip-nav-item {{ request()->routeIs('eys.mail-client.*') ? 'is-active' : '' }}">
                     <x-eys.icon name="mail" />

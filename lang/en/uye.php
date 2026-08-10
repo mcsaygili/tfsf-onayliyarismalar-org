@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Approved Competitions',
 
+    'common' => [
+        'confirm' => 'Confirm',
+        'cancel' => 'Cancel',
+        'action_cancelled' => 'Action cancelled.',
+        'edit_action' => 'Edit',
+        'delete_action' => 'Delete',
+    ],
+
     'login' => [
         'heading' => 'Member Portal',
         'subheading' => 'Log in to take part in competitions and manage your photographs.',
@@ -73,6 +81,7 @@ return [
     'nav' => [
         'dashboard' => 'Dashboard',
         'portfolio' => 'My Portfolio',
+        'equipment' => 'My Equipment',
         'profile' => 'My Profile',
         'privacy' => 'Privacy Settings',
         'password' => 'Password',
@@ -127,6 +136,8 @@ return [
         'add_photo' => '+ Add New Photo',
         'limit_reached' => 'You can upload up to :max photos.',
         'empty_state' => "You haven't added any photos yet.",
+        'back_to_list' => 'Back to portfolio',
+        'create_hint' => 'Upload your photo — the system will read its EXIF data automatically.',
 
         'view_toggle_label' => 'View',
         'view_grid' => 'Grid View',
@@ -142,6 +153,11 @@ return [
         'field_description' => 'Description / Story',
         'field_category' => 'Category',
         'category_none' => 'No category selected',
+        'field_equipment' => 'Equipment Used',
+        'equipment_empty' => "You don't have any registered equipment yet.",
+        'equipment_empty_cta' => 'Add equipment',
+        'equipment_used_title' => 'Equipment Used',
+        'equipment_used_empty' => 'No equipment tagged for this photo.',
 
         'exif_title' => 'Technical Info (EXIF)',
         'exif_missing_badge' => 'EXIF Missing',
@@ -176,6 +192,37 @@ return [
         'delete_confirm_text' => 'Are you sure you want to delete this photo? This cannot be undone.',
         'cancel' => 'Cancel',
         'close' => 'Close',
+    ],
+
+    'equipment' => [
+        'section_title' => 'My Equipment',
+        'section_hint' => 'Keep track of the photography equipment you own.',
+        'add_equipment' => '+ Add New Equipment',
+        'add_title' => 'Add New Equipment',
+        'empty_state' => "You haven't added any equipment yet.",
+        'back_to_list' => 'Back to equipment list',
+        'create_title' => 'Add New Equipment',
+        'create_hint' => 'Pick a brand and model from the catalog to register your own equipment.',
+        'edit_title' => 'Edit Equipment',
+
+        'column_type' => 'Type',
+        'column_brand' => 'Brand',
+        'column_model' => 'Model',
+        'column_notes' => 'Notes',
+
+        'field_brand' => 'Brand',
+        'field_model' => 'Model',
+        'field_notes' => 'Notes (optional)',
+        'select_brand' => 'Select a brand',
+        'select_model' => 'Select a brand first',
+
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'created' => 'Equipment added.',
+        'updated' => 'Equipment updated.',
+        'deleted' => 'Equipment deleted.',
+        'delete_equipment' => 'Delete Equipment',
+        'delete_confirm_text' => 'Are you sure you want to delete this equipment?',
     ],
 
 ];

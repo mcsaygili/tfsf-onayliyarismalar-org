@@ -8,6 +8,9 @@ use App\Http\Controllers\Eys\CompetitionReviewController;
 use App\Http\Controllers\Eys\CountryController;
 use App\Http\Controllers\Eys\DashboardController;
 use App\Http\Controllers\Eys\EducationLevelController;
+use App\Http\Controllers\Eys\EquipmentBrandController;
+use App\Http\Controllers\Eys\EquipmentModelController;
+use App\Http\Controllers\Eys\EquipmentTypeController;
 use App\Http\Controllers\Eys\FileManagerController;
 use App\Http\Controllers\Eys\InstitutionController;
 use App\Http\Controllers\Eys\InstitutionStaffController;
@@ -135,6 +138,33 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{photoCategory}/duzenle', [PhotoCategoryController::class, 'edit'])->name('edit');
             Route::patch('{photoCategory}', [PhotoCategoryController::class, 'update'])->name('update');
             Route::delete('{photoCategory}', [PhotoCategoryController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('ekipman-turleri')->name('eys.equipment-types.')->middleware('permission:eys.equipment_types.manage')->group(function () {
+            Route::get('/', [EquipmentTypeController::class, 'index'])->name('index');
+            Route::get('yeni', [EquipmentTypeController::class, 'create'])->name('create');
+            Route::post('/', [EquipmentTypeController::class, 'store'])->name('store');
+            Route::get('{equipmentType}/duzenle', [EquipmentTypeController::class, 'edit'])->name('edit');
+            Route::patch('{equipmentType}', [EquipmentTypeController::class, 'update'])->name('update');
+            Route::delete('{equipmentType}', [EquipmentTypeController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('markalar')->name('eys.equipment-brands.')->middleware('permission:eys.equipment_brands.manage')->group(function () {
+            Route::get('/', [EquipmentBrandController::class, 'index'])->name('index');
+            Route::get('yeni', [EquipmentBrandController::class, 'create'])->name('create');
+            Route::post('/', [EquipmentBrandController::class, 'store'])->name('store');
+            Route::get('{equipmentBrand}/duzenle', [EquipmentBrandController::class, 'edit'])->name('edit');
+            Route::patch('{equipmentBrand}', [EquipmentBrandController::class, 'update'])->name('update');
+            Route::delete('{equipmentBrand}', [EquipmentBrandController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('ekipman-modelleri')->name('eys.equipment-models.')->middleware('permission:eys.equipment_models.manage')->group(function () {
+            Route::get('/', [EquipmentModelController::class, 'index'])->name('index');
+            Route::get('yeni', [EquipmentModelController::class, 'create'])->name('create');
+            Route::post('/', [EquipmentModelController::class, 'store'])->name('store');
+            Route::get('{equipmentModel}/duzenle', [EquipmentModelController::class, 'edit'])->name('edit');
+            Route::patch('{equipmentModel}', [EquipmentModelController::class, 'update'])->name('update');
+            Route::delete('{equipmentModel}', [EquipmentModelController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('sartname-bolumleri')->name('eys.regulation-sections.')->middleware('permission:eys.regulation_sections.manage')->group(function () {

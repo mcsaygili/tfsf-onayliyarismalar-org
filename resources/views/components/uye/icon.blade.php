@@ -53,4 +53,16 @@
     @case('list')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M8.5 6.5h11.5M8.5 12h11.5M8.5 17.5h11.5" stroke-linecap="round"/><path d="M4 6.5h.01M4 12h.01M4 17.5h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
         @break
+
+    @case('equipment')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="3.5" y="8.5" width="17" height="10.5" rx="1.5"/><path d="M8.5 8.5V6a1.5 1.5 0 011.5-1.5h4A1.5 1.5 0 0115.5 6v2.5"/><path d="M3.5 13h17" stroke-linecap="round"/></svg>
+        @break
+
+    @case('edit')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 20h4L18.5 9.5a2.121 2.121 0 00-3-3L5 17v3z"/><path d="M13.5 6.5l4 4"/></svg>
+        @break
+
+    @case('back')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" {{ $attributes }}><path d="M15 5l-7 7 7 7"/></svg>
+        @break
 @endswitch

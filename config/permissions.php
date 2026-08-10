@@ -48,6 +48,18 @@ return [
                     'label' => 'Fotoğraf Kategorisi Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'equipment_types' => [
+                    'label' => 'Ekipman Türü Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
+                'equipment_brands' => [
+                    'label' => 'Marka Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
+                'equipment_models' => [
+                    'label' => 'Ekipman Modeli Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'regulation_sections' => [
                     'label' => 'Şartname Bölümü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],

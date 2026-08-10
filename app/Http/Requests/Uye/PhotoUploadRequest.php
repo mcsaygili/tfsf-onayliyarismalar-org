@@ -5,6 +5,7 @@ namespace App\Http\Requests\Uye;
 use App\Models\PortfolioSetting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class PhotoUploadRequest extends FormRequest
@@ -22,6 +23,11 @@ class PhotoUploadRequest extends FormRequest
             'tags' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string', 'max:2000'],
             'photo_category_id' => ['nullable', 'uuid', 'exists:photo_categories,id'],
+            'equipment' => ['nullable', 'array'],
+            'equipment.*' => [
+                'uuid',
+                Rule::exists('user_equipment', 'id')->where(fn ($q) => $q->where('user_id', $this->user()->id)),
+            ],
         ];
     }
 

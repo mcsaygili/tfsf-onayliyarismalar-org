@@ -57,6 +57,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Photo::class);
     }
 
+    public function equipment(): HasMany
+    {
+        return $this->hasMany(UserEquipment::class);
+    }
+
     public function canUploadMorePhotos(): bool
     {
         return $this->photos()->count() < PortfolioSetting::current()->max_photos_per_user;

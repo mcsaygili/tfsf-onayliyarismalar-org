@@ -31,6 +31,28 @@ class PortfolioTest extends TestCase
         );
     }
 
+    public function test_yukleme_sayfasi_goruntulenebilir(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('portfolio.create'));
+
+        $response->assertOk();
+    }
+
+    public function test_duzenleme_sayfasi_sadece_sahibine_acik(): void
+    {
+        $owner = User::factory()->create();
+        $intruder = User::factory()->create();
+        $photo = Photo::factory()->for($owner)->create();
+
+        $ownerResponse = $this->actingAs($owner)->get(route('portfolio.edit', $photo));
+        $ownerResponse->assertOk();
+
+        $intruderResponse = $this->actingAs($intruder)->get(route('portfolio.edit', $photo));
+        $intruderResponse->assertForbidden();
+    }
+
     public function test_gercek_exifli_fotograf_yuklenince_exif_bilgileri_dogru_okunur(): void
     {
         Storage::fake('public');

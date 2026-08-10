@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             InstitutionTypeSeeder::class,
             RegulationSectionSeeder::class,
             PhotoCategorySeeder::class,
+            EquipmentTypeSeeder::class,
+            EquipmentBrandSeeder::class,
         ]);
     }
 }

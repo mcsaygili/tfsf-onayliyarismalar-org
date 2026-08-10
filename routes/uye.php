@@ -11,6 +11,7 @@ use App\Http\Controllers\Uye\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Uye\Auth\RegisteredUserController;
 use App\Http\Controllers\Uye\Auth\SmsPasswordResetController;
 use App\Http\Controllers\Uye\Auth\VerifyEmailController;
+use App\Http\Controllers\Uye\EquipmentController;
 use App\Http\Controllers\Uye\PortfolioController;
 use App\Http\Controllers\Uye\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -75,9 +76,21 @@ Route::domain(config('domains.uye'))->group(function () {
 
         Route::prefix('portfolyo')->name('portfolio.')->group(function () {
             Route::get('/', [PortfolioController::class, 'index'])->name('index');
+            Route::get('yeni', [PortfolioController::class, 'create'])->name('create');
             Route::post('/', [PortfolioController::class, 'store'])->name('store');
+            Route::get('{photo}/duzenle', [PortfolioController::class, 'edit'])->name('edit');
             Route::patch('{photo}', [PortfolioController::class, 'update'])->name('update');
             Route::delete('{photo}', [PortfolioController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('ekipmanlarim')->name('equipment.')->group(function () {
+            Route::get('/', [EquipmentController::class, 'index'])->name('index');
+            Route::get('yeni', [EquipmentController::class, 'create'])->name('create');
+            Route::post('/', [EquipmentController::class, 'store'])->name('store');
+            Route::get('{userEquipment}/duzenle', [EquipmentController::class, 'edit'])->name('edit');
+            Route::patch('{userEquipment}', [EquipmentController::class, 'update'])->name('update');
+            Route::delete('{userEquipment}', [EquipmentController::class, 'destroy'])->name('destroy');
+            Route::get('markalar/{equipmentBrand}/modeller', [EquipmentController::class, 'modelsByBrand'])->name('models-by-brand');
         });
     });
 });

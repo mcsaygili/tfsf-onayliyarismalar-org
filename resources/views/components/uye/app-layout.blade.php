@@ -20,6 +20,63 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    <script>
+        /**
+         * Uygulama genelinde tek tip onay modalı + toast bildirim mimarisi
+         * (bkz. EYS app-layout.blade.php — aynı desen).
+         * window.uyeConfirm(message, target) — target bir <form> ise onaylanınca
+         * gönderilir, fonksiyon ise onaylanınca çağrılır.
+         * window.uyeToast(type, message) — type: success|error|info.
+         */
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('toast', {
+                items: [],
+                push(type, message) {
+                    if (!message) return;
+                    const id = Date.now() + Math.random();
+                    this.items.push({ id, type, message });
+                    setTimeout(() => {
+                        this.items = this.items.filter((t) => t.id !== id);
+                    }, 4000);
+                },
+            });
+
+            Alpine.store('confirmModal', {
+                open: false,
+                message: '',
+                onConfirm: null,
+                show(message, onConfirm) {
+                    this.message = message;
+                    this.onConfirm = onConfirm;
+                    this.open = true;
+                },
+                async confirm() {
+                    const fn = this.onConfirm;
+                    this.open = false;
+                    this.onConfirm = null;
+                    if (fn) await fn();
+                },
+                cancel() {
+                    this.open = false;
+                    this.onConfirm = null;
+                    window.uyeToast('info', @js(__('uye.common.action_cancelled')));
+                },
+            });
+        });
+
+        window.uyeToast = (type, message) => Alpine.store('toast').push(type, message);
+
+        window.uyeConfirm = (message, target) => {
+            Alpine.store('confirmModal').show(message, () => {
+                if (target instanceof HTMLFormElement) {
+                    target.requestSubmit();
+                } else if (typeof target === 'function') {
+                    return target();
+                }
+            });
+        };
+    </script>
+
     <style>
         [x-cloak] { display: none !important; }
 
@@ -455,6 +512,50 @@
         }
         .ip-modal-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
 
+        /* ---- Toast bildirimleri — bottom-center, silme/kaydetme sonrası. ---- */
+        .ip-toast-stack {
+            position: fixed;
+            left: 50%;
+            bottom: 1.5rem;
+            transform: translateX(-50%);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .6rem;
+            pointer-events: none;
+        }
+        .ip-toast {
+            pointer-events: auto;
+            min-width: 16rem;
+            max-width: 26rem;
+            background: var(--ia-bg-soft);
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 10px;
+            padding: .75rem 1.1rem;
+            font-size: .85rem;
+            color: var(--ia-cream);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+        }
+        .ip-toast.is-success { border-color: rgba(120, 190, 130, .35); background: rgba(88, 140, 92, .16); color: #c8e8ca; }
+        .ip-toast.is-error { border-color: rgba(224, 133, 122, .4); background: rgba(224, 133, 122, .14); color: #f0c2ba; }
+        .ip-toast.is-info { border-color: var(--ia-surface-border); background: var(--ia-surface); color: var(--ia-muted); }
+
+        /* ---- Liste satırı ikon butonu (düzenle/sil) ---- */
+        .ip-row-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            color: var(--ia-muted);
+            border: 1px solid transparent;
+            transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+        }
+        .ip-row-icon-btn svg { width: 16px; height: 16px; }
+        .ip-row-icon-btn:hover { color: var(--ia-copper); background: rgba(201,168,76,.08); border-color: rgba(201,168,76,.25); }
+
         /* ---- Uyarı bandı ---- */
         .ip-alert { display: flex; gap: .85rem; padding: 1rem 1.1rem; border-radius: 10px; margin-bottom: 1.5rem; }
         .ip-alert svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: .1rem; }
@@ -476,6 +577,9 @@
         }
         .ip-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
         .ip-badge.is-warning { color: #d9a441; background: rgba(217,164,65,.14); }
+
+        /* ---- Ekleme/düzenleme alt sayfaları — başlık satırı + geri dön ---- */
+        .ip-page-actions { display: flex; justify-content: flex-end; margin-bottom: 1.25rem; }
 
         /* ---- Fotoğraf Portfolyosu ---- */
         .ip-view-toggle { display: inline-flex; border: 1px solid var(--ia-surface-border); border-radius: 7px; overflow: hidden; }
@@ -509,6 +613,7 @@
             cursor: pointer;
             transition: transform .15s ease, border-color .15s ease;
             text-align: left;
+            text-decoration: none;
             padding: 0;
             display: block;
             width: 100%;
@@ -546,6 +651,15 @@
         .ip-exif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1.2rem; font-size: .84rem; }
         .ip-exif-grid dt { color: var(--ia-muted-dim); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }
         .ip-exif-grid dd { color: var(--ia-muted); margin: 0 0 .6rem; }
+
+        /* ---- Ekipman seçim listesi (fotoğraf yükleme/düzenleme) ---- */
+        .ip-checklist { display: flex; flex-direction: column; gap: .55rem; max-height: 9rem; overflow-y: auto; }
+        .ip-checklist-item { display: flex; align-items: center; gap: .55rem; font-size: .85rem; color: var(--ia-muted); cursor: pointer; }
+        .ip-checklist-item input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--ia-copper); flex-shrink: 0; }
+
+        /* ---- Fotoğraf detayında kullanılan ekipman listesi ---- */
+        .ip-tag-list { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .ip-tag { display: inline-flex; align-items: center; padding: .3rem .7rem; border-radius: 999px; background: rgba(201,168,76,.1); color: var(--ia-cream); font-size: .78rem; }
     </style>
 </head>
 <body class="ip-shell">
@@ -566,6 +680,10 @@
             <a href="{{ route('portfolio.index') }}" class="ip-nav-item {{ request()->routeIs('portfolio.*') ? 'is-active' : '' }}">
                 <x-uye.icon name="camera" />
                 {{ __('uye.nav.portfolio') }}
+            </a>
+            <a href="{{ route('equipment.index') }}" class="ip-nav-item {{ request()->routeIs('equipment.*') ? 'is-active' : '' }}">
+                <x-uye.icon name="equipment" />
+                {{ __('uye.nav.equipment') }}
             </a>
             <div x-data="{ o: {{ request()->routeIs('profile.*') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('profile.*') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
@@ -633,12 +751,28 @@
         </header>
 
         <main class="ip-content">
-            @if (session('status') && ! in_array(session('status'), ['profile-updated', 'password-updated', 'verification-link-sent'], true))
+            @if (session('status') && ! in_array(session('status'), ['profile-updated', 'password-updated', 'verification-link-sent'], true) && ! request()->routeIs('equipment.*') && ! request()->routeIs('portfolio.*'))
                 <div class="ip-status">{{ session('status') }}</div>
             @endif
 
             {{ $slot }}
         </main>
+    </div>
+
+    <div x-data class="ip-modal-overlay" x-show="$store.confirmModal.open" x-cloak x-transition.opacity>
+        <div class="ip-modal" role="alertdialog" aria-modal="true">
+            <p class="ip-modal-message" x-text="$store.confirmModal.message"></p>
+            <div class="ip-modal-actions">
+                <button type="button" class="ia-btn ia-btn-secondary" @click="$store.confirmModal.cancel()">{{ __('uye.common.cancel') }}</button>
+                <button type="button" class="ia-btn" @click="$store.confirmModal.confirm()">{{ __('uye.common.confirm') }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-data class="ip-toast-stack">
+        <template x-for="t in $store.toast.items" :key="t.id">
+            <div class="ip-toast" :class="'is-' + t.type" x-text="t.message" x-transition></div>
+        </template>
     </div>
 </body>
 </html>

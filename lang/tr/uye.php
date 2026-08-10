@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Onaylı Yarışmalar',
 
+    'common' => [
+        'confirm' => 'Onay',
+        'cancel' => 'İptal',
+        'action_cancelled' => 'İşlem iptal edildi.',
+        'edit_action' => 'Düzenle',
+        'delete_action' => 'Sil',
+    ],
+
     'login' => [
         'heading' => 'Üye Portalı',
         'subheading' => 'Yarışmalara katılmak ve fotoğraflarınızı yönetmek için giriş yapın.',
@@ -73,6 +81,7 @@ return [
     'nav' => [
         'dashboard' => 'Gösterge Paneli',
         'portfolio' => 'Fotoğraf Portfolyom',
+        'equipment' => 'Ekipmanlarım',
         'profile' => 'Üye Bilgilerim',
         'privacy' => 'Gizlilik Ayarları',
         'password' => 'Şifre İşlemleri',
@@ -127,6 +136,8 @@ return [
         'add_photo' => '+ Yeni Fotoğraf Ekle',
         'limit_reached' => 'En fazla :max fotoğraf yükleyebilirsiniz.',
         'empty_state' => 'Henüz fotoğraf eklemediniz.',
+        'back_to_list' => 'Portfolyoya dön',
+        'create_hint' => 'Fotoğrafınızı yükleyin, sistem EXIF bilgilerini otomatik okuyacak.',
 
         'view_toggle_label' => 'Görünüm',
         'view_grid' => 'Izgara Görünümü',
@@ -142,6 +153,11 @@ return [
         'field_description' => 'Açıklama / Hikaye',
         'field_category' => 'Kategori',
         'category_none' => 'Kategori seçilmedi',
+        'field_equipment' => 'Kullanılan Ekipman',
+        'equipment_empty' => 'Henüz kayıtlı ekipmanınız yok.',
+        'equipment_empty_cta' => 'Ekipman ekleyin',
+        'equipment_used_title' => 'Kullanılan Ekipman',
+        'equipment_used_empty' => 'Bu fotoğrafa ekipman etiketlenmedi.',
 
         'exif_title' => 'Teknik Bilgiler (EXIF)',
         'exif_missing_badge' => 'EXIF Eksik',
@@ -176,6 +192,37 @@ return [
         'delete_confirm_text' => 'Bu fotoğrafı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
         'cancel' => 'Vazgeç',
         'close' => 'Kapat',
+    ],
+
+    'equipment' => [
+        'section_title' => 'Ekipmanlarım',
+        'section_hint' => 'Sahip olduğunuz fotoğraf ekipmanlarını kayıt altına alın.',
+        'add_equipment' => '+ Yeni Ekipman Ekle',
+        'add_title' => 'Yeni Ekipman Ekle',
+        'empty_state' => 'Henüz ekipman eklemediniz.',
+        'back_to_list' => 'Ekipman listesine dön',
+        'create_title' => 'Yeni Ekipman Ekle',
+        'create_hint' => 'Ekipman kataloğundan marka ve model seçerek kendi ekipmanınızı kaydedin.',
+        'edit_title' => 'Ekipmanı Düzenle',
+
+        'column_type' => 'Tür',
+        'column_brand' => 'Marka',
+        'column_model' => 'Model',
+        'column_notes' => 'Notlar',
+
+        'field_brand' => 'Marka',
+        'field_model' => 'Model',
+        'field_notes' => 'Not (isteğe bağlı)',
+        'select_brand' => 'Marka seçin',
+        'select_model' => 'Önce marka seçin',
+
+        'save' => 'Kaydet',
+        'cancel' => 'Vazgeç',
+        'created' => 'Ekipman eklendi.',
+        'updated' => 'Ekipman güncellendi.',
+        'deleted' => 'Ekipman silindi.',
+        'delete_equipment' => 'Ekipmanı Sil',
+        'delete_confirm_text' => 'Bu ekipmanı silmek istediğinizden emin misiniz?',
     ],
 
 ];

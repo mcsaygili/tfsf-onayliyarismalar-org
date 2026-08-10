@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -51,6 +52,11 @@ class Photo extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(PhotoCategory::class, 'photo_category_id');
+    }
+
+    public function equipment(): BelongsToMany
+    {
+        return $this->belongsToMany(UserEquipment::class, 'photo_equipment');
     }
 
     public function url(): string

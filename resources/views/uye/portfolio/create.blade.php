@@ -1,7 +1,15 @@
-{{-- $photoCategories dışarıdan geliyor (index.blade.php) --}}
-<div class="ip-modal-overlay" x-show="uploadOpen" x-cloak x-transition.opacity @keydown.escape.window="uploadOpen = false">
-    <div class="ip-modal is-wide" role="dialog" aria-modal="true" @click.outside="uploadOpen = false">
+{{-- $photoCategories, $userEquipment dışarıdan geliyor (PortfolioController::create()) --}}
+<x-uye.app-layout :title="__('uye.portfolio.add_photo')">
+    <div class="ip-page-actions">
+        <a href="{{ route('portfolio.index') }}" class="ia-btn ia-btn-secondary ip-btn-sm">
+            <x-uye.icon name="back" />
+            {{ __('uye.portfolio.back_to_list') }}
+        </a>
+    </div>
+
+    <div class="ip-card">
         <div class="ip-section-title">{{ __('uye.portfolio.add_photo') }}</div>
+        <div class="ip-section-hint">{{ __('uye.portfolio.create_hint') }}</div>
 
         <form method="POST" action="{{ route('portfolio.store') }}" enctype="multipart/form-data" novalidate autocomplete="off">
             @csrf
@@ -58,16 +66,35 @@
                 <x-uye.input-error :messages="$errors->get('tags')" />
             </div>
 
-            <div class="ia-field" style="margin-bottom: 0;">
+            <div class="ia-field">
                 <x-uye.label for="description" :value="__('uye.portfolio.field_description')" />
                 <textarea id="description" name="description" class="ia-input" rows="3">{{ old('description') }}</textarea>
                 <x-uye.input-error :messages="$errors->get('description')" />
             </div>
 
-            <div class="ip-modal-actions">
-                <button type="button" class="ia-btn ia-btn-secondary" @click="uploadOpen = false">{{ __('uye.portfolio.cancel') }}</button>
+            <div class="ia-field" style="margin-bottom: 0;">
+                <x-uye.label :value="__('uye.portfolio.field_equipment')" />
+                @if ($userEquipment->isEmpty())
+                    <div style="font-size: .82rem; color: var(--ia-muted-dim);">
+                        {{ __('uye.portfolio.equipment_empty') }}
+                        <a href="{{ route('equipment.index') }}" style="color: var(--ia-copper);">{{ __('uye.portfolio.equipment_empty_cta') }}</a>
+                    </div>
+                @else
+                    <div class="ip-checklist">
+                        @foreach ($userEquipment as $item)
+                            <label class="ip-checklist-item">
+                                <input type="checkbox" name="equipment[]" value="{{ $item->id }}" @checked(in_array($item->id, old('equipment', [])))>
+                                {{ $item->equipmentModel->brand?->name }} {{ $item->equipmentModel->name }}
+                            </label>
+                        @endforeach
+                    </div>
+                @endif
+                <x-uye.input-error :messages="$errors->get('equipment')" />
+            </div>
+
+            <div style="margin-top: 1.5rem;">
                 <x-uye.button>{{ __('uye.portfolio.save') }}</x-uye.button>
             </div>
         </form>
     </div>
-</div>
+</x-uye.app-layout>

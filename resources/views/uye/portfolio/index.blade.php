@@ -1,5 +1,5 @@
 <x-uye.app-layout :title="__('uye.nav.portfolio')">
-    <div x-data="{ uploadOpen: {{ $errors->hasAny(['photo', 'title', 'location', 'taken_at', 'tags', 'description', 'photo_category_id']) ? 'true' : 'false' }}, detailId: null, view: 'grid' }">
+    <div x-data="{ view: 'grid' }">
         <div class="ip-card" style="margin-bottom: 1.5rem;">
             <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                 <div>
@@ -17,7 +17,7 @@
                         </button>
                     </div>
                     @if ($canUploadMore)
-                        <button type="button" class="ia-btn ip-btn-sm" @click="uploadOpen = true">{{ __('uye.portfolio.add_photo') }}</button>
+                        <a href="{{ route('portfolio.create') }}" class="ia-btn ip-btn-sm">{{ __('uye.portfolio.add_photo') }}</a>
                     @endif
                 </div>
             </div>
@@ -79,7 +79,7 @@
             <template x-if="view === 'grid'">
                 <div class="ip-photo-grid">
                     @foreach ($photos as $photo)
-                        <button type="button" class="ip-photo-card" @click="detailId = '{{ $photo->id }}'">
+                        <a href="{{ route('portfolio.edit', $photo) }}" class="ip-photo-card">
                             <img src="{{ $photo->thumbUrl() }}" alt="{{ $photo->title }}" loading="lazy">
                             <div class="ip-photo-meta">
                                 <div class="ip-photo-title">{{ $photo->title }}</div>
@@ -90,7 +90,7 @@
                                     @endif
                                 </div>
                             </div>
-                        </button>
+                        </a>
                     @endforeach
                 </div>
             </template>
@@ -106,11 +106,12 @@
                                 <th>{{ __('uye.portfolio.field_taken_at') }}</th>
                                 <th>{{ __('uye.portfolio.field_tags') }}</th>
                                 <th>{{ __('uye.portfolio.exif_title') }}</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($photos as $photo)
-                                <tr @click="detailId = '{{ $photo->id }}'">
+                                <tr>
                                     <td class="ip-cell-thumb"><img src="{{ $photo->thumbUrl() }}" alt="{{ $photo->title }}" loading="lazy"></td>
                                     <td class="ip-cell-name">{{ $photo->title }}</td>
                                     <td>{{ $photo->category?->getTranslation()?->name ?? '—' }}</td>
@@ -123,6 +124,18 @@
                                             <span style="color: var(--ia-muted-dim);">{{ __('uye.portfolio.exif_ok') }}</span>
                                         @endif
                                     </td>
+                                    <td style="text-align: right; white-space: nowrap;">
+                                        <a href="{{ route('portfolio.edit', $photo) }}" class="ip-row-icon-btn" title="{{ __('uye.common.edit_action') }}" aria-label="{{ __('uye.common.edit_action') }}">
+                                            <x-uye.icon name="edit" />
+                                        </a>
+                                        <form method="POST" action="{{ route('portfolio.destroy', $photo) }}" style="display: inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="ip-row-icon-btn" title="{{ __('uye.common.delete_action') }}" aria-label="{{ __('uye.common.delete_action') }}" onclick="uyeConfirm(@js(__('uye.portfolio.delete_confirm_text')), this.closest('form'))">
+                                                <x-uye.icon name="trash" />
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -130,11 +143,11 @@
                 </div>
             </template>
         @endif
-
-        @include('uye.portfolio._upload-modal')
-
-        @foreach ($photos as $photo)
-            @include('uye.portfolio._photo-modal', ['photo' => $photo])
-        @endforeach
     </div>
+
+    @if (session('status'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => window.uyeToast('success', @js(session('status'))));
+        </script>
+    @endif
 </x-uye.app-layout>
