@@ -54,6 +54,12 @@ class PortfolioTest extends TestCase
         $this->assertSame('1/200', $photo->shutter_speed);
         $this->assertSame(100, $photo->iso);
         Storage::disk('public')->assertExists($photo->disk_path);
+
+        // exif_raw, yapılandırılmış sütunlara eşlenen dar alt kümeyle sınırlı değil —
+        // dosyada okunabilen tüm EXIF etiketlerini içermeli.
+        $this->assertArrayHasKey('ExifVersion', $photo->exif_raw);
+        $this->assertArrayHasKey('XResolution', $photo->exif_raw);
+        $this->assertArrayHasKey('ComponentsConfiguration', $photo->exif_raw);
     }
 
     public function test_exifsiz_fotograf_yuklenince_exif_missing_isaretlenir_hata_vermez(): void

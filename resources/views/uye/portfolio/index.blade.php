@@ -17,10 +17,7 @@
                         </button>
                     </div>
                     @if ($canUploadMore)
-                        <button type="button" class="ia-btn ip-btn-sm" @click="uploadOpen = true">
-                            <x-uye.icon name="upload" />
-                            {{ __('uye.portfolio.add_photo') }}
-                        </button>
+                        <button type="button" class="ia-btn ip-btn-sm" @click="uploadOpen = true">{{ __('uye.portfolio.add_photo') }}</button>
                     @endif
                 </div>
             </div>

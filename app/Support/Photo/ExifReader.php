@@ -19,13 +19,6 @@ use Symfony\Component\Process\Process;
  */
 class ExifReader
 {
-    /** @var array<int, string> */
-    private const REQUESTED_TAGS = [
-        'Make', 'Model', 'LensModel', 'FocalLength', 'FNumber',
-        'ExposureTime', 'ISO', 'DateTimeOriginal', 'ColorSpace',
-        'ImageWidth', 'ImageHeight',
-    ];
-
     /** @var array<int, string> — bunlardan en az biri yoksa exif_missing=true (genişlik/yükseklik tek başına EXIF sayılmaz) */
     private const CAMERA_TAGS = [
         'Make', 'Model', 'LensModel', 'FocalLength', 'FNumber',
@@ -68,11 +61,11 @@ class ExifReader
      */
     private function runExiftool(string $absolutePath): array
     {
-        $command = array_merge(
-            ['exiftool', '-json'],
-            array_map(fn ($tag) => "-{$tag}", self::REQUESTED_TAGS),
-            [$absolutePath]
-        );
+        // -EXIF:all + -GPS:all: dosyada okunabilen TÜM EXIF/GPS etiketleri (sadece
+        // yapılandırılmış sütunlara eşlenen dar bir alt küme değil) — hepsi exif_raw'a
+        // yazılır. ImageWidth/ImageHeight EXIF grubunda değil (File grubunda) olduğu
+        // için ayrıca istenir.
+        $command = ['exiftool', '-json', '-EXIF:all', '-GPS:all', '-ImageWidth', '-ImageHeight', $absolutePath];
 
         $process = new Process($command);
         $process->setTimeout(5);

@@ -124,7 +124,7 @@ return [
         'section_title' => 'My Photo Portfolio',
         'section_hint' => 'Build your personal photo collection (up to 30 photos).',
         'count_label' => ':count / :max photos',
-        'add_photo' => 'Add New Photo',
+        'add_photo' => '+ Add New Photo',
         'limit_reached' => 'You can upload up to 30 photos.',
         'empty_state' => "You haven't added any photos yet.",
 
