@@ -1,4 +1,4 @@
-{{-- $photoCategories, $userEquipment dışarıdan geliyor (PortfolioController::create()) --}}
+{{-- $photoCategories, $userEquipment, $photoTechniques dışarıdan geliyor (PortfolioController::create()) --}}
 <x-uye.app-layout :title="__('uye.portfolio.add_photo')">
     <div class="ip-page-actions">
         <a href="{{ route('portfolio.index') }}" class="ia-btn ia-btn-secondary ip-btn-sm">
@@ -72,7 +72,7 @@
                 <x-uye.input-error :messages="$errors->get('description')" />
             </div>
 
-            <div class="ia-field" style="margin-bottom: 0;">
+            <div class="ia-field">
                 <x-uye.label :value="__('uye.portfolio.field_equipment')" />
                 @if ($userEquipment->isEmpty())
                     <div style="font-size: .82rem; color: var(--ia-muted-dim);">
@@ -90,6 +90,20 @@
                     </div>
                 @endif
                 <x-uye.input-error :messages="$errors->get('equipment')" />
+            </div>
+
+            <div class="ia-field" style="margin-bottom: 0;">
+                <x-uye.label :value="__('uye.portfolio.field_techniques')" />
+                <div style="font-size: .78rem; color: var(--ia-muted-dim); margin-bottom: .5rem;">{{ __('uye.portfolio.field_techniques_hint') }}</div>
+                <div class="ip-checklist">
+                    @foreach ($photoTechniques as $technique)
+                        <label class="ip-checklist-item">
+                            <input type="checkbox" name="techniques[]" value="{{ $technique->id }}" @checked(in_array($technique->id, old('techniques', [])))>
+                            {{ $technique->getTranslation()?->name }}
+                        </label>
+                    @endforeach
+                </div>
+                <x-uye.input-error :messages="$errors->get('techniques')" />
             </div>
 
             <div style="margin-top: 1.5rem;">

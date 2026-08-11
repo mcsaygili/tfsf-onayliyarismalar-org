@@ -28,6 +28,8 @@ class PhotoUploadRequest extends FormRequest
                 'uuid',
                 Rule::exists('user_equipment', 'id')->where(fn ($q) => $q->where('user_id', $this->user()->id)),
             ],
+            'techniques' => ['nullable', 'array'],
+            'techniques.*' => ['uuid', Rule::exists('photo_techniques', 'id')->where('status', true)],
         ];
     }
 

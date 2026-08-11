@@ -1,4 +1,4 @@
-{{-- $photo, $photoCategories, $userEquipment dışarıdan geliyor (PortfolioController::edit()) --}}
+{{-- $photo, $photoCategories, $userEquipment, $photoTechniques dışarıdan geliyor (PortfolioController::edit()) --}}
 <x-uye.app-layout :title="__('uye.portfolio.edit_title')">
     <div class="ip-page-actions">
         <a href="{{ route('portfolio.index') }}" class="ia-btn ia-btn-secondary ip-btn-sm">
@@ -60,6 +60,19 @@
         @endif
     </div>
 
+    <div class="ip-card" style="margin-bottom: 1.25rem;">
+        <div class="ip-section-title" style="font-size: .92rem;">{{ __('uye.portfolio.techniques_used_title') }}</div>
+        @if ($photo->techniques->isEmpty())
+            <div style="font-size: .82rem; color: var(--ia-muted-dim);">{{ __('uye.portfolio.techniques_used_empty') }}</div>
+        @else
+            <div class="ip-tag-list">
+                @foreach ($photo->techniques as $technique)
+                    <span class="ip-tag">{{ $technique->getTranslation()?->name }}</span>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
     <div class="ip-card">
         <div class="ip-section-title">{{ __('uye.portfolio.edit_title') }}</div>
 
@@ -113,8 +126,8 @@
                 <textarea id="description" name="description" class="ia-input" rows="3">{{ $photo->description }}</textarea>
             </div>
 
-            @php $taggedIds = $photo->equipment->pluck('id')->all(); @endphp
-            <div class="ia-field" style="margin-bottom: 0;">
+            @php $taggedEquipmentIds = $photo->equipment->pluck('id')->all(); @endphp
+            <div class="ia-field">
                 <x-uye.label :value="__('uye.portfolio.field_equipment')" />
                 @if ($userEquipment->isEmpty())
                     <div style="font-size: .82rem; color: var(--ia-muted-dim);">
@@ -125,12 +138,26 @@
                     <div class="ip-checklist">
                         @foreach ($userEquipment as $item)
                             <label class="ip-checklist-item">
-                                <input type="checkbox" name="equipment[]" value="{{ $item->id }}" @checked(in_array($item->id, $taggedIds))>
+                                <input type="checkbox" name="equipment[]" value="{{ $item->id }}" @checked(in_array($item->id, $taggedEquipmentIds))>
                                 {{ $item->equipmentModel->brand?->name }} {{ $item->equipmentModel->name }}
                             </label>
                         @endforeach
                     </div>
                 @endif
+            </div>
+
+            @php $taggedTechniqueIds = $photo->techniques->pluck('id')->all(); @endphp
+            <div class="ia-field" style="margin-bottom: 0;">
+                <x-uye.label :value="__('uye.portfolio.field_techniques')" />
+                <div style="font-size: .78rem; color: var(--ia-muted-dim); margin-bottom: .5rem;">{{ __('uye.portfolio.field_techniques_hint') }}</div>
+                <div class="ip-checklist">
+                    @foreach ($photoTechniques as $technique)
+                        <label class="ip-checklist-item">
+                            <input type="checkbox" name="techniques[]" value="{{ $technique->id }}" @checked(in_array($technique->id, $taggedTechniqueIds))>
+                            {{ $technique->getTranslation()?->name }}
+                        </label>
+                    @endforeach
+                </div>
             </div>
 
             <div class="ip-modal-actions" style="justify-content: space-between; margin-top: 1.5rem;">

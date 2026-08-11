@@ -21,6 +21,7 @@ use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\PhotoCategoryController;
+use App\Http\Controllers\Eys\PhotoTechniqueController;
 use App\Http\Controllers\Eys\RegulationItemController;
 use App\Http\Controllers\Eys\RegulationSectionController;
 use App\Http\Controllers\Eys\RoleController;
@@ -138,6 +139,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{photoCategory}/duzenle', [PhotoCategoryController::class, 'edit'])->name('edit');
             Route::patch('{photoCategory}', [PhotoCategoryController::class, 'update'])->name('update');
             Route::delete('{photoCategory}', [PhotoCategoryController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('fotograf-cekim-teknikleri')->name('eys.photo-techniques.')->middleware('permission:eys.photo_techniques.manage')->group(function () {
+            Route::get('/', [PhotoTechniqueController::class, 'index'])->name('index');
+            Route::get('yeni', [PhotoTechniqueController::class, 'create'])->name('create');
+            Route::post('/', [PhotoTechniqueController::class, 'store'])->name('store');
+            Route::get('{photoTechnique}/duzenle', [PhotoTechniqueController::class, 'edit'])->name('edit');
+            Route::patch('{photoTechnique}', [PhotoTechniqueController::class, 'update'])->name('update');
+            Route::delete('{photoTechnique}', [PhotoTechniqueController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('ekipman-turleri')->name('eys.equipment-types.')->middleware('permission:eys.equipment_types.manage')->group(function () {

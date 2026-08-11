@@ -48,6 +48,10 @@ return [
                     'label' => 'Fotoğraf Kategorisi Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'photo_techniques' => [
+                    'label' => 'Fotoğraf Çekim Tekniği Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'equipment_types' => [
                     'label' => 'Ekipman Türü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],

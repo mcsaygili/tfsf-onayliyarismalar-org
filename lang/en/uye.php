@@ -158,6 +158,10 @@ return [
         'equipment_empty_cta' => 'Add equipment',
         'equipment_used_title' => 'Equipment Used',
         'equipment_used_empty' => 'No equipment tagged for this photo.',
+        'field_techniques' => 'Shooting / Processing Techniques',
+        'field_techniques_hint' => 'Declare any shooting or processing techniques used for this photo, if applicable.',
+        'techniques_used_title' => 'Shooting / Processing Techniques',
+        'techniques_used_empty' => 'No technique declared for this photo.',
 
         'exif_title' => 'Technical Info (EXIF)',
         'exif_missing_badge' => 'EXIF Missing',

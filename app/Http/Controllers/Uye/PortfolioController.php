@@ -7,6 +7,7 @@ use App\Http\Requests\Uye\PhotoUpdateRequest;
 use App\Http\Requests\Uye\PhotoUploadRequest;
 use App\Models\Photo;
 use App\Models\PhotoCategory;
+use App\Models\PhotoTechnique;
 use App\Models\PortfolioSetting;
 use App\Support\Photo\ExifReader;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -29,7 +30,7 @@ class PortfolioController extends Controller
     public function index(Request $request): View
     {
         $photos = $request->user()->photos()
-            ->with(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations'])
+            ->with(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations', 'techniques.translations'])
             ->when($request->filled('category_id'), fn ($q) => $q->where('photo_category_id', $request->input('category_id')))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
@@ -49,6 +50,7 @@ class PortfolioController extends Controller
             'canUploadMore' => $request->user()->canUploadMorePhotos(),
             'maxPhotos' => PortfolioSetting::current()->max_photos_per_user,
             'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
+            'photoTechniques' => PhotoTechnique::active()->ordered()->with('translations')->get(),
             'filter' => [
                 'category_id' => $request->input('category_id', ''),
                 'q' => $request->input('q', ''),
@@ -63,6 +65,7 @@ class PortfolioController extends Controller
         return view('uye.portfolio.create', [
             'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
             'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
+            'photoTechniques' => PhotoTechnique::active()->ordered()->with('translations')->get(),
         ]);
     }
 
@@ -107,6 +110,7 @@ class PortfolioController extends Controller
         ]));
 
         $photo->equipment()->sync($request->input('equipment', []));
+        $photo->techniques()->sync($request->input('techniques', []));
 
         return redirect()->route('portfolio.index')->with('status', __('uye.portfolio.uploaded'));
     }
@@ -115,12 +119,13 @@ class PortfolioController extends Controller
     {
         $this->authorizeOwner($photo, $request);
 
-        $photo->load(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations']);
+        $photo->load(['category.translations', 'equipment.equipmentModel.brand', 'equipment.equipmentModel.type.translations', 'techniques.translations']);
 
         return view('uye.portfolio.edit', [
             'photo' => $photo,
             'photoCategories' => PhotoCategory::active()->ordered()->with('translations')->get(),
             'userEquipment' => $request->user()->equipment()->with('equipmentModel.brand', 'equipmentModel.type.translations')->get(),
+            'photoTechniques' => PhotoTechnique::active()->ordered()->with('translations')->get(),
         ]);
     }
 
@@ -141,6 +146,7 @@ class PortfolioController extends Controller
         ]);
 
         $photo->equipment()->sync($request->input('equipment', []));
+        $photo->techniques()->sync($request->input('techniques', []));
 
         return redirect()->route('portfolio.index')->with('status', __('uye.portfolio.updated'));
     }

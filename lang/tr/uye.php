@@ -158,6 +158,10 @@ return [
         'equipment_empty_cta' => 'Ekipman ekleyin',
         'equipment_used_title' => 'Kullanılan Ekipman',
         'equipment_used_empty' => 'Bu fotoğrafa ekipman etiketlenmedi.',
+        'field_techniques' => 'Çekim / İşlem Teknikleri',
+        'field_techniques_hint' => 'Fotoğrafta kullandığınız çekim veya işlem tekniklerini beyan edin (varsa).',
+        'techniques_used_title' => 'Çekim / İşlem Teknikleri',
+        'techniques_used_empty' => 'Bu fotoğraf için bir teknik beyanı yapılmadı.',
 
         'exif_title' => 'Teknik Bilgiler (EXIF)',
         'exif_missing_badge' => 'EXIF Eksik',

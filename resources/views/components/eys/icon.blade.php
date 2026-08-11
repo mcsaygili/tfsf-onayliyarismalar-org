@@ -157,4 +157,8 @@
     @case('tag')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M11.5 4H6.5a1.5 1.5 0 00-1.5 1.5v5l9.7 9.7a1.5 1.5 0 002.12 0l4.38-4.38a1.5 1.5 0 000-2.12L11.5 4z" stroke-linejoin="round"/><circle cx="8.75" cy="8.75" r="1.25"/></svg>
         @break
+
+    @case('wand')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 20L15 9" stroke-linecap="round"/><path d="M17 4v3M17 11v3M21 7h-3M21.5 13.5h-3" stroke-linecap="round"/><path d="M14.5 6.5l2 2" stroke-linecap="round"/></svg>
+        @break
 @endswitch

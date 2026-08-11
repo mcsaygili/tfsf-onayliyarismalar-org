@@ -59,6 +59,11 @@ class Photo extends Model
         return $this->belongsToMany(UserEquipment::class, 'photo_equipment');
     }
 
+    public function techniques(): BelongsToMany
+    {
+        return $this->belongsToMany(PhotoTechnique::class, 'photo_photo_techniques');
+    }
+
     public function url(): string
     {
         return Storage::disk('public')->url($this->disk_path);
