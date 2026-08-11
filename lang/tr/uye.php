@@ -12,6 +12,14 @@ return [
         'delete_action' => 'Sil',
     ],
 
+    'maintenance' => [
+        'heading' => 'Bakım Çalışması',
+        'subheading' => 'Üye paneli kısa bir süreliğine bakımda.',
+        'card_label' => 'Bakım Modu',
+        'card_title' => 'Şu anda bakımdayız',
+        'default_message' => 'Sistemimizde planlı bir bakım çalışması yürütülmektedir. Lütfen daha sonra tekrar deneyiniz.',
+    ],
+
     'login' => [
         'heading' => 'Üye Portalı',
         'subheading' => 'Yarışmalara katılmak ve fotoğraflarınızı yönetmek için giriş yapın.',
@@ -92,6 +100,12 @@ return [
 
     'dashboard' => [
         'welcome' => 'Giriş yaptınız, hoş geldiniz :name.',
+        'stat_photos' => 'Portfolyo Fotoğraf Sayısı',
+        'photo_count_value' => ':count / :max',
+        'stat_equipment' => 'Ekipman Sayısı',
+        'stat_last_login' => 'Son Başarılı Giriş',
+        'last_login_never' => 'İlk girişiniz',
+        'stat_member_since' => 'Üye Olma Tarihi',
     ],
 
     'profile' => [

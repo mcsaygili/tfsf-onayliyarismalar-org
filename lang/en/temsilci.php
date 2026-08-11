@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Approved Competitions',
 
+    'maintenance' => [
+        'heading' => 'Under Maintenance',
+        'subheading' => 'The representative panel is briefly under maintenance.',
+        'card_label' => 'Maintenance Mode',
+        'card_title' => "We'll be right back",
+        'default_message' => 'We are currently performing scheduled maintenance. Please try again later.',
+    ],
+
     'login' => [
         'heading' => 'Representative Portal',
         'subheading' => 'Log in to manage competition processes in your region.',

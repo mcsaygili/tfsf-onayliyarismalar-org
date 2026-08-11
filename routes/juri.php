@@ -13,7 +13,7 @@ use App\Http\Controllers\Juri\ProfileController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.juri'))->group(function () {
+Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('juri.language');
 
     Route::middleware('guest:juri')->group(function () {

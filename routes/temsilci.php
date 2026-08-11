@@ -13,7 +13,7 @@ use App\Http\Controllers\Temsilci\PasswordController;
 use App\Http\Controllers\Temsilci\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.temsilci'))->group(function () {
+Route::domain(config('domains.temsilci'))->middleware('maintenance:temsilci')->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('temsilci.language');
 
     Route::middleware('guest:temsilci')->group(function () {

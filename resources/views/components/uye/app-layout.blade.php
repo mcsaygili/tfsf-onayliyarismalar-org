@@ -565,6 +565,14 @@
         .ip-alert-text a { color: var(--ia-copper); font-weight: 600; text-decoration: none; }
         .ip-alert-text a:hover { color: var(--ia-copper-bright); }
 
+        /* ---- İstatistik kartları (ör. Gösterge Paneli) ---- */
+        .ip-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .ip-stat-card { display: flex; align-items: center; gap: .9rem; background: var(--ia-surface); border: 1px solid var(--ia-surface-border); border-radius: 12px; padding: 1.25rem 1.4rem; }
+        .ip-stat-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(201,168,76,.1); color: var(--ia-copper); display: grid; place-items: center; flex-shrink: 0; }
+        .ip-stat-icon svg { width: 20px; height: 20px; }
+        .ip-stat-value { font-family: 'Figtree', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--ia-cream); line-height: 1; }
+        .ip-stat-label { font-size: .78rem; color: var(--ia-muted); margin-top: .3rem; }
+
         /* ---- Rozet (ör. EXIF Eksik) ---- */
         .ip-badge {
             display: inline-flex;

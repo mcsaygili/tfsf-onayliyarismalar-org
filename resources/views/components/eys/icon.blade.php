@@ -161,4 +161,8 @@
     @case('wand')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 20L15 9" stroke-linecap="round"/><path d="M17 4v3M17 11v3M21 7h-3M21.5 13.5h-3" stroke-linecap="round"/><path d="M14.5 6.5l2 2" stroke-linecap="round"/></svg>
         @break
+
+    @case('wrench')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M14.5 6.5a4 4 0 00-5.4 4.9L4 16.5V20h3.5l5.1-5.1a4 4 0 004.9-5.4l-2.9 2.9-2-2 2.9-2.9z" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        @break
 @endswitch

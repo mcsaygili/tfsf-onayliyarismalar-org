@@ -65,4 +65,12 @@
     @case('back')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" {{ $attributes }}><path d="M15 5l-7 7 7 7"/></svg>
         @break
+
+    @case('clock')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        @break
+
+    @case('calendar')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="4" y="5.5" width="16" height="14.5" rx="1.5"/><path d="M4 9.5h16" /><path d="M8 3.5v3.5M16 3.5v3.5" stroke-linecap="round"/></svg>
+        @break
 @endswitch

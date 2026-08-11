@@ -77,6 +77,7 @@ return [
         'file_manager' => 'Dosya Yöneticisi',
         'system_settings' => 'Sistem Ayarları',
         'portfolio_settings' => 'Portfolyo Ayarları',
+        'maintenance_mode' => 'Bakım Modu',
         'logout' => 'Güvenli Çıkış',
         'section_general' => 'Genel',
         'section_modules' => 'Modüller',
@@ -693,6 +694,18 @@ return [
         'max_photos_per_user_hint' => 'Üyeler bu sayıdan fazla fotoğraf yükleyemez.',
         'save' => 'Kaydet',
         'portfolio_updated' => 'Portfolyo ayarları güncellendi.',
+
+        'maintenance_title' => 'Bakım Modu',
+        'maintenance_hint' => 'Her subdomain için bakım modunu ayrı ayrı açıp kapatın. Açık olan bir subdomain\'de oturumu olan kullanıcılar bir sonraki isteklerinde otomatik olarak çıkış yaptırılır ve tek sayfalık bakım bildirimini görür.',
+        'module_institution' => 'Kurum',
+        'module_temsilci' => 'Temsilci',
+        'module_juri' => 'Jüri',
+        'module_uye' => 'Üye',
+        'maintenance_active' => 'Açık (Bakımda)',
+        'maintenance_inactive' => 'Kapalı',
+        'maintenance_message' => 'Bakım Mesajı (isteğe bağlı)',
+        'maintenance_message_placeholder' => 'Boş bırakılırsa varsayılan bakım mesajı gösterilir.',
+        'maintenance_updated' => 'Bakım modu ayarları güncellendi.',
     ],
 
     'mail_client' => [

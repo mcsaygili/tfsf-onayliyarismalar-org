@@ -939,6 +939,10 @@
                                 <x-eys.icon name="camera" />
                                 {{ __('eys.nav.portfolio_settings') }}
                             </a>
+                            <a href="{{ route('eys.system-settings.maintenance') }}" class="ip-nav-item {{ request()->routeIs('eys.system-settings.maintenance*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="wrench" />
+                                {{ __('eys.nav.maintenance_mode') }}
+                            </a>
                         @endcan
                     </div>
                 </div>

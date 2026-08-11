@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Approved Competitions',
 
+    'maintenance' => [
+        'heading' => 'Under Maintenance',
+        'subheading' => 'The institution panel is briefly under maintenance.',
+        'card_label' => 'Maintenance Mode',
+        'card_title' => "We'll be right back",
+        'default_message' => 'We are currently performing scheduled maintenance. Please try again later.',
+    ],
+
     'login' => [
         'heading' => 'Institution Portal',
         'subheading' => 'Log in to organize competitions and manage everything related to the ones you run.',

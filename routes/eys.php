@@ -302,6 +302,8 @@ Route::domain(config('domains.eys'))->group(function () {
         Route::prefix('sistem-ayarlari')->name('eys.system-settings.')->middleware('permission:eys.system_settings.manage')->group(function () {
             Route::get('portfolyo', [SystemSettingsController::class, 'portfolio'])->name('portfolio');
             Route::patch('portfolyo', [SystemSettingsController::class, 'updatePortfolio'])->name('portfolio.update');
+            Route::get('bakim-modu', [SystemSettingsController::class, 'maintenance'])->name('maintenance');
+            Route::patch('bakim-modu', [SystemSettingsController::class, 'updateMaintenance'])->name('maintenance.update');
         });
     });
 });

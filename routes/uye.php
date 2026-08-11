@@ -11,6 +11,7 @@ use App\Http\Controllers\Uye\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Uye\Auth\RegisteredUserController;
 use App\Http\Controllers\Uye\Auth\SmsPasswordResetController;
 use App\Http\Controllers\Uye\Auth\VerifyEmailController;
+use App\Http\Controllers\Uye\DashboardController;
 use App\Http\Controllers\Uye\EquipmentController;
 use App\Http\Controllers\Uye\PortfolioController;
 use App\Http\Controllers\Uye\ProfileController;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 // Route adları guard adıyla ÖNEKLENMİYOR (bare `login`/`register`/`dashboard`)
 // — Üye framework'ün varsayılan `web` guard'ı, bootstrap/app.php'deki
 // redirectGuestsTo() default dalı da bu bare isimlere göre kuruldu.
-Route::domain(config('domains.uye'))->group(function () {
+Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('language');
 
     Route::middleware('guest')->group(function () {
@@ -61,9 +62,7 @@ Route::domain(config('domains.uye'))->group(function () {
     });
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/', function () {
-            return view('uye.dashboard');
-        })->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [ProfileController::class, 'edit'])->name('edit');

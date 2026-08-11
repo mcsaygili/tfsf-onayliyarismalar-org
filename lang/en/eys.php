@@ -77,6 +77,7 @@ return [
         'file_manager' => 'File Manager',
         'system_settings' => 'System Settings',
         'portfolio_settings' => 'Portfolio Settings',
+        'maintenance_mode' => 'Maintenance Mode',
         'logout' => 'Secure Logout',
         'section_general' => 'General',
         'section_modules' => 'Modules',
@@ -693,6 +694,18 @@ return [
         'max_photos_per_user_hint' => 'Members cannot upload more than this number of photos.',
         'save' => 'Save',
         'portfolio_updated' => 'Portfolio settings updated.',
+
+        'maintenance_title' => 'Maintenance Mode',
+        'maintenance_hint' => 'Toggle maintenance mode independently for each subdomain. Any logged-in user on an enabled subdomain is automatically logged out on their next request and shown a single-page maintenance notice.',
+        'module_institution' => 'Institution',
+        'module_temsilci' => 'Representative',
+        'module_juri' => 'Jury',
+        'module_uye' => 'Member',
+        'maintenance_active' => 'On (Under Maintenance)',
+        'maintenance_inactive' => 'Off',
+        'maintenance_message' => 'Maintenance Message (optional)',
+        'maintenance_message_placeholder' => 'If left blank, the default maintenance message is shown.',
+        'maintenance_updated' => 'Maintenance mode settings updated.',
     ],
 
     'mail_client' => [

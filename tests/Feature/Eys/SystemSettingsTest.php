@@ -4,6 +4,7 @@ namespace Tests\Feature\Eys;
 
 use App\Enums\Module;
 use App\Models\EysUser;
+use App\Models\MaintenanceMode;
 use App\Models\Permission;
 use App\Models\PortfolioSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,6 +66,49 @@ class SystemSettingsTest extends TestCase
         $user = EysUser::factory()->create();
 
         $response = $this->actingAs($user, 'eys')->get(route('eys.system-settings.portfolio'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_bakim_modu_sayfasi_goruntulenebilir(): void
+    {
+        $user = $this->admin();
+
+        $response = $this->actingAs($user, 'eys')->get(route('eys.system-settings.maintenance'));
+
+        $response->assertOk();
+    }
+
+    public function test_bakim_modu_dort_subdomain_icin_ayri_ayri_guncellenebilir(): void
+    {
+        $user = $this->admin();
+
+        $response = $this->actingAs($user, 'eys')->patch(route('eys.system-settings.maintenance.update'), [
+            'modules' => [
+                'institution' => ['enabled' => '1', 'message' => 'Kurum bakımda.'],
+                'temsilci' => ['enabled' => '0', 'message' => ''],
+                'juri' => ['enabled' => '0', 'message' => ''],
+                'uye' => ['enabled' => '0', 'message' => ''],
+            ],
+        ]);
+
+        $response->assertRedirect(route('eys.system-settings.maintenance'));
+
+        $this->assertTrue(MaintenanceMode::isEnabledFor('institution'));
+        $this->assertFalse(MaintenanceMode::isEnabledFor('temsilci'));
+        $this->assertFalse(MaintenanceMode::isEnabledFor('juri'));
+        $this->assertFalse(MaintenanceMode::isEnabledFor('uye'));
+
+        $institution = MaintenanceMode::query()->where('module', 'institution')->first();
+        $this->assertSame('Kurum bakımda.', $institution->message);
+        $this->assertSame($user->id, $institution->updated_by);
+    }
+
+    public function test_izinsiz_kullanici_bakim_modu_sayfasina_erisemez(): void
+    {
+        $user = EysUser::factory()->create();
+
+        $response = $this->actingAs($user, 'eys')->get(route('eys.system-settings.maintenance'));
 
         $response->assertForbidden();
     }

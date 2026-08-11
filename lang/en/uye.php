@@ -12,6 +12,14 @@ return [
         'delete_action' => 'Delete',
     ],
 
+    'maintenance' => [
+        'heading' => 'Under Maintenance',
+        'subheading' => 'The member panel is briefly under maintenance.',
+        'card_label' => 'Maintenance Mode',
+        'card_title' => "We'll be right back",
+        'default_message' => 'We are currently performing scheduled maintenance. Please try again later.',
+    ],
+
     'login' => [
         'heading' => 'Member Portal',
         'subheading' => 'Log in to take part in competitions and manage your photographs.',
@@ -92,6 +100,12 @@ return [
 
     'dashboard' => [
         'welcome' => "You're signed in, welcome :name.",
+        'stat_photos' => 'Portfolio Photo Count',
+        'photo_count_value' => ':count / :max',
+        'stat_equipment' => 'Equipment Count',
+        'stat_last_login' => 'Last Successful Login',
+        'last_login_never' => 'Your first login',
+        'stat_member_since' => 'Member Since',
     ],
 
     'profile' => [

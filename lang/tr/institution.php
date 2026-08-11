@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Onaylı Yarışmalar',
 
+    'maintenance' => [
+        'heading' => 'Bakım Çalışması',
+        'subheading' => 'Kurum paneli kısa bir süreliğine bakımda.',
+        'card_label' => 'Bakım Modu',
+        'card_title' => 'Şu anda bakımdayız',
+        'default_message' => 'Sistemimizde planlı bir bakım çalışması yürütülmektedir. Lütfen daha sonra tekrar deneyiniz.',
+    ],
+
     'login' => [
         'heading' => 'Kurum Portalı',
         'subheading' => 'Yarışma düzenlemek ve düzenlediğiniz yarışmalarla ilgili işlemleri yönetmek için giriş yapın.',

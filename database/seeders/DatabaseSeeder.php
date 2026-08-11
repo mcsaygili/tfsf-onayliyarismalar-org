@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             PhotoTechniqueSeeder::class,
             EquipmentTypeSeeder::class,
             EquipmentBrandSeeder::class,
+            MaintenanceModeSeeder::class,
         ]);
     }
 }

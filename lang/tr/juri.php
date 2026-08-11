@@ -4,6 +4,14 @@ return [
 
     'eyebrow' => 'TFSF Onaylı Yarışmalar',
 
+    'maintenance' => [
+        'heading' => 'Bakım Çalışması',
+        'subheading' => 'Jüri paneli kısa bir süreliğine bakımda.',
+        'card_label' => 'Bakım Modu',
+        'card_title' => 'Şu anda bakımdayız',
+        'default_message' => 'Sistemimizde planlı bir bakım çalışması yürütülmektedir. Lütfen daha sonra tekrar deneyiniz.',
+    ],
+
     'login' => [
         'heading' => 'Jüri Portalı',
         'subheading' => 'Değerlendirmesi size atanan yarışmalarla ilgili işlemleri yönetmek için giriş yapın.',

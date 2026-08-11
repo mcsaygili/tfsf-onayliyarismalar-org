@@ -16,7 +16,7 @@ use App\Http\Controllers\Institution\StaffController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.institution'))->group(function () {
+Route::domain(config('domains.institution'))->middleware('maintenance:institution')->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('institution.language');
 
     Route::middleware('guest:institution')->group(function () {

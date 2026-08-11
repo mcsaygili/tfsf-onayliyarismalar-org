@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Middleware\CheckMaintenanceMode;
 use App\Http\Middleware\EnsureGuardEmailIsVerified;
 use App\Http\Middleware\ResolveGuardSessionCookie;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetPermissionsTeam;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -38,7 +40,23 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            // Bakım Modu — bkz. App\Http\Middleware\CheckMaintenanceMode.
+            'maintenance' => CheckMaintenanceMode::class,
         ]);
+
+        // KRİTİK: Laravel'in $middlewarePriority listesi, bu listede YER ALAN
+        // middleware'leri (ör. Authenticate/'auth') route'ta bildirilen sıradan
+        // BAĞIMSIZ olarak yeniden sıralar — listede olmayan middleware'ler
+        // (CheckMaintenanceMode gibi) 'auth:*' bir route'ta birlikte kullanıldığında
+        // sessizce 'auth'un ARKASINA düşer (route()->gatherMiddleware() hâlâ
+        // bildirilen sırayı gösterir, ama gerçek çalıştırma sırası bu değil) —
+        // bu yüzden bakım modu, oturumu olmayan biri için asla tetiklenmiyordu.
+        // Explicit'e priority eklemek, StartSession'dan SONRA (session'a ihtiyaç
+        // duyuyor: force-logout) ama Authenticate'ten ÖNCE çalışmasını garanti eder.
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: CheckMaintenanceMode::class,
+        );
 
         // Laravel'in yerleşik `auth` middleware'i (Authenticate), oturum
         // açmamış bir kullanıcıyı korumalı bir sayfadan uzaklaştırırken
