@@ -34,6 +34,34 @@ class CompetitionTest extends TestCase
         $response->assertRedirect(route('institution.competitions.step.show', [$competition, 1]));
     }
 
+    public function test_kurum_bilgileri_eksikse_yeni_yarisma_olusturulamaz(): void
+    {
+        $institution = Institution::factory()->create([
+            'name' => null,
+            'email' => null,
+            'phone' => null,
+        ]);
+        $staff = InstitutionStaff::factory()->for($institution)->create();
+
+        $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.store'));
+
+        $response->assertRedirect(route('institution.competitions.index'));
+        $this->assertDatabaseCount('competitions', 0);
+    }
+
+    public function test_kurum_bilgileri_eksikse_yeni_basvuru_yerine_tamamlama_baglantisi_gosterilir(): void
+    {
+        $institution = Institution::factory()->create(['phone' => null]);
+        $staff = InstitutionStaff::factory()->for($institution)->create();
+
+        $response = $this->actingAs($staff, 'institution')->get(route('institution.competitions.index'));
+
+        $response->assertOk();
+        $response->assertSee(__('institution.competitions.incomplete_profile_title'));
+        $response->assertSee(__('institution.competitions.complete_profile'));
+        $response->assertDontSee(__('institution.competitions.add_new'));
+    }
+
     public function test_adim_1_zorunlu_alanlar_doldurulmadan_sonraki_adima_gecilemez(): void
     {
         $staff = $this->staff();
@@ -49,7 +77,8 @@ class CompetitionTest extends TestCase
             ['name' => 'Test Yarışması', 'action' => 'next']
         );
 
-        $response->assertSessionHasErrors(['partners', 'subject', 'purpose']);
+        $response->assertSessionHasErrors(['subject', 'purpose']);
+        $response->assertSessionDoesntHaveErrors('partners');
         $this->assertSame(1, $competition->fresh()->current_step);
     }
 
@@ -66,6 +95,34 @@ class CompetitionTest extends TestCase
         $response->assertSessionDoesntHaveErrors();
         $this->assertSame('Test Yarışması', $competition->fresh()->name);
         $this->assertSame(1, $competition->fresh()->current_step);
+    }
+
+    public function test_adim_1_duzenleyen_kurumu_salt_okunur_ve_metin_sinirlarini_gosterir(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'subject' => null,
+            'purpose' => null,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->get(
+            route('institution.competitions.step.show', [$competition, 1])
+        );
+
+        $response->assertOk();
+        $response->assertSee($staff->institution->name);
+        $response->assertSee('id="organizing_institution"', false);
+        $response->assertSee('readonly', false);
+        $response->assertSee('id="partners"', false);
+        $response->assertSee('maxlength="1000"', false);
+        $response->assertSee('x-on:input="remaining = Math.max(0, max - [...$event.target.value].length)"', false);
+        $response->assertSee(__('institution.competitions.fields.characters_remaining', ['remaining' => 1000, 'max' => 1000]));
+        $response->assertSee('aria-controls="field-help-name"', false);
+        $response->assertSee('aria-controls="field-help-organizing_institution"', false);
+        $response->assertSee('aria-controls="field-help-partners"', false);
+        $response->assertSee('aria-controls="field-help-subject"', false);
+        $response->assertSee('aria-controls="field-help-purpose"', false);
+        $response->assertSee(__('institution.competitions.field_help.subject.example'));
     }
 
     public function test_adim_1_tamamlaninca_adim_2ye_gecilir_ve_current_step_ilerler(): void
@@ -86,6 +143,46 @@ class CompetitionTest extends TestCase
 
         $response->assertRedirect(route('institution.competitions.step.show', [$competition, 2]));
         $this->assertSame(2, $competition->fresh()->current_step);
+    }
+
+    public function test_adim_1_paydas_girilmeden_tamamlanabilir(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create();
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 1]),
+            [
+                'name' => 'Test Yarışması',
+                'partners' => '',
+                'subject' => 'Test Konu',
+                'purpose' => 'Test Amaç',
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertSessionDoesntHaveErrors();
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 2]));
+        $this->assertNull($competition->fresh()->partners);
+    }
+
+    public function test_konu_ve_amac_1000_karakteri_gecemez(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create();
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 1]),
+            [
+                'name' => 'Test Yarışması',
+                'subject' => str_repeat('a', 1001),
+                'purpose' => str_repeat('b', 1001),
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertSessionHasErrors(['subject', 'purpose']);
+        $this->assertSame(1, $competition->fresh()->current_step);
     }
 
     public function test_baska_kurumun_basvurusuna_erisilemez(): void

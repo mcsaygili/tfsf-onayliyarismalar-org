@@ -826,7 +826,7 @@ return [
 
         'fields' => [
             'name' => 'Competition Name',
-            'partners' => "Organizing Institution's Partners and Collaborators",
+            'partners' => 'Partners and Collaborators',
             'subject' => 'Competition Subject',
             'purpose' => 'Competition Purpose',
         ],

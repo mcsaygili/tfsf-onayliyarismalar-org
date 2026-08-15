@@ -826,7 +826,7 @@ return [
 
         'fields' => [
             'name' => 'Yarışma Adı',
-            'partners' => 'Düzenleyen Kurum Paydaş ve İşbirlikçileri',
+            'partners' => 'Paydaş ve İşbirlikçileri',
             'subject' => 'Yarışmanın Konusu',
             'purpose' => 'Yarışmanın Amacı',
         ],

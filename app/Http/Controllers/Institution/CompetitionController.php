@@ -24,6 +24,7 @@ class CompetitionController extends Controller
         $institution = Auth::guard('institution')->user()->institution;
 
         return view('institution.competitions.index', [
+            'institution' => $institution,
             'competitions' => $institution->competitions()->latest()->paginate(10),
         ]);
     }
@@ -31,6 +32,10 @@ class CompetitionController extends Controller
     public function store(): RedirectResponse
     {
         $staff = Auth::guard('institution')->user();
+
+        if (! $staff->institution->hasCompleteProfile()) {
+            return redirect()->route('institution.competitions.index');
+        }
 
         $competition = $staff->institution->competitions()->create([
             'institution_staff_id' => $staff->id,

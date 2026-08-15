@@ -1,5 +1,5 @@
 <x-institution.app-layout :title="__('institution.nav.dashboard')">
-    @if (blank($institution->name) || blank($institution->email) || blank($institution->phone))
+    @unless ($hasCompleteProfile)
         <div class="ip-alert ip-alert-warning">
             <x-institution.icon name="warning" />
             <div>
@@ -10,7 +10,7 @@
                 </div>
             </div>
         </div>
-    @endif
+    @endunless
 
     <div class="ip-stats">
         <div class="ip-stat-card">

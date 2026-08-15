@@ -52,4 +52,15 @@ class Institution extends Model
     {
         return $this->approved_at !== null;
     }
+
+    /**
+     * Yarışma başvurusu açabilmek için gereken asgari kurum bilgileri.
+     * Profil formundaki zorunlu alanlarla aynı tutulmalıdır.
+     */
+    public function hasCompleteProfile(): bool
+    {
+        return filled($this->name)
+            && filled($this->email)
+            && filled($this->phone);
+    }
 }

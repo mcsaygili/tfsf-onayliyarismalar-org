@@ -10,7 +10,9 @@ return new class extends Migration
      * Bir kurumun yarışma başvurusu — taslaktan yayına kadar tek kayıt
      * (bkz. proje planı "Kurum Paneli — Yarışma Ekleme Sihirbazı"). Sihirbaz
      * 10 adımlı tasarlandı ama şimdilik sadece 1. adımın alanları
-     * (name/partners/subject/purpose) gerçek — kalan adımlar
+     * (name/partners/subject/purpose) gerçek. Düzenleyen kurum ayrıca
+     * kopyalanmaz; institution_id ilişkisi üzerinden salt okunur gösterilir.
+     * Kalan adımlar
      * app/Support/CompetitionWizard/PlaceholderStep üzerinden ilerliyor,
      * ileride yeni sütunlar eklenerek genişleyecek.
      *

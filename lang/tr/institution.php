@@ -142,10 +142,20 @@ return [
         'total_staff' => 'Toplam Yetkili',
     ],
 
+    'field_help' => [
+        'open' => ':field alanı için yardım göster',
+        'close' => 'Yardım penceresini kapat',
+        'example' => 'Örnek',
+    ],
+
     'competitions' => [
         'list_title' => 'Yarışmalarım',
         'list_hint' => 'Yarışma başvurularınızı buradan oluşturur ve takip edersiniz.',
         'add_new' => '+ Yeni Başvuru',
+        'complete_profile' => 'Kurum Bilgilerini Tamamla',
+        'incomplete_profile_title' => 'Yeni yarışma oluşturamazsınız',
+        'incomplete_profile_text' => 'Yarışma başvurusu oluşturmadan önce kurum adı, e-postası ve telefonu eksiksiz olmalıdır.',
+        'incomplete_profile_link' => 'Kurum bilgilerini tamamlayın.',
         'untitled' => 'İsimsiz Başvuru',
         'column_name' => 'Yarışma Adı',
         'column_status' => 'Durum',
@@ -163,7 +173,7 @@ return [
         ],
 
         'steps' => [
-            1 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, paydaşları, konusu ve amacı.'],
+            1 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, düzenleyen kurumu, paydaşları, konusu ve amacı.'],
             2 => ['label' => 'Adım 2'],
             3 => ['label' => 'Adım 3'],
             4 => ['label' => 'Adım 4'],
@@ -177,9 +187,36 @@ return [
 
         'fields' => [
             'name' => 'Yarışma Adı',
-            'partners' => 'Düzenleyen Kurum Paydaş ve İşbirlikçileri',
+            'organizing_institution' => 'Düzenleyen Kurum',
+            'organizing_institution_hint' => 'Oturum açtığınız kurum bilgisi otomatik olarak kullanılır ve bu alanda değiştirilemez.',
+            'partners' => 'Paydaş ve İşbirlikçileri',
+            'partners_placeholder' => 'Örn. Kurum A, Kurum B, Kurum C',
+            'partners_hint' => 'Opsiyoneldir. Birden fazla paydaş veya işbirlikçiyi virgül (,) ile ayırın.',
             'subject' => 'Yarışmanın Konusu',
             'purpose' => 'Yarışmanın Amacı',
+            'characters_remaining' => ':remaining karakter kaldı (en fazla :max).',
+        ],
+
+        'field_help' => [
+            'name' => [
+                'description' => 'Yarışmanın duyuru, şartname ve sonuç ekranlarında kullanılacak açık ve resmî adını yazın.',
+                'example' => 'TFSF 2026 Ulusal Doğa Fotoğraf Yarışması',
+            ],
+            'organizing_institution' => [
+                'description' => 'Yarışmayı düzenleyen kurum, oturum açtığınız kurum hesabından otomatik alınır. Bu bilgi yarışma ekranından değiştirilemez.',
+            ],
+            'partners' => [
+                'description' => 'Yarışmanın düzenlenmesine katkı sağlayan paydaş ve işbirlikçileri yazabilirsiniz. Alan opsiyoneldir; birden fazla kurum varsa virgülle ayırın.',
+                'example' => 'Örnek Belediyesi, Örnek Fotoğraf Derneği, Örnek Üniversitesi',
+            ],
+            'subject' => [
+                'description' => 'Yarışmada ele alınacak tema veya konuyu açık ve anlaşılır biçimde açıklayın. Bu alan zorunludur ve en fazla 1000 karakter olabilir.',
+                'example' => 'Türkiye’nin doğal yaşamını, biyolojik çeşitliliğini ve koruma altındaki alanlarını belgeleyen fotoğraflar.',
+            ],
+            'purpose' => [
+                'description' => 'Yarışmanın düzenlenme amacını, hedefini ve oluşturması beklenen etkiyi açıklayın. Bu alan zorunludur ve en fazla 1000 karakter olabilir.',
+                'example' => 'Doğal yaşamın korunmasına yönelik toplumsal farkındalığı artırmak ve fotoğraf sanatını desteklemek.',
+            ],
         ],
 
         'save_draft' => 'Taslak Olarak Kaydet',

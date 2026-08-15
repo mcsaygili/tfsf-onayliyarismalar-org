@@ -3,9 +3,10 @@
 namespace App\Support\CompetitionWizard;
 
 /**
- * Adım 1 — Yarışma Bilgileri: Yarışma Adı, Düzenleyen Kurum Paydaş ve
- * İşbirlikçileri, Yarışmanın Konusu, Yarışmanın Amacı. Kullanıcı isteğine
- * göre 4 alan da zorunlu — taslak kaydında (isDraftSave) hepsi nullable.
+ * Adım 1 — Yarışma Bilgileri: Yarışma Adı, Paydaş ve İşbirlikçileri,
+ * Yarışmanın Konusu, Yarışmanın Amacı. Düzenleyen kurum form verisi değildir;
+ * yarışmanın Institution ilişkisi üzerinden salt okunur gösterilir. Paydaşlar
+ * opsiyoneldir; konu ve amaç en fazla 1000 karakter olabilir.
  */
 class Step1 implements CompetitionStep
 {
@@ -35,9 +36,9 @@ class Step1 implements CompetitionStep
 
         return [
             'name' => [$required, 'string', 'max:255'],
-            'partners' => [$required, 'string', 'max:2000'],
-            'subject' => [$required, 'string', 'max:2000'],
-            'purpose' => [$required, 'string', 'max:2000'],
+            'partners' => ['nullable', 'string', 'max:2000'],
+            'subject' => [$required, 'string', 'max:1000'],
+            'purpose' => [$required, 'string', 'max:1000'],
         ];
     }
 }

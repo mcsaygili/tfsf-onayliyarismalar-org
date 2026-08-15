@@ -14,6 +14,7 @@ class DashboardController extends Controller
 
         return view('institution.dashboard', [
             'institution' => $institution,
+            'hasCompleteProfile' => $institution->hasCompleteProfile(),
             'staffCount' => $institution->staff()->count(),
         ]);
     }

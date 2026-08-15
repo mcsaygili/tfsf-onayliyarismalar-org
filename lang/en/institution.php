@@ -142,10 +142,20 @@ return [
         'total_staff' => 'Total Staff',
     ],
 
+    'field_help' => [
+        'open' => 'Show help for :field',
+        'close' => 'Close help dialog',
+        'example' => 'Example',
+    ],
+
     'competitions' => [
         'list_title' => 'My Competitions',
         'list_hint' => 'Create and track your competition applications here.',
         'add_new' => '+ New Application',
+        'complete_profile' => 'Complete Institution Details',
+        'incomplete_profile_title' => 'You cannot create a new competition',
+        'incomplete_profile_text' => 'The institution name, email, and phone must be completed before creating a competition application.',
+        'incomplete_profile_link' => 'Complete institution details.',
         'untitled' => 'Untitled Application',
         'column_name' => 'Competition Name',
         'column_status' => 'Status',
@@ -163,7 +173,7 @@ return [
         ],
 
         'steps' => [
-            1 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, partners, subject, and purpose.'],
+            1 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, organizing institution, partners, subject, and purpose.'],
             2 => ['label' => 'Step 2'],
             3 => ['label' => 'Step 3'],
             4 => ['label' => 'Step 4'],
@@ -177,9 +187,36 @@ return [
 
         'fields' => [
             'name' => 'Competition Name',
-            'partners' => "Organizing Institution's Partners and Collaborators",
+            'organizing_institution' => 'Organizing Institution',
+            'organizing_institution_hint' => 'The institution you are signed in as is used automatically and cannot be changed here.',
+            'partners' => 'Partners and Collaborators',
+            'partners_placeholder' => 'E.g. Institution A, Institution B, Institution C',
+            'partners_hint' => 'Optional. Separate multiple partners or collaborators with commas (,).',
             'subject' => 'Competition Subject',
             'purpose' => 'Competition Purpose',
+            'characters_remaining' => ':remaining characters remaining (maximum :max).',
+        ],
+
+        'field_help' => [
+            'name' => [
+                'description' => 'Enter the clear, official competition name that will appear in announcements, regulations, and results.',
+                'example' => 'TFSF 2026 National Nature Photography Competition',
+            ],
+            'organizing_institution' => [
+                'description' => 'The organizing institution is taken automatically from the institution account you are signed in with and cannot be changed on this screen.',
+            ],
+            'partners' => [
+                'description' => 'You may enter partners and collaborators contributing to the competition. This field is optional; separate multiple institutions with commas.',
+                'example' => 'Example Municipality, Example Photography Association, Example University',
+            ],
+            'subject' => [
+                'description' => 'Describe the competition theme or subject clearly. This field is required and may contain up to 1000 characters.',
+                'example' => 'Photographs documenting Türkiye’s wildlife, biodiversity, and protected natural areas.',
+            ],
+            'purpose' => [
+                'description' => 'Explain the aim, objectives, and intended impact of the competition. This field is required and may contain up to 1000 characters.',
+                'example' => 'To raise public awareness of wildlife conservation and support the art of photography.',
+            ],
         ],
 
         'save_draft' => 'Save as Draft',

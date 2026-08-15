@@ -17,6 +17,7 @@ class InstitutionFactory extends Factory
         return [
             'name' => fake()->company(),
             'email' => fake()->unique()->companyEmail(),
+            'phone' => fake()->phoneNumber(),
             'status' => true,
             'approved_at' => now(),
         ];

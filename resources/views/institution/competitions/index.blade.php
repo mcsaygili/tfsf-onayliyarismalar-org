@@ -1,14 +1,31 @@
 <x-institution.app-layout :title="__('institution.nav.competitions')">
+    @unless ($institution->hasCompleteProfile())
+        <div class="ip-alert ip-alert-warning">
+            <x-institution.icon name="warning" />
+            <div>
+                <div class="ip-alert-title">{{ __('institution.competitions.incomplete_profile_title') }}</div>
+                <div class="ip-alert-text">
+                    {{ __('institution.competitions.incomplete_profile_text') }}
+                    <a href="{{ route('institution.profile.edit') }}">{{ __('institution.competitions.incomplete_profile_link') }}</a>
+                </div>
+            </div>
+        </div>
+    @endunless
+
     <div class="ip-card">
         <div class="ip-toolbar">
             <div>
                 <div class="ip-toolbar-title">{{ __('institution.competitions.list_title') }}</div>
                 <div class="ip-toolbar-hint">{{ __('institution.competitions.list_hint') }}</div>
             </div>
-            <form method="POST" action="{{ route('institution.competitions.store') }}">
-                @csrf
-                <button type="submit" class="ia-btn ip-btn-sm">{{ __('institution.competitions.add_new') }}</button>
-            </form>
+            @if ($institution->hasCompleteProfile())
+                <form method="POST" action="{{ route('institution.competitions.store') }}">
+                    @csrf
+                    <button type="submit" class="ia-btn ip-btn-sm">{{ __('institution.competitions.add_new') }}</button>
+                </form>
+            @else
+                <a href="{{ route('institution.profile.edit') }}" class="ia-btn ip-btn-sm">{{ __('institution.competitions.complete_profile') }}</a>
+            @endif
         </div>
 
         <div class="ip-table-wrap">

@@ -318,6 +318,61 @@
             color: var(--ia-muted);
             margin-bottom: .5rem;
         }
+        .ip-field-label-wrap { display: contents; }
+        .ip-field-label-row { display: flex; align-items: center; gap: .45rem; margin-bottom: .5rem; }
+        .ip-field-label-row .ia-label { margin-bottom: 0; }
+        .ip-field-help-button {
+            width: 19px;
+            height: 19px;
+            padding: 0;
+            display: inline-grid;
+            place-items: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 1px solid var(--ia-copper);
+            background: rgba(201, 168, 76, .08);
+            color: var(--ia-copper-bright);
+            font: 700 .72rem/1 'Figtree', sans-serif;
+            cursor: pointer;
+        }
+        .ip-field-help-button:hover { background: rgba(201, 168, 76, .18); }
+        .ip-field-help-button:focus-visible,
+        .ip-field-help-close:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ia-focus); }
+        .ip-field-help-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            display: grid;
+            place-items: center;
+            padding: 1.25rem;
+            background: rgba(0, 0, 0, .72);
+        }
+        .ip-field-help-dialog {
+            width: min(100%, 34rem);
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 12px;
+            padding: 1.4rem;
+            background: var(--ia-bg-soft);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+        }
+        .ip-field-help-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .85rem; }
+        .ip-field-help-header h2 { margin: 0; color: var(--ia-cream); font-size: 1.05rem; font-weight: 800; }
+        .ip-field-help-close {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: 0;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, .06);
+            color: var(--ia-muted);
+            font-size: 1.35rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .ip-field-help-description { margin: 0; color: var(--ia-muted); font-size: .9rem; line-height: 1.6; }
+        .ip-field-help-example { margin-top: 1rem; padding: .85rem 1rem; border-left: 3px solid var(--ia-copper); background: rgba(201, 168, 76, .07); border-radius: 0 8px 8px 0; }
+        .ip-field-help-example strong { display: block; margin-bottom: .3rem; color: var(--ia-copper-bright); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; }
+        .ip-field-help-example span { color: var(--ia-cream); font-size: .88rem; line-height: 1.5; }
         .ia-input {
             width: 100%;
             background: var(--ia-bg);
