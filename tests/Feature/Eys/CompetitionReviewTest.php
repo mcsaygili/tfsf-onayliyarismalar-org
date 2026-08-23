@@ -7,7 +7,10 @@ use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Enums\Module;
 use App\Models\Competition;
+use App\Models\CompetitionType;
+use App\Models\Country;
 use App\Models\EysUser;
+use App\Models\ParticipantApprovalProcess;
 use App\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -76,6 +79,34 @@ class CompetitionReviewTest extends TestCase
         $this->assertNotNull($competition->published_at);
         $this->assertSame($reviewer->id, $competition->reviewed_by);
         $this->assertSame('approved', $competition->statusLogs()->first()->action);
+    }
+
+    public function test_maraton_lokasyonu_ve_katilimci_onay_sureci_okunabilir_gosterilir(): void
+    {
+        app()->setLocale('tr');
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $country = Country::create(['status' => true]);
+        $country->upsertTranslations(['tr' => ['official_name' => 'Türkiye']]);
+        $city = $country->cities()->create(['status' => true]);
+        $city->upsertTranslations(['tr' => ['official_name' => 'İstanbul']]);
+        $process = ParticipantApprovalProcess::factory()->create(['code' => 'representative']);
+        $process->upsertTranslations(['tr' => ['name' => 'Temsilci', 'description' => 'Açıklama']]);
+        $competition = Competition::factory()->create([
+            'competition_type_id' => $type->id,
+            'country_id' => $country->id,
+            'city_id' => $city->id,
+            'participant_approval_process_id' => $process->id,
+        ]);
+
+        $response = $this->withSession(['locale' => 'tr'])->actingAs($this->reviewer(), 'eys')
+            ->get(route('eys.competitions.show', $competition));
+
+        $response->assertOk();
+        $response->assertSee('Türkiye');
+        $response->assertSee('İstanbul');
+        $response->assertSee('Temsilci');
+        $response->assertDontSee($country->id);
+        $response->assertDontSee($city->id);
     }
 
     public function test_reddetme_mesaj_zorunludur_ve_durumu_gunceller(): void

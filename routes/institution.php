@@ -65,6 +65,8 @@ Route::domain(config('domains.institution'))->middleware('maintenance:institutio
         });
 
         Route::prefix('yarismalarim')->name('institution.competitions.')->group(function () {
+            Route::get('lokasyonlar/ulke/{country}/sehirler', [CompetitionStepController::class, 'cities'])
+                ->name('cities');
             Route::get('/', [CompetitionController::class, 'index'])->name('index');
             Route::post('/', [CompetitionController::class, 'store'])->name('store');
             Route::post('{competition}/gonder', [CompetitionController::class, 'submit'])->name('submit');

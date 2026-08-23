@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * bilinçli olarak Fillable DIŞINDA — bunlar yalnızca controller mantığıyla
  * (CompetitionController::submit / CompetitionReviewController) değişmeli.
  */
-#[Fillable(['institution_id', 'institution_staff_id', 'audience', 'infrastructure_provider', 'competition_type_id', 'partners'])]
+#[Fillable(['institution_id', 'institution_staff_id', 'audience', 'infrastructure_provider', 'competition_type_id', 'country_id', 'city_id', 'participant_approval_process_id', 'partners'])]
 class Competition extends Model
 {
     use HasFactory, HasTranslations, HasUuids;
@@ -56,6 +56,21 @@ class Competition extends Model
     public function competitionType(): BelongsTo
     {
         return $this->belongsTo(CompetitionType::class)->withTrashed();
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class)->withTrashed();
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class)->withTrashed();
+    }
+
+    public function participantApprovalProcess(): BelongsTo
+    {
+        return $this->belongsTo(ParticipantApprovalProcess::class)->withTrashed();
     }
 
     public function reviewer(): BelongsTo

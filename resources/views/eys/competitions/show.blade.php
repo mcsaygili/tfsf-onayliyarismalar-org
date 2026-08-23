@@ -48,6 +48,9 @@
                                 $translationKey = 'eys.competitions.field_values.'.$field.'.'.$fieldValue;
                                 $displayValue = match (true) {
                                     $field === 'competition_type' => $competition->competitionType?->name,
+                                    $field === 'country' => $competition->country?->official_name,
+                                    $field === 'city' => $competition->city?->official_name,
+                                    $field === 'participant_approval_process' => $competition->participantApprovalProcess?->name,
                                     $fieldValue && trans()->has($translationKey) => __($translationKey),
                                     default => $fieldValue,
                                 };

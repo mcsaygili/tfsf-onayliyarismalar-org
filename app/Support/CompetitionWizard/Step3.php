@@ -43,7 +43,12 @@ class Step3 implements CompetitionStep
             $attributes = ['infrastructure_provider' => $validated['infrastructure_provider']];
 
             if ($validated['infrastructure_provider'] === CompetitionInfrastructureProvider::External->value) {
-                $attributes['competition_type_id'] = null;
+                $attributes += [
+                    'competition_type_id' => null,
+                    'country_id' => null,
+                    'city_id' => null,
+                    'participant_approval_process_id' => null,
+                ];
             }
 
             $competition->update($attributes);

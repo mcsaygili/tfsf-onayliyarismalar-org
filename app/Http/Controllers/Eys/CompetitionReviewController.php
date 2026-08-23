@@ -41,7 +41,16 @@ class CompetitionReviewController extends Controller
 
     public function show(Competition $competition): View
     {
-        $competition->load(['institution', 'institutionStaff', 'competitionType.translations', 'translations', 'statusLogs.actor']);
+        $competition->load([
+            'institution',
+            'institutionStaff',
+            'competitionType.translations',
+            'country.translations',
+            'city.translations',
+            'participantApprovalProcess.translations',
+            'translations',
+            'statusLogs.actor',
+        ]);
 
         return view('eys.competitions.show', [
             'competition' => $competition,

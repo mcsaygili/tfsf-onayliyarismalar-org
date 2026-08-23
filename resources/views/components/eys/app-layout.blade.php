@@ -977,23 +977,31 @@
                 </div>
             @endcanany
 
-            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage'])
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.participant_approval_processes.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
-                @can('eys.competition_types.manage')
-                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*') ? 'true' : 'false' }} }">
+                @canany(['eys.competition_types.manage', 'eys.participant_approval_processes.manage'])
+                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*') || request()->routeIs('eys.participant-approval-processes.*') ? 'true' : 'false' }} }">
                         <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                             <x-eys.icon name="layers" />
                             <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
                             <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
                         </button>
                         <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
-                            <a href="{{ route('eys.competition-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.competition-types.*') ? 'is-active' : '' }}">
-                                <x-eys.icon name="competitions" />
-                                {{ __('eys.nav.competition_types') }}
-                            </a>
+                            @can('eys.competition_types.manage')
+                                <a href="{{ route('eys.competition-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.competition-types.*') ? 'is-active' : '' }}">
+                                    <x-eys.icon name="competitions" />
+                                    {{ __('eys.nav.competition_types') }}
+                                </a>
+                            @endcan
+                            @can('eys.participant_approval_processes.manage')
+                                <a href="{{ route('eys.participant-approval-processes.index') }}" class="ip-nav-item {{ request()->routeIs('eys.participant-approval-processes.*') ? 'is-active' : '' }}">
+                                    <x-eys.icon name="list-check" />
+                                    {{ __('eys.nav.participant_approval_processes') }}
+                                </a>
+                            @endcan
                         </div>
                     </div>
-                @endcan
+                @endcanany
                 @can('eys.regulation_sections.manage')
                     <a href="{{ route('eys.regulation-sections.index') }}" class="ip-nav-item {{ request()->routeIs('eys.regulation-sections.*') ? 'is-active' : '' }}">
                         <x-eys.icon name="document" />

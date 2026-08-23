@@ -76,6 +76,10 @@ return [
                     'label' => 'Yarışma Türü Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'participant_approval_processes' => [
+                    'label' => 'Katılımcı Onay Süreci Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'file_manager' => [
                     'label' => 'Dosya Yöneticisi',
                     'actions' => ['view', 'create', 'delete', 'manage'],

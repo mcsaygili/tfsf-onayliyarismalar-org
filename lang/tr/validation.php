@@ -183,6 +183,9 @@ return [
         'en.name' => 'İngilizce yarışma adı',
         'en.subject' => 'İngilizce yarışmanın konusu',
         'en.purpose' => 'İngilizce yarışmanın amacı',
+        'country' => 'ülke',
+        'city' => 'şehir',
+        'participant_approval_process' => 'katılımcı onay süreci',
     ],
 
 ];

@@ -6,9 +6,12 @@ use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
+use App\Models\Country;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use App\Support\CompetitionWizard\Step4;
+use App\Support\CompetitionWizard\Step5;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -62,7 +65,27 @@ class CompetitionStepController extends Controller
             $viewData['competitionTypes'] = $stepDef->options();
         }
 
+        if ($stepDef instanceof Step5) {
+            $viewData['countries'] = $stepDef->countries();
+            $viewData['cities'] = $stepDef->cities(old('country', $competition->country_id));
+            $viewData['approvalProcesses'] = $stepDef->approvalProcesses();
+        }
+
         return view($view, $viewData);
+    }
+
+    public function cities(Country $country): JsonResponse
+    {
+        abort_unless($country->status, 404);
+
+        $cities = (new Step5)->cities($country->id)
+            ->map(fn ($city) => [
+                'id' => $city->id,
+                'name' => $city->official_name,
+            ])
+            ->values();
+
+        return response()->json($cities);
     }
 
     public function update(Request $request, Competition $competition, int $step): RedirectResponse

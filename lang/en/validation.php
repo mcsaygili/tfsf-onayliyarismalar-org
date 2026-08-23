@@ -204,6 +204,9 @@ return [
         'en.name' => 'English competition name',
         'en.subject' => 'English competition subject',
         'en.purpose' => 'English competition purpose',
+        'country' => 'country',
+        'city' => 'city',
+        'participant_approval_process' => 'participant approval process',
     ],
 
 ];

@@ -7,9 +7,12 @@ use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\CompetitionType;
+use App\Models\Country;
 use App\Models\Institution;
 use App\Models\InstitutionStaff;
+use App\Models\ParticipantApprovalProcess;
 use Database\Seeders\CompetitionTypeSeeder;
+use Database\Seeders\ParticipantApprovalProcessSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -361,20 +364,20 @@ class CompetitionTest extends TestCase
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 5]));
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 6]));
         $this->assertSame(CompetitionInfrastructureProvider::External, $competition->infrastructure_provider);
         $this->assertNull($competition->competition_type_id);
-        $this->assertSame(5, $competition->current_step);
+        $this->assertSame(6, $competition->current_step);
 
         $stepFour = $this->actingAs($staff, 'institution')->get(
             route('institution.competitions.step.show', [$competition, 4])
         );
-        $stepFour->assertRedirect(route('institution.competitions.step.show', [$competition, 5]));
+        $stepFour->assertRedirect(route('institution.competitions.step.show', [$competition, 6]));
 
         $stepFive = $this->actingAs($staff, 'institution')->get(
             route('institution.competitions.step.show', [$competition, 5])
         );
-        $stepFive->assertDontSee(__('institution.competitions.steps.4.label'));
+        $stepFive->assertRedirect(route('institution.competitions.step.show', [$competition, 6]));
     }
 
     public function test_adim_3_iki_alt_yapi_secenegini_ve_tfsf_hizmetlerini_gosterir(): void
@@ -439,7 +442,7 @@ class CompetitionTest extends TestCase
         $this->assertSame(4, $competition->fresh()->current_step);
     }
 
-    public function test_adim_4_aktif_yarisma_turu_secilir_ve_adim_5e_gecilir(): void
+    public function test_adim_4_maraton_disindaki_aktif_yarisma_turu_secilince_adim_5_atlanir(): void
     {
         $staff = $this->staff();
         $competitionType = CompetitionType::factory()->create();
@@ -455,9 +458,27 @@ class CompetitionTest extends TestCase
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 5]));
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 6]));
         $this->assertTrue($competition->competitionType->is($competitionType));
-        $this->assertSame(5, $competition->current_step);
+        $this->assertSame(6, $competition->current_step);
+    }
+
+    public function test_adim_4_fotografcilar_maratonu_secilince_adim_5e_gecilir(): void
+    {
+        $staff = $this->staff();
+        $competitionType = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => null,
+            'current_step' => 4,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 4]),
+            ['competition_type' => $competitionType->id, 'action' => 'next']
+        );
+
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 5]));
+        $this->assertSame(5, $competition->fresh()->current_step);
     }
 
     public function test_adim_4_pasif_yarisma_turu_secilemez(): void
@@ -476,6 +497,127 @@ class CompetitionTest extends TestCase
 
         $response->assertSessionHasErrors('competition_type');
         $this->assertNull($competition->fresh()->competition_type_id);
+    }
+
+    public function test_adim_5_maraton_lokasyonunu_ve_onay_sureclerini_gosterir(): void
+    {
+        app()->setLocale('tr');
+        $this->seed(ParticipantApprovalProcessSeeder::class);
+        $staff = $this->staff();
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $country = Country::create(['iso_alpha2' => 'TR', 'iso_alpha3' => 'TUR', 'status' => true]);
+        $country->upsertTranslations(['tr' => ['official_name' => 'Türkiye']]);
+        $city = $country->cities()->create(['status' => true]);
+        $city->upsertTranslations(['tr' => ['official_name' => 'İstanbul']]);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $type->id,
+            'current_step' => 5,
+        ]);
+
+        $response = $this->withSession(['locale' => 'tr'])->actingAs($staff, 'institution')->get(
+            route('institution.competitions.step.show', [$competition, 5])
+        );
+
+        $response->assertOk();
+        $response->assertSee('Türkiye');
+        $response->assertSee('Temsilci');
+        $response->assertSee('Kurum');
+        $response->assertSee(__('institution.competitions.location_information_title'));
+        $response->assertSee(__('institution.competitions.location_information_hint'));
+        $response->assertSee('aria-controls="field-help-country"', false);
+        $response->assertSee('aria-controls="field-help-city"', false);
+        $response->assertSee('aria-controls="field-help-participant_approval_process"', false);
+    }
+
+    public function test_adim_5_sehirleri_ulkeye_gore_getirir(): void
+    {
+        $staff = $this->staff();
+        $country = Country::create(['status' => true]);
+        $country->upsertTranslations(['tr' => ['official_name' => 'Türkiye']]);
+        $city = $country->cities()->create(['status' => true]);
+        $city->upsertTranslations(['tr' => ['official_name' => 'Ankara']]);
+
+        $response = $this->actingAs($staff, 'institution')->getJson(
+            route('institution.competitions.cities', $country)
+        );
+
+        $response->assertOk()->assertExactJson([['id' => $city->id, 'name' => 'Ankara']]);
+    }
+
+    public function test_adim_5_zorunlu_bilgiler_olmadan_ilerlenemez(): void
+    {
+        $staff = $this->staff();
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $type->id,
+            'current_step' => 5,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 5]),
+            ['action' => 'next']
+        );
+
+        $response->assertSessionHasErrors(['country', 'city', 'participant_approval_process']);
+        $this->assertSame(5, $competition->fresh()->current_step);
+    }
+
+    public function test_adim_5_ayni_ulkeye_bagli_sehir_ve_onay_sureciyle_tamamlanir(): void
+    {
+        $staff = $this->staff();
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $country = Country::create(['status' => true]);
+        $country->upsertTranslations(['tr' => ['official_name' => 'Türkiye']]);
+        $city = $country->cities()->create(['status' => true]);
+        $city->upsertTranslations(['tr' => ['official_name' => 'İzmir']]);
+        $process = ParticipantApprovalProcess::factory()->create(['code' => 'representative']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $type->id,
+            'current_step' => 5,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 5]),
+            [
+                'country' => $country->id,
+                'city' => $city->id,
+                'participant_approval_process' => $process->id,
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 6]));
+        $competition->refresh();
+        $this->assertSame($country->id, $competition->country_id);
+        $this->assertSame($city->id, $competition->city_id);
+        $this->assertSame($process->id, $competition->participant_approval_process_id);
+        $this->assertSame(6, $competition->current_step);
+    }
+
+    public function test_adim_5_baska_ulkeye_bagli_sehir_secilemez(): void
+    {
+        $staff = $this->staff();
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $country = Country::create(['status' => true]);
+        $otherCountry = Country::create(['status' => true]);
+        $city = $otherCountry->cities()->create(['status' => true]);
+        $process = ParticipantApprovalProcess::factory()->create();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $type->id,
+            'current_step' => 5,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 5]),
+            [
+                'country' => $country->id,
+                'city' => $city->id,
+                'participant_approval_process' => $process->id,
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertSessionHasErrors('city');
     }
 
     public function test_baska_kurumun_basvurusuna_erisilemez(): void
@@ -554,6 +696,23 @@ class CompetitionTest extends TestCase
 
         $response->assertRedirect(route('institution.competitions.index'));
         $this->assertSame(CompetitionStatus::PendingReview, $competition->fresh()->status);
+    }
+
+    public function test_fotografcilar_maratonu_adim_5_tamamlanmadan_onaya_gonderilemez(): void
+    {
+        $staff = $this->staff();
+        $type = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $type->id,
+            'country_id' => null,
+            'city_id' => null,
+            'participant_approval_process_id' => null,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
+
+        $response->assertStatus(422);
+        $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
     public function test_tamamlanan_adimlar_onaya_gonderilebilir_ve_submitted_log_yazilir(): void

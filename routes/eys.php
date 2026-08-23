@@ -20,6 +20,7 @@ use App\Http\Controllers\Eys\JuriController;
 use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
+use App\Http\Controllers\Eys\ParticipantApprovalProcessController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\PhotoCategoryController;
 use App\Http\Controllers\Eys\PhotoTechniqueController;
@@ -203,6 +204,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{competitionType}/duzenle', [CompetitionTypeController::class, 'edit'])->name('edit');
             Route::patch('{competitionType}', [CompetitionTypeController::class, 'update'])->name('update');
             Route::delete('{competitionType}', [CompetitionTypeController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('katilimci-onay-surecleri')->name('eys.participant-approval-processes.')->middleware('permission:eys.participant_approval_processes.manage')->group(function () {
+            Route::get('/', [ParticipantApprovalProcessController::class, 'index'])->name('index');
+            Route::get('yeni', [ParticipantApprovalProcessController::class, 'create'])->name('create');
+            Route::post('/', [ParticipantApprovalProcessController::class, 'store'])->name('store');
+            Route::get('{participantApprovalProcess}/duzenle', [ParticipantApprovalProcessController::class, 'edit'])->name('edit');
+            Route::patch('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'update'])->name('update');
+            Route::delete('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('kurum')->name('eys.institution.')->middleware(['team:Institution', 'permission:institution.dashboard.view'])->group(function () {
