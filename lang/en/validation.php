@@ -197,6 +197,13 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'tr.name' => 'Turkish competition name',
+        'tr.subject' => 'Turkish competition subject',
+        'tr.purpose' => 'Turkish competition purpose',
+        'en.name' => 'English competition name',
+        'en.subject' => 'English competition subject',
+        'en.purpose' => 'English competition purpose',
+    ],
 
 ];

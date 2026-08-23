@@ -19,7 +19,7 @@
             <div class="ip-section-title">{{ __('institution.competitions.steps.1.label') }}</div>
             <div class="ip-section-hint">{{ __('institution.competitions.steps.1.hint') }}</div>
 
-            <fieldset class="ia-field" style="margin-bottom: 0;">
+            <fieldset class="ia-field ip-field-last">
                 <legend class="ip-visually-hidden">{{ __('institution.competitions.fields.audience') }}</legend>
 
                 <x-institution.field-label
@@ -30,23 +30,24 @@
                     :example="__('institution.competitions.field_help.audience.example')"
                 />
 
-                <div class="ip-audience-options">
+                <div class="ip-choice-options">
                     @foreach (['national', 'international'] as $audience)
-                        <label class="ip-audience-option" for="audience_{{ $audience }}">
+                        <label class="ip-choice-option" for="audience_{{ $audience }}">
                             <input
                                 id="audience_{{ $audience }}"
                                 type="radio"
                                 name="audience"
                                 value="{{ $audience }}"
                                 @checked(old('audience', $competition->audience?->value) === $audience)
+                                @if ($errors->has('audience')) aria-invalid="true" aria-describedby="audience-error" @endif
                             >
-                            <span class="ip-audience-content">
-                                <span class="ip-audience-heading">
+                            <span class="ip-choice-content">
+                                <span class="ip-choice-heading">
                                     <strong>{{ __('institution.competitions.audiences.'.$audience.'.title') }}</strong>
                                     <span class="ip-audience-language">{{ __('institution.competitions.audiences.'.$audience.'.language') }}</span>
                                 </span>
-                                <span class="ip-audience-description">{{ __('institution.competitions.audiences.'.$audience.'.description') }}</span>
-                                <span class="ip-audience-definition">
+                                <span class="ip-choice-description">{{ __('institution.competitions.audiences.'.$audience.'.description') }}</span>
+                                <span class="ip-choice-definition">
                                     <strong>{{ __('institution.competitions.audience_definition') }}</strong>
                                     {{ __('institution.competitions.audiences.'.$audience.'.definition') }}
                                 </span>
@@ -55,11 +56,11 @@
                     @endforeach
                 </div>
 
-                <x-institution.input-error :messages="$errors->get('audience')" />
+                <x-institution.input-error id="audience-error" :messages="$errors->get('audience')" />
             </fieldset>
         </div>
 
-        <div style="margin-top: 1.5rem; display: flex; gap: .75rem;">
+        <div class="ip-form-actions">
             <button type="submit" name="action" value="draft" class="ia-btn ia-btn-secondary">{{ __('institution.competitions.save_draft') }}</button>
             <button type="submit" name="action" value="next" class="ia-btn">{{ __('institution.competitions.next_step') }} →</button>
         </div>

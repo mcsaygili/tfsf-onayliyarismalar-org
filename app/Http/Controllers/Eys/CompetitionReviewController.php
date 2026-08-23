@@ -25,7 +25,7 @@ class CompetitionReviewController extends Controller
     public function index(Request $request): View
     {
         $competitions = Competition::query()
-            ->with('institution')
+            ->with(['institution', 'translations'])
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->latest()
             ->paginate(20)
@@ -41,7 +41,7 @@ class CompetitionReviewController extends Controller
 
     public function show(Competition $competition): View
     {
-        $competition->load(['institution', 'institutionStaff', 'statusLogs.actor']);
+        $competition->load(['institution', 'institutionStaff', 'competitionType.translations', 'translations', 'statusLogs.actor']);
 
         return view('eys.competitions.show', [
             'competition' => $competition,

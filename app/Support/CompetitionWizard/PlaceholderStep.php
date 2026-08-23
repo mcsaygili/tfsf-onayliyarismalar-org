@@ -2,6 +2,8 @@
 
 namespace App\Support\CompetitionWizard;
 
+use App\Models\Competition;
+
 /**
  * Alanları henüz tasarlanmamış adımlar için (şu an 3-10) — "ileri"
  * tıklanınca hep geçer (rules() boş), view "yakında" içeriği gösterir.
@@ -29,12 +31,22 @@ class PlaceholderStep implements CompetitionStep
         return false;
     }
 
-    public function fillable(): array
+    public function isApplicable(Competition $competition): bool
+    {
+        return true;
+    }
+
+    public function data(Competition $competition): array
     {
         return [];
     }
 
-    public function rules(bool $isDraftSave): array
+    public function persist(Competition $competition, array $validated): void
+    {
+        // Henüz uygulanmamış adımlar veri yazmaz.
+    }
+
+    public function rules(bool $isDraftSave, Competition $competition): array
     {
         return [];
     }

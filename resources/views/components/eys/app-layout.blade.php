@@ -435,6 +435,7 @@
             border-radius: 12px;
             padding: 1.5rem;
         }
+        .ip-card-spaced { margin-bottom: 1.5rem; }
 
         /* Liste sayfalarındaki 3 panel (başlık, filtre, tablo) arası boşluk. */
         .ip-panel-stack { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -514,6 +515,8 @@
 
         /* ---- Form bileşenleri (x-eys.input/label/button/input-error) ---- */
         .ia-field { margin-bottom: 1.35rem; }
+        .ip-field-last { margin-bottom: 0; }
+        .ip-field-hint { margin-top: .35rem; color: var(--ia-muted-dim); font-size: .78rem; line-height: 1.5; }
         .ia-label {
             display: block;
             font-size: .78rem;
@@ -540,6 +543,26 @@
             box-shadow: 0 0 0 3px var(--ia-focus);
         }
         .ia-error { margin-top: .5rem; font-size: .8rem; color: #e0857a; }
+        .ip-language-tabs { display: flex; align-items: stretch; gap: .25rem; border-bottom: 1px solid var(--ia-surface-border); }
+        .ip-language-tab {
+            display: inline-flex;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            padding: .65rem 1rem;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: var(--ia-muted);
+            font: 600 .84rem/1.2 'Figtree', sans-serif;
+            cursor: pointer;
+            transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+        }
+        .ip-language-tab:hover { background: rgba(201, 168, 76, .05); color: var(--ia-cream); }
+        .ip-language-tab:focus-visible { outline: 2px solid var(--ia-copper); outline-offset: -2px; }
+        .ip-language-tab.is-active { border-bottom-color: var(--ia-copper-bright); color: var(--ia-cream); }
+        .ip-language-panel { max-width: 75ch; padding-top: 1.5rem; }
+        .ip-form-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
         /* ---- Tek tip buton stili — tüm eys/* butonları "Geri Dön" tasarımını
            kullanır: şeffaf zemin, ince kenarlık, kompakt boyut. ---- */
         .ia-btn {
@@ -676,7 +699,13 @@
         .ip-pagination-links span.is-current { color: #14161f; background: var(--ia-copper); }
         .ip-pagination-links span.is-disabled { color: var(--ia-muted-dim); }
 
-        .ip-page-actions { display: flex; justify-content: flex-end; margin-bottom: 1.25rem; }
+        .ip-page-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+        .ip-table-actions { text-align: right; white-space: nowrap; }
+        .ip-inline-form { display: inline; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ip-language-tab { transition: none; }
+        }
 
         /* ---- On/Off switch (ör. Yetkili durumu) ---- */
         .ip-switch { display: inline-flex; align-items: center; gap: .65rem; cursor: pointer; user-select: none; }
@@ -948,8 +977,23 @@
                 </div>
             @endcanany
 
-            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage'])
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
+                @can('eys.competition_types.manage')
+                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*') ? 'true' : 'false' }} }">
+                        <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
+                            <x-eys.icon name="layers" />
+                            <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
+                            <x-eys.icon name="chevron-right" class="ip-nav-group-chevron" />
+                        </button>
+                        <div class="ip-nav-group-body" x-show="o" x-cloak x-transition>
+                            <a href="{{ route('eys.competition-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.competition-types.*') ? 'is-active' : '' }}">
+                                <x-eys.icon name="competitions" />
+                                {{ __('eys.nav.competition_types') }}
+                            </a>
+                        </div>
+                    </div>
+                @endcan
                 @can('eys.regulation_sections.manage')
                     <a href="{{ route('eys.regulation-sections.index') }}" class="ip-nav-item {{ request()->routeIs('eys.regulation-sections.*') ? 'is-active' : '' }}">
                         <x-eys.icon name="document" />

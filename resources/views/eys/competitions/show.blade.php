@@ -29,20 +29,34 @@
         </div>
 
         @foreach ($steps as $number => $stepDef)
-            @if ($stepDef->isImplemented())
+            @if ($stepDef->isApplicable($competition) && $stepDef->isImplemented())
                 <div class="ip-card">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
-                    @foreach ($stepDef->fillable() as $field)
-                        @php
-                            $fieldValue = $competition->{$field};
-                            $displayValue = $fieldValue instanceof \BackedEnum
-                                ? __('eys.competitions.field_values.'.$field.'.'.$fieldValue->value)
-                                : $fieldValue;
-                        @endphp
-                        <div class="ia-field">
-                            <x-eys.label :value="__('eys.competitions.fields.'.$field)" />
-                            <div style="color: var(--ia-cream); white-space: pre-line;">{{ $displayValue ?: '—' }}</div>
-                        </div>
+                    @foreach ($stepDef->data($competition) as $field => $fieldValue)
+                        @if (is_array($fieldValue))
+                            <div class="ia-field">
+                                <x-eys.label :value="config('locales.supported.'.$field, strtoupper($field))" />
+                                @foreach ($fieldValue as $translatedField => $translatedValue)
+                                    <div style="margin-top: .75rem;">
+                                        <div style="font-size: .76rem; color: var(--ia-muted-dim); margin-bottom: .25rem;">{{ __('eys.competitions.fields.'.$translatedField) }}</div>
+                                        <div style="color: var(--ia-cream); white-space: pre-line;">{{ $translatedValue ?: '—' }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            @php
+                                $translationKey = 'eys.competitions.field_values.'.$field.'.'.$fieldValue;
+                                $displayValue = match (true) {
+                                    $field === 'competition_type' => $competition->competitionType?->name,
+                                    $fieldValue && trans()->has($translationKey) => __($translationKey),
+                                    default => $fieldValue,
+                                };
+                            @endphp
+                            <div class="ia-field">
+                                <x-eys.label :value="__('eys.competitions.fields.'.$field)" />
+                                <div style="color: var(--ia-cream); white-space: pre-line;">{{ $displayValue ?: '—' }}</div>
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             @endif
@@ -98,8 +112,14 @@
                     @if ($log->changes)
                         <ul style="font-size: .82rem; color: var(--ia-muted); margin-top: .35rem; padding-left: 1.1rem;">
                             @foreach ($log->changes as $field => $diff)
+                                @php
+                                    $fieldParts = explode('.', $field, 2);
+                                    $fieldLabel = count($fieldParts) === 2
+                                        ? config('locales.supported.'.$fieldParts[0], strtoupper($fieldParts[0])).' / '.__('eys.competitions.fields.'.$fieldParts[1])
+                                        : __('eys.competitions.fields.'.$field);
+                                @endphp
                                 <li>
-                                    <strong>{{ __('eys.competitions.fields.'.$field) }}:</strong>
+                                    <strong>{{ $fieldLabel }}:</strong>
                                     <span style="color: #e0857a;">{{ $diff[0] ?: '—' }}</span>
                                     →
                                     <span style="color: #8fcf93;">{{ $diff[1] ?: '—' }}</span>

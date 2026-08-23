@@ -2,6 +2,8 @@
 
 namespace App\Support\CompetitionWizard;
 
+use App\Models\Competition;
+
 /**
  * Yarışma ekleme sihirbazının tek bir adımını tanımlar (bkz. proje planı
  * "Kurum Paneli — Yarışma Ekleme Sihirbazı"). Yeni bir adım eklemek =
@@ -20,15 +22,17 @@ interface CompetitionStep
      */
     public function isImplemented(): bool;
 
-    /**
-     * Bu adımın yazdığı Competition kolonları.
-     *
-     * @return array<int, string>
-     */
-    public function fillable(): array;
+    /** Bu adım mevcut yarışma seçimleri için sihirbazda gösterilmeli mi? */
+    public function isApplicable(Competition $competition): bool;
+
+    /** @return array<string, mixed> */
+    public function data(Competition $competition): array;
+
+    /** @param array<string, mixed> $validated */
+    public function persist(Competition $competition, array $validated): void;
 
     /**
      * @return array<string, array<int, mixed>>
      */
-    public function rules(bool $isDraftSave): array;
+    public function rules(bool $isDraftSave, Competition $competition): array;
 }

@@ -1,6 +1,7 @@
 {{-- $steps: CompetitionStepRegistry::all(), $competition, $step (görüntülenen adım) --}}
 <div class="ip-steps">
     @foreach ($steps as $number => $stepDef)
+        @continue(! $stepDef->isApplicable($competition))
         @php
             $isDone = $number < $competition->current_step;
             $isCurrent = $number === $step;

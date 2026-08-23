@@ -175,8 +175,8 @@ return [
         'steps' => [
             1 => ['label' => 'Yarışma Kitlesi', 'hint' => 'Yarışmanın hedef kitlesini seçin. Bu seçim, İngilizce içerik girilmesi gerekip gerekmediğini belirler.'],
             2 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, düzenleyen kurumu, paydaşları, konusu ve amacı.'],
-            3 => ['label' => 'Adım 3'],
-            4 => ['label' => 'Adım 4'],
+            3 => ['label' => 'Yarışma Alt Yapısı', 'hint' => 'Yarışmanın teknik ve operasyonel alt yapısının TFSF tarafından mı yoksa kurum tarafından mı sağlanacağını seçin.'],
+            4 => ['label' => 'Yarışma Türü', 'hint' => 'TFSF alt yapısında kullanılacak yarışma modelini seçin.'],
             5 => ['label' => 'Adım 5'],
             6 => ['label' => 'Adım 6'],
             7 => ['label' => 'Adım 7'],
@@ -185,8 +185,26 @@ return [
             10 => ['label' => 'Adım 10'],
         ],
 
+        'shared_information_title' => 'Ortak Bilgiler',
+        'translated_information_title' => 'Dil Bazlı Yarışma İçerikleri',
+        'translated_information_hint' => 'Yarışma adını, konusunu ve amacını her dil için ayrı girin.',
+        'language_tabs_label' => 'Yarışma içeriği dili',
+        'language_requirement' => [
+            'national' => 'Ulusal yarışmalarda Türkçe alanlar zorunludur. İngilizce içerik isteğe bağlıdır.',
+            'international' => 'Uluslararası yarışmalarda Türkçe ve İngilizce alanların tamamı zorunludur.',
+            'national_short' => 'TR zorunlu',
+            'international_short' => 'TR ve EN zorunlu',
+        ],
+        'language_status' => [
+            'required' => 'Zorunlu',
+            'optional' => 'İsteğe bağlı',
+            'error' => 'Eksik',
+        ],
+
         'fields' => [
             'audience' => 'Yarışma Kitlesi',
+            'infrastructure_provider' => 'Yarışma Alt Yapısı',
+            'competition_type' => 'Yarışma Türü',
             'name' => 'Yarışma Adı',
             'organizing_institution' => 'Düzenleyen Kurum',
             'organizing_institution_hint' => 'Oturum açtığınız kurum bilgisi otomatik olarak kullanılır ve bu alanda değiştirilemez.',
@@ -214,10 +232,36 @@ return [
             ],
         ],
 
+        'infrastructure_providers' => [
+            'tfsf' => [
+                'title' => 'TFSF Alt Yapısı Kullanılarak',
+                'badge' => 'TFSF hizmetleri dahil',
+                'description' => 'Yarışmanın başvuru, değerlendirme ve raporlama süreçleri TFSF sistemi üzerinden yürütülür.',
+                'scope_title' => 'Dahil olan hizmetler',
+                'definition' => 'TFSF alt yapısı seçildiğinde aşağıdaki operasyon ve raporlama hizmetleri sağlanır.',
+                'services' => ['Jüri', 'Temsilci', 'Kurum', 'Yarışma İstatistikleri', 'Katılım İstatistikleri', 'Almanak'],
+            ],
+            'external' => [
+                'title' => 'TFSF Alt Yapısı Kullanılmadan',
+                'badge' => 'Harici alt yapı',
+                'description' => 'Yarışmanın başvuru, değerlendirme ve sonuç süreçleri kurumun kendi veya üçüncü taraf alt yapısı üzerinden yürütülür.',
+                'scope_title' => 'Kurum sorumluluğu',
+                'definition' => 'Yarışma alt yapısı ve ilgili operasyonlar düzenleyen kurum tarafından sağlanır.',
+            ],
+        ],
+
         'field_help' => [
             'audience' => [
                 'description' => 'Yarışmanın ulaşacağı kitleyi seçin. Ulusal yarışmalarda yalnızca Türkçe, uluslararası yarışmalarda Türkçe ve İngilizce içerik istenir.',
                 'example' => 'Türkiye dışından katılım kabul ediliyorsa “Uluslararası Yarışma” seçin.',
+            ],
+            'infrastructure_provider' => [
+                'description' => 'Katılımcı başvuruları, değerlendirme ve raporlama süreçlerinin hangi sistem üzerinden yürütüleceğini seçin.',
+                'example' => 'Başvuruları ve jüri değerlendirmesini TFSF sistemi üzerinden yönetecekseniz “TFSF Alt Yapısı Kullanılarak” seçeneğini işaretleyin.',
+            ],
+            'competition_type' => [
+                'description' => 'Yarışmanın başvuru, eser üretimi ve değerlendirme biçimine en uygun yarışma modelini seçin.',
+                'example' => 'Eserlerin önceden belirlenen tema ve kategorilerde çevrim içi alınacağı klasik bir yarışma için “Standart Yarışma” seçin.',
             ],
             'name' => [
                 'description' => 'Yarışmanın duyuru, şartname ve sonuç ekranlarında kullanılacak açık ve resmî adını yazın.',
@@ -241,6 +285,7 @@ return [
         ],
 
         'save_draft' => 'Taslak Olarak Kaydet',
+        'no_competition_types' => 'Seçilebilecek aktif bir yarışma türü bulunmuyor. Lütfen sistem yöneticinizle iletişime geçin.',
         'next_step' => 'İleri',
         'draft_saved' => 'Taslak kaydedildi.',
         'coming_soon' => 'Bu adım yakında eklenecek.',

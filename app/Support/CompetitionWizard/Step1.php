@@ -3,6 +3,7 @@
 namespace App\Support\CompetitionWizard;
 
 use App\Enums\CompetitionAudience;
+use App\Models\Competition;
 use Illuminate\Validation\Rule;
 
 /**
@@ -26,12 +27,24 @@ class Step1 implements CompetitionStep
         return true;
     }
 
-    public function fillable(): array
+    public function isApplicable(Competition $competition): bool
     {
-        return ['audience'];
+        return true;
     }
 
-    public function rules(bool $isDraftSave): array
+    public function data(Competition $competition): array
+    {
+        return ['audience' => $competition->audience?->value];
+    }
+
+    public function persist(Competition $competition, array $validated): void
+    {
+        if (array_key_exists('audience', $validated)) {
+            $competition->update(['audience' => $validated['audience']]);
+        }
+    }
+
+    public function rules(bool $isDraftSave, Competition $competition): array
     {
         return [
             'audience' => [

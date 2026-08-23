@@ -177,6 +177,12 @@ return [
         'remember' => 'beni hatırla',
         'name' => 'ad',
         'address' => 'adres',
+        'tr.name' => 'Türkçe yarışma adı',
+        'tr.subject' => 'Türkçe yarışmanın konusu',
+        'tr.purpose' => 'Türkçe yarışmanın amacı',
+        'en.name' => 'İngilizce yarışma adı',
+        'en.subject' => 'İngilizce yarışmanın konusu',
+        'en.purpose' => 'İngilizce yarışmanın amacı',
     ],
 
 ];

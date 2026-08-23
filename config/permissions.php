@@ -72,6 +72,10 @@ return [
                     'label' => 'Şartname Maddesi Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'competition_types' => [
+                    'label' => 'Yarışma Türü Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'file_manager' => [
                     'label' => 'Dosya Yöneticisi',
                     'actions' => ['view', 'create', 'delete', 'manage'],

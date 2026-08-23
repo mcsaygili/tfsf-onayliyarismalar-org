@@ -175,8 +175,8 @@ return [
         'steps' => [
             1 => ['label' => 'Competition Audience', 'hint' => 'Select the target audience. This determines whether English content is required.'],
             2 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, organizing institution, partners, subject, and purpose.'],
-            3 => ['label' => 'Step 3'],
-            4 => ['label' => 'Step 4'],
+            3 => ['label' => 'Competition Infrastructure', 'hint' => 'Choose whether the technical and operational infrastructure will be provided by TFSF or by the institution.'],
+            4 => ['label' => 'Competition Type', 'hint' => 'Select the competition model to be used with the TFSF infrastructure.'],
             5 => ['label' => 'Step 5'],
             6 => ['label' => 'Step 6'],
             7 => ['label' => 'Step 7'],
@@ -185,8 +185,26 @@ return [
             10 => ['label' => 'Step 10'],
         ],
 
+        'shared_information_title' => 'Shared Information',
+        'translated_information_title' => 'Competition Content by Language',
+        'translated_information_hint' => 'Enter the competition name, subject, and purpose separately for each language.',
+        'language_tabs_label' => 'Competition content language',
+        'language_requirement' => [
+            'national' => 'Turkish fields are required for national competitions. English content is optional.',
+            'international' => 'All Turkish and English fields are required for international competitions.',
+            'national_short' => 'TR required',
+            'international_short' => 'TR and EN required',
+        ],
+        'language_status' => [
+            'required' => 'Required',
+            'optional' => 'Optional',
+            'error' => 'Missing',
+        ],
+
         'fields' => [
             'audience' => 'Competition Audience',
+            'infrastructure_provider' => 'Competition Infrastructure',
+            'competition_type' => 'Competition Type',
             'name' => 'Competition Name',
             'organizing_institution' => 'Organizing Institution',
             'organizing_institution_hint' => 'The institution you are signed in as is used automatically and cannot be changed here.',
@@ -214,10 +232,36 @@ return [
             ],
         ],
 
+        'infrastructure_providers' => [
+            'tfsf' => [
+                'title' => 'Using TFSF Infrastructure',
+                'badge' => 'TFSF services included',
+                'description' => 'Competition entry, judging, and reporting processes are managed through the TFSF system.',
+                'scope_title' => 'Included services',
+                'definition' => 'When TFSF infrastructure is selected, the following operational and reporting services are provided.',
+                'services' => ['Jury', 'Representative', 'Institution', 'Competition Statistics', 'Participation Statistics', 'Almanac'],
+            ],
+            'external' => [
+                'title' => 'Without TFSF Infrastructure',
+                'badge' => 'External infrastructure',
+                'description' => 'Competition entry, judging, and results processes are managed through the institution’s own or a third-party infrastructure.',
+                'scope_title' => 'Institution responsibility',
+                'definition' => 'The organizing institution provides the competition infrastructure and related operations.',
+            ],
+        ],
+
         'field_help' => [
             'audience' => [
                 'description' => 'Select the audience the competition will reach. National competitions require Turkish content only; international competitions require both Turkish and English content.',
                 'example' => 'Select “International Competition” when participants outside Türkiye may enter.',
+            ],
+            'infrastructure_provider' => [
+                'description' => 'Choose which system will manage participant entries, judging, and reporting processes.',
+                'example' => 'Select “Using TFSF Infrastructure” if entries and jury evaluations will be managed through the TFSF system.',
+            ],
+            'competition_type' => [
+                'description' => 'Select the competition model that best matches how entries are produced, submitted, and evaluated.',
+                'example' => 'Select “Standard Competition” for a classic competition where entries are submitted online under predefined themes and categories.',
             ],
             'name' => [
                 'description' => 'Enter the clear, official competition name that will appear in announcements, regulations, and results.',
@@ -241,6 +285,7 @@ return [
         ],
 
         'save_draft' => 'Save as Draft',
+        'no_competition_types' => 'There are no active competition types available. Please contact your system administrator.',
         'next_step' => 'Next',
         'draft_saved' => 'Draft saved.',
         'coming_soon' => 'This step will be added soon.',

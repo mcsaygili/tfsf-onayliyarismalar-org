@@ -3,6 +3,7 @@
 namespace Tests\Feature\Eys;
 
 use App\Enums\CompetitionAudience;
+use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Enums\Module;
 use App\Models\Competition;
@@ -36,11 +37,12 @@ class CompetitionReviewTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_inceleme_ekrani_yarisma_kitlesini_okunabilir_gosterir(): void
+    public function test_inceleme_ekrani_yarisma_kitlesini_alt_yapisini_ve_turunu_okunabilir_gosterir(): void
     {
         $reviewer = $this->reviewer();
         $competition = Competition::factory()->create([
             'audience' => CompetitionAudience::International,
+            'infrastructure_provider' => CompetitionInfrastructureProvider::External,
         ]);
 
         $response = $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.show', $competition));
@@ -48,6 +50,16 @@ class CompetitionReviewTest extends TestCase
         $response->assertOk();
         $response->assertSee(__('eys.competitions.fields.audience'));
         $response->assertSee(__('eys.competitions.field_values.audience.international'));
+        $response->assertSee(__('eys.competitions.fields.infrastructure_provider'));
+        $response->assertSee(__('eys.competitions.field_values.infrastructure_provider.external'));
+        $response->assertDontSee(__('eys.competitions.fields.competition_type'));
+
+        $tfsfCompetition = Competition::factory()->create();
+        $tfsfResponse = $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.show', $tfsfCompetition));
+
+        $tfsfResponse->assertOk();
+        $tfsfResponse->assertSee(__('eys.competitions.fields.competition_type'));
+        $tfsfResponse->assertSee($tfsfCompetition->competitionType->name);
     }
 
     public function test_onaylama_durumu_ve_yayin_tarihini_gunceller_ve_log_yazar(): void
@@ -106,16 +118,22 @@ class CompetitionReviewTest extends TestCase
     public function test_kurum_needs_info_durumundayken_alan_degistirirse_field_updated_logu_yazilir_eski_yeni_degerle(): void
     {
         $reviewer = $this->reviewer();
-        $competition = Competition::factory()->needsInfo()->create(['subject' => 'Eski Konu']);
+        $competition = Competition::factory()
+            ->needsInfo()
+            ->withTranslations(['tr' => ['subject' => 'Eski Konu']])
+            ->create();
         $staff = $competition->institutionStaff;
+        $translation = $competition->getTranslation('tr', false);
 
         $this->actingAs($staff, 'institution')->put(
             route('institution.competitions.step.update', [$competition, 2]),
             [
-                'name' => $competition->name,
                 'partners' => $competition->partners,
-                'subject' => 'Yeni Konu',
-                'purpose' => $competition->purpose,
+                'tr' => [
+                    'name' => $translation?->name,
+                    'subject' => 'Yeni Konu',
+                    'purpose' => $translation?->purpose,
+                ],
                 'action' => 'draft',
             ]
         );
@@ -123,7 +141,7 @@ class CompetitionReviewTest extends TestCase
         $log = $competition->statusLogs()->where('action', 'field_updated')->first();
 
         $this->assertNotNull($log);
-        $this->assertSame(['Eski Konu', 'Yeni Konu'], $log->changes['subject']);
+        $this->assertSame(['Eski Konu', 'Yeni Konu'], $log->changes['tr.subject']);
     }
 
     public function test_needs_info_sonrasi_yeniden_gonderilince_resubmitted_logu_yazilir_ve_pending_reviewe_doner(): void

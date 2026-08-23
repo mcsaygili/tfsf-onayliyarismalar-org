@@ -87,6 +87,7 @@ return [
         'section_competition_system' => 'Competition System',
         'regulation_sections' => 'Regulation Sections',
         'regulation_items' => 'Regulation Items',
+        'competition_types' => 'Competition Types',
     ],
 
     'modules' => [
@@ -480,6 +481,36 @@ return [
         'delete_confirm' => 'Are you sure you want to delete this item?',
     ],
 
+    'competition_type' => [
+        'title' => 'Competition Types',
+        'list_hint' => 'Competition models institutions can select for TFSF-powered competitions. Names and descriptions are managed per language.',
+        'new' => 'Add New Competition Type',
+        'edit_title' => 'Edit Competition Type',
+        'code' => 'System Code',
+        'code_hint' => 'Unique technical code used by integrations. Only letters, numbers, dashes, and underscores are allowed.',
+        'name' => 'Name',
+        'description' => 'Description',
+        'description_hint' => 'A short, distinctive explanation shown to institutions while choosing.',
+        'sort_order' => 'Sort Order',
+        'sort_order_hint' => 'Lower values are shown first.',
+        'status' => 'Status',
+        'status_active' => 'Active',
+        'status_inactive' => 'Inactive',
+        'column_name' => 'Competition Type',
+        'column_code' => 'Code',
+        'column_order' => 'Order',
+        'column_status' => 'Status',
+        'empty' => 'No competition types yet.',
+        'filter_name' => 'Search by name',
+        'filter_status' => 'Status',
+        'filter_all_status' => 'All',
+        'created' => 'Competition type created.',
+        'updated' => 'Competition type updated.',
+        'deleted' => 'Competition type deleted.',
+        'delete_action' => 'Delete',
+        'delete_confirm' => 'Are you sure you want to delete this competition type?',
+    ],
+
     'education_level' => [
         'title' => 'Education Level',
         'list_hint' => 'Reference education level list — name is kept per locale, sort order controls display priority.',
@@ -826,6 +857,8 @@ return [
 
         'fields' => [
             'audience' => 'Competition Audience',
+            'infrastructure_provider' => 'Competition Infrastructure',
+            'competition_type' => 'Competition Type',
             'name' => 'Competition Name',
             'partners' => 'Partners and Collaborators',
             'subject' => 'Competition Subject',
@@ -836,6 +869,10 @@ return [
             'audience' => [
                 'national' => 'National Competition',
                 'international' => 'International Competition',
+            ],
+            'infrastructure_provider' => [
+                'tfsf' => 'Using TFSF Infrastructure',
+                'external' => 'Without TFSF Infrastructure',
             ],
         ],
 

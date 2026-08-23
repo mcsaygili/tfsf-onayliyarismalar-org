@@ -25,7 +25,7 @@ class CompetitionController extends Controller
 
         return view('institution.competitions.index', [
             'institution' => $institution,
-            'competitions' => $institution->competitions()->latest()->paginate(10),
+            'competitions' => $institution->competitions()->with('translations')->latest()->paginate(10),
         ]);
     }
 

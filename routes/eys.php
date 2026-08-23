@@ -5,6 +5,7 @@ use App\Http\Controllers\Eys\Auth\NewPasswordController;
 use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Eys\CityController;
 use App\Http\Controllers\Eys\CompetitionReviewController;
+use App\Http\Controllers\Eys\CompetitionTypeController;
 use App\Http\Controllers\Eys\CountryController;
 use App\Http\Controllers\Eys\DashboardController;
 use App\Http\Controllers\Eys\EducationLevelController;
@@ -193,6 +194,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{regulationItem}/duzenle', [RegulationItemController::class, 'edit'])->name('edit');
             Route::patch('{regulationItem}', [RegulationItemController::class, 'update'])->name('update');
             Route::delete('{regulationItem}', [RegulationItemController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('yarisma-turleri')->name('eys.competition-types.')->middleware('permission:eys.competition_types.manage')->group(function () {
+            Route::get('/', [CompetitionTypeController::class, 'index'])->name('index');
+            Route::get('yeni', [CompetitionTypeController::class, 'create'])->name('create');
+            Route::post('/', [CompetitionTypeController::class, 'store'])->name('store');
+            Route::get('{competitionType}/duzenle', [CompetitionTypeController::class, 'edit'])->name('edit');
+            Route::patch('{competitionType}', [CompetitionTypeController::class, 'update'])->name('update');
+            Route::delete('{competitionType}', [CompetitionTypeController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('kurum')->name('eys.institution.')->middleware(['team:Institution', 'permission:institution.dashboard.view'])->group(function () {

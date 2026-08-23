@@ -87,6 +87,7 @@ return [
         'section_competition_system' => 'Yarışma Sistemi',
         'regulation_sections' => 'Şartname Bölümleri',
         'regulation_items' => 'Şartname Maddeleri',
+        'competition_types' => 'Yarışma Türleri',
     ],
 
     'modules' => [
@@ -480,6 +481,36 @@ return [
         'delete_confirm' => 'Bu maddeyi silmek istediğinize emin misiniz?',
     ],
 
+    'competition_type' => [
+        'title' => 'Yarışma Türleri',
+        'list_hint' => 'Kurumların TFSF altyapılı yarışmalarda seçebileceği yarışma modelleri. Ad ve açıklama dil bazında yönetilir.',
+        'new' => 'Yeni Yarışma Türü Ekle',
+        'edit_title' => 'Yarışma Türünü Düzenle',
+        'code' => 'Sistem Kodu',
+        'code_hint' => 'Entegrasyonlarda kullanılan benzersiz teknik kod. Yalnızca harf, rakam, tire ve alt çizgi kullanılabilir.',
+        'name' => 'Ad',
+        'description' => 'Açıklama',
+        'description_hint' => 'Kurumun seçim yaparken göreceği kısa ve ayırt edici açıklama.',
+        'sort_order' => 'Sıra',
+        'sort_order_hint' => 'Küçük değer önce gösterilir.',
+        'status' => 'Durum',
+        'status_active' => 'Aktif',
+        'status_inactive' => 'Pasif',
+        'column_name' => 'Yarışma Türü',
+        'column_code' => 'Kod',
+        'column_order' => 'Sıra',
+        'column_status' => 'Durum',
+        'empty' => 'Henüz kayıtlı bir yarışma türü yok.',
+        'filter_name' => 'Ada göre ara',
+        'filter_status' => 'Durum',
+        'filter_all_status' => 'Tümü',
+        'created' => 'Yarışma türü oluşturuldu.',
+        'updated' => 'Yarışma türü güncellendi.',
+        'deleted' => 'Yarışma türü silindi.',
+        'delete_action' => 'Sil',
+        'delete_confirm' => 'Bu yarışma türünü silmek istediğinize emin misiniz?',
+    ],
+
     'education_level' => [
         'title' => 'Öğrenim Durumu',
         'list_hint' => 'Referans öğrenim durumu listesi — ad dil bazında tutulur, sıralama gösterim önceliğini belirler.',
@@ -826,6 +857,8 @@ return [
 
         'fields' => [
             'audience' => 'Yarışma Kitlesi',
+            'infrastructure_provider' => 'Yarışma Alt Yapısı',
+            'competition_type' => 'Yarışma Türü',
             'name' => 'Yarışma Adı',
             'partners' => 'Paydaş ve İşbirlikçileri',
             'subject' => 'Yarışmanın Konusu',
@@ -836,6 +869,10 @@ return [
             'audience' => [
                 'national' => 'Ulusal Yarışma',
                 'international' => 'Uluslararası Yarışma',
+            ],
+            'infrastructure_provider' => [
+                'tfsf' => 'TFSF Alt Yapısı Kullanılarak',
+                'external' => 'TFSF Alt Yapısı Kullanılmadan',
             ],
         ],
 

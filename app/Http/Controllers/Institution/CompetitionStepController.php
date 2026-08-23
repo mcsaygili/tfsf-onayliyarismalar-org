@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
+use App\Support\CompetitionWizard\Step4;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -31,18 +33,36 @@ class CompetitionStepController extends Controller
             return redirect()->route('institution.competitions.step.show', [$competition, $competition->current_step]);
         }
 
+        $competition->loadMissing('translations');
+
         $stepDef = CompetitionStepRegistry::get($step);
+
+        if (! $stepDef->isApplicable($competition)) {
+            $nextStep = CompetitionStepRegistry::nextApplicableStepNumber($step, $competition);
+
+            if ($competition->current_step === $step && $nextStep > $step) {
+                $competition->forceFill(['current_step' => $nextStep])->save();
+            }
+
+            return redirect()->route('institution.competitions.step.show', [$competition, $nextStep]);
+        }
 
         $view = $stepDef->isImplemented()
             ? 'institution.competitions.step-'.$step
             : 'institution.competitions.step-placeholder';
 
-        return view($view, [
+        $viewData = [
             'competition' => $competition,
             'step' => $step,
             'stepDef' => $stepDef,
             'steps' => CompetitionStepRegistry::all(),
-        ]);
+        ];
+
+        if ($stepDef instanceof Step4) {
+            $viewData['competitionTypes'] = $stepDef->options();
+        }
+
+        return view($view, $viewData);
     }
 
     public function update(Request $request, Competition $competition, int $step): RedirectResponse
@@ -52,21 +72,22 @@ class CompetitionStepController extends Controller
         abort_unless($competition->isEditable(), 403);
 
         $stepDef = CompetitionStepRegistry::get($step);
+        abort_unless($stepDef->isApplicable($competition), 404);
         $isDraftSave = $request->input('action') === 'draft';
 
         $validated = Validator::make(
             $request->all(),
-            $stepDef->rules($isDraftSave)
+            $stepDef->rules($isDraftSave, $competition)
         )->validate();
 
         $wasNeedsInfo = $competition->status === CompetitionStatus::NeedsInfo;
-        $before = $wasNeedsInfo ? $competition->only($stepDef->fillable()) : null;
+        $before = $wasNeedsInfo ? $stepDef->data($competition) : null;
 
         DB::transaction(function () use ($competition, $validated, $wasNeedsInfo, $before, $stepDef) {
-            $competition->update($validated);
+            $stepDef->persist($competition, $validated);
 
             if ($wasNeedsInfo && $before !== null) {
-                $this->logFieldChanges($competition, $stepDef->fillable(), $before);
+                $this->logFieldChanges($competition, $before, $stepDef->data($competition));
             }
         });
 
@@ -76,26 +97,33 @@ class CompetitionStepController extends Controller
                 ->with('status', __('institution.competitions.draft_saved'));
         }
 
-        $competition->forceFill([
-            'current_step' => max($competition->current_step, $step + 1),
-        ])->save();
+        $competition->refresh();
+        $nextStep = CompetitionStepRegistry::nextApplicableStepNumber($step, $competition);
+        $furthestStep = max($competition->current_step, $nextStep);
+        $firstIncompleteStep = CompetitionStepRegistry::firstIncompleteStepNumber($competition);
 
-        $nextStep = min($step + 1, CompetitionStepRegistry::TOTAL_STEPS);
+        $competition->forceFill([
+            'current_step' => $firstIncompleteStep !== null && $firstIncompleteStep < $furthestStep
+                ? $firstIncompleteStep
+                : $furthestStep,
+        ])->save();
 
         return redirect()->route('institution.competitions.step.show', [$competition, $nextStep]);
     }
 
     /**
-     * @param  array<int, string>  $fields
      * @param  array<string, mixed>  $before
+     * @param  array<string, mixed>  $after
      */
-    private function logFieldChanges(Competition $competition, array $fields, array $before): void
+    private function logFieldChanges(Competition $competition, array $before, array $after): void
     {
         $changes = [];
+        $before = Arr::dot($before);
+        $after = Arr::dot($after);
 
-        foreach ($fields as $field) {
-            if ($before[$field] !== $competition->{$field}) {
-                $changes[$field] = [$before[$field], $competition->{$field}];
+        foreach (array_unique([...array_keys($before), ...array_keys($after)]) as $field) {
+            if (($before[$field] ?? null) !== ($after[$field] ?? null)) {
+                $changes[$field] = [$before[$field] ?? null, $after[$field] ?? null];
             }
         }
 
