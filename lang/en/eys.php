@@ -17,6 +17,10 @@ return [
         'back' => 'Back',
         'confirm' => 'Confirm',
         'cancel' => 'Cancel',
+        'save' => 'Save',
+        'all' => 'All',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
         'action_cancelled' => 'Action cancelled.',
     ],
 
@@ -89,6 +93,10 @@ return [
         'regulation_items' => 'Regulation Items',
         'competition_types' => 'Competition Types',
         'participant_approval_processes' => 'Participant Approval Processes',
+        'participant_genders' => 'Participant Genders',
+        'age_eligibility_rules' => 'Age Eligibility Rules',
+        'member_groups' => 'Member Groups',
+        'capture_devices' => 'Photo Capture Devices',
     ],
 
     'modules' => [
@@ -542,6 +550,28 @@ return [
         'delete_confirm' => 'Are you sure you want to delete this participant approval process?',
     ],
 
+    'participant_gender' => [
+        'title' => 'Gender Check Options', 'list_hint' => 'Manage gender check policies used by category eligibility rules.', 'new' => 'New Gender Check', 'edit_title' => 'Edit Gender Check',
+        'code' => 'System Code', 'code_hint' => 'Unique technical code used by the entry validation engine.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
+        'created' => 'Gender option created.', 'updated' => 'Gender option updated.', 'deleted' => 'Gender option deleted.', 'delete_confirm' => 'Are you sure you want to delete this option?',
+    ],
+    'age_eligibility_rule' => [
+        'title' => 'Age Eligibility Rules', 'list_hint' => 'Manage category rules based on completed age on the competition end date.', 'new' => 'New Age Rule', 'edit_title' => 'Edit Age Rule',
+        'code' => 'System Code', 'code_hint' => 'Unique technical code used by entry and regulation engines.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
+        'minimum_age' => 'Minimum Age', 'maximum_age' => 'Maximum Age', 'minimum_inclusive' => 'Include minimum age', 'maximum_inclusive' => 'Include maximum age', 'age_hint' => 'A blank boundary is not applied. Age is calculated on the competition end date.',
+        'created' => 'Age eligibility rule created.', 'updated' => 'Age eligibility rule updated.', 'deleted' => 'Age eligibility rule deleted.', 'delete_confirm' => 'Are you sure you want to delete this age rule?',
+    ],
+    'member_group' => [
+        'title' => 'Member Groups', 'list_hint' => 'Manage membership groups eligible to enter competition categories.', 'new' => 'New Member Group', 'edit_title' => 'Edit Member Group',
+        'code' => 'System Code', 'code_hint' => 'Unique technical code matching the membership code in user profiles.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
+        'created' => 'Member group created.', 'updated' => 'Member group updated.', 'deleted' => 'Member group deleted.', 'delete_confirm' => 'Are you sure you want to delete this group?',
+    ],
+    'capture_device' => [
+        'title' => 'Photo Capture Devices', 'list_hint' => 'Manage devices that may be used to produce photographs entered in a category.', 'new' => 'New Device Option', 'edit_title' => 'Edit Device Option',
+        'code' => 'System Code', 'code_hint' => 'Unique technical code used by the entry validation engine.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
+        'created' => 'Device option created.', 'updated' => 'Device option updated.', 'deleted' => 'Device option deleted.', 'delete_confirm' => 'Are you sure you want to delete this device?',
+    ],
+
     'education_level' => [
         'title' => 'Education Level',
         'list_hint' => 'Reference education level list — name is kept per locale, sort order controls display priority.',
@@ -893,6 +923,10 @@ return [
             'country' => 'Country',
             'city' => 'City',
             'participant_approval_process' => 'Participant Approval Process',
+            'genders' => 'Gender',
+            'birth_date' => 'Date of Birth',
+            'member_groups' => 'Member Groups',
+            'capture_devices' => 'Device Used to Produce the Photograph',
             'name' => 'Competition Name',
             'partners' => 'Partners and Collaborators',
             'subject' => 'Competition Subject',
@@ -909,6 +943,7 @@ return [
                 'external' => 'Without TFSF Infrastructure',
             ],
         ],
+        'unrestricted' => 'No restriction',
 
         'latest_message_title' => 'Latest review note',
         'review_title' => 'Review',

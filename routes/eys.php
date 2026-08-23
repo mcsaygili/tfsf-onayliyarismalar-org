@@ -4,6 +4,7 @@ use App\Http\Controllers\Eys\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Eys\Auth\NewPasswordController;
 use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Eys\CityController;
+use App\Http\Controllers\Eys\CompetitionCategoryReferenceController;
 use App\Http\Controllers\Eys\CompetitionReviewController;
 use App\Http\Controllers\Eys\CompetitionTypeController;
 use App\Http\Controllers\Eys\CountryController;
@@ -214,6 +215,22 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::patch('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'update'])->name('update');
             Route::delete('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'destroy'])->name('destroy');
         });
+
+        foreach ([
+            'katilimci-cinsiyetleri' => ['participant-genders', 'participant-genders'],
+            'yas-uygunluk-kurallari' => ['age-eligibility-rules', 'age-eligibility-rules'],
+            'uye-gruplari' => ['member-groups', 'member-groups'],
+            'fotograf-uretim-cihazlari' => ['capture-devices', 'capture-devices'],
+        ] as $prefix => [$name, $type]) {
+            Route::prefix($prefix)->name("eys.$name.")->middleware('permission:eys.'.str_replace('-', '_', $name).'.manage')->group(function () use ($type) {
+                Route::get('/', [CompetitionCategoryReferenceController::class, 'index'])->defaults('referenceType', $type)->name('index');
+                Route::get('yeni', [CompetitionCategoryReferenceController::class, 'create'])->defaults('referenceType', $type)->name('create');
+                Route::post('/', [CompetitionCategoryReferenceController::class, 'store'])->defaults('referenceType', $type)->name('store');
+                Route::get('{reference}/duzenle', [CompetitionCategoryReferenceController::class, 'edit'])->defaults('referenceType', $type)->name('edit');
+                Route::patch('{reference}', [CompetitionCategoryReferenceController::class, 'update'])->defaults('referenceType', $type)->name('update');
+                Route::delete('{reference}', [CompetitionCategoryReferenceController::class, 'destroy'])->defaults('referenceType', $type)->name('destroy');
+            });
+        }
 
         Route::prefix('kurum')->name('eys.institution.')->middleware(['team:Institution', 'permission:institution.dashboard.view'])->group(function () {
             Route::get('/', [ModuleDashboardController::class, 'institution'])->name('dashboard');

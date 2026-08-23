@@ -58,6 +58,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4 20.5V9l5-3.5V20.5"/><path d="M9 20.5V5.5l6 3v12"/><path d="M15 20.5V9l5 2.5v9"/><path d="M6.5 11h1M6.5 14h1M6.5 17h1M11.5 9.5h1M11.5 12.5h1M11.5 15.5h1M17 13h1M17 16h1"/></svg>
         @break
 
+    @case('calendar')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="3.5" y="5.5" width="17" height="15" rx="1.5"/><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17" stroke-linecap="round"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01" stroke-linecap="round"/></svg>
+        @break
+
     @case('file-manager')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M3.5 7.5a1 1 0 011-1h4.5l2 2h8.5a1 1 0 011 1v9a1 1 0 01-1 1h-15a1 1 0 01-1-1v-11z"/></svg>
         @break

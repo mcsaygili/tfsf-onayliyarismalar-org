@@ -17,6 +17,10 @@ return [
         'back' => 'Geri Dön',
         'confirm' => 'Onay',
         'cancel' => 'İptal',
+        'save' => 'Kaydet',
+        'all' => 'Tümü',
+        'active' => 'Aktif',
+        'inactive' => 'Pasif',
         'action_cancelled' => 'İşlem iptal edildi.',
     ],
 
@@ -89,6 +93,10 @@ return [
         'regulation_items' => 'Şartname Maddeleri',
         'competition_types' => 'Yarışma Türleri',
         'participant_approval_processes' => 'Katılımcı Onay Süreçleri',
+        'participant_genders' => 'Katılımcı Cinsiyetleri',
+        'age_eligibility_rules' => 'Yaş Uygunluk Kuralları',
+        'member_groups' => 'Üye Grupları',
+        'capture_devices' => 'Fotoğraf Üretim Cihazları',
     ],
 
     'modules' => [
@@ -542,6 +550,28 @@ return [
         'delete_confirm' => 'Bu katılımcı onay sürecini silmek istediğinize emin misiniz?',
     ],
 
+    'participant_gender' => [
+        'title' => 'Cinsiyet Kontrol Seçenekleri', 'list_hint' => 'Kategori uygunluk kurallarında kullanılacak cinsiyet kontrol politikalarını yönetin.', 'new' => 'Yeni Cinsiyet Kontrolü', 'edit_title' => 'Cinsiyet Kontrolünü Düzenle',
+        'code' => 'Sistem Kodu', 'code_hint' => 'Katılım motorunda kullanılacak benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
+        'created' => 'Cinsiyet seçeneği oluşturuldu.', 'updated' => 'Cinsiyet seçeneği güncellendi.', 'deleted' => 'Cinsiyet seçeneği silindi.', 'delete_confirm' => 'Bu seçeneği silmek istediğinize emin misiniz?',
+    ],
+    'age_eligibility_rule' => [
+        'title' => 'Yaş Uygunluk Kuralları', 'list_hint' => 'Yarışma sonlanma tarihindeki tamamlanmış yaşa göre uygulanacak kategori kurallarını yönetin.', 'new' => 'Yeni Yaş Kuralı', 'edit_title' => 'Yaş Kuralını Düzenle',
+        'code' => 'Sistem Kodu', 'code_hint' => 'Katılım ve şartname motorunda kullanılacak benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
+        'minimum_age' => 'En Küçük Yaş', 'maximum_age' => 'En Büyük Yaş', 'minimum_inclusive' => 'En küçük yaş dahil', 'maximum_inclusive' => 'En büyük yaş dahil', 'age_hint' => 'Boş bırakılan sınır uygulanmaz. Yaş, yarışma sonlanma tarihinde hesaplanır.',
+        'created' => 'Yaş uygunluk kuralı oluşturuldu.', 'updated' => 'Yaş uygunluk kuralı güncellendi.', 'deleted' => 'Yaş uygunluk kuralı silindi.', 'delete_confirm' => 'Bu yaş kuralını silmek istediğinize emin misiniz?',
+    ],
+    'member_group' => [
+        'title' => 'Üye Grupları', 'list_hint' => 'Kategoriye katılabilecek kullanıcı üyelik gruplarını yönetin.', 'new' => 'Yeni Üye Grubu', 'edit_title' => 'Üye Grubunu Düzenle',
+        'code' => 'Sistem Kodu', 'code_hint' => 'Kullanıcı profilindeki üyelik koduyla eşleşen benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
+        'created' => 'Üye grubu oluşturuldu.', 'updated' => 'Üye grubu güncellendi.', 'deleted' => 'Üye grubu silindi.', 'delete_confirm' => 'Bu grubu silmek istediğinize emin misiniz?',
+    ],
+    'capture_device' => [
+        'title' => 'Fotoğraf Üretim Cihazları', 'list_hint' => 'Kategoriye gönderilecek fotoğrafların üretilebileceği cihaz seçeneklerini yönetin.', 'new' => 'Yeni Cihaz Seçeneği', 'edit_title' => 'Cihaz Seçeneğini Düzenle',
+        'code' => 'Sistem Kodu', 'code_hint' => 'Katılım motorunda kullanılacak benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
+        'created' => 'Cihaz seçeneği oluşturuldu.', 'updated' => 'Cihaz seçeneği güncellendi.', 'deleted' => 'Cihaz seçeneği silindi.', 'delete_confirm' => 'Bu cihazı silmek istediğinize emin misiniz?',
+    ],
+
     'education_level' => [
         'title' => 'Öğrenim Durumu',
         'list_hint' => 'Referans öğrenim durumu listesi — ad dil bazında tutulur, sıralama gösterim önceliğini belirler.',
@@ -893,6 +923,10 @@ return [
             'country' => 'Ülke',
             'city' => 'Şehir',
             'participant_approval_process' => 'Katılımcı Onay Süreci',
+            'genders' => 'Cinsiyet',
+            'birth_date' => 'Doğum Tarihi',
+            'member_groups' => 'Üye Grupları',
+            'capture_devices' => 'Fotoğrafın Üretildiği Cihaz',
             'name' => 'Yarışma Adı',
             'partners' => 'Paydaş ve İşbirlikçileri',
             'subject' => 'Yarışmanın Konusu',
@@ -909,6 +943,7 @@ return [
                 'external' => 'TFSF Alt Yapısı Kullanılmadan',
             ],
         ],
+        'unrestricted' => 'Sınır yok',
 
         'latest_message_title' => 'Son inceleme notu',
         'review_title' => 'İnceleme',

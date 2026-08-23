@@ -977,10 +977,10 @@
                 </div>
             @endcanany
 
-            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.participant_approval_processes.manage'])
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
-                @canany(['eys.competition_types.manage', 'eys.participant_approval_processes.manage'])
-                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*') || request()->routeIs('eys.participant-approval-processes.*') ? 'true' : 'false' }} }">
+                @canany(['eys.competition_types.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage'])
+                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*', 'eys.participant-approval-processes.*', 'eys.participant-genders.*', 'eys.age-eligibility-rules.*', 'eys.member-groups.*', 'eys.capture-devices.*') ? 'true' : 'false' }} }">
                         <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                             <x-eys.icon name="layers" />
                             <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
@@ -992,6 +992,18 @@
                                     <x-eys.icon name="competitions" />
                                     {{ __('eys.nav.competition_types') }}
                                 </a>
+                            @endcan
+                            @can('eys.age_eligibility_rules.manage')
+                                <a href="{{ route('eys.age-eligibility-rules.index') }}" class="ip-nav-item {{ request()->routeIs('eys.age-eligibility-rules.*') ? 'is-active' : '' }}"><x-eys.icon name="calendar" />{{ __('eys.nav.age_eligibility_rules') }}</a>
+                            @endcan
+                            @can('eys.participant_genders.manage')
+                                <a href="{{ route('eys.participant-genders.index') }}" class="ip-nav-item {{ request()->routeIs('eys.participant-genders.*') ? 'is-active' : '' }}"><x-eys.icon name="users" />{{ __('eys.nav.participant_genders') }}</a>
+                            @endcan
+                            @can('eys.member_groups.manage')
+                                <a href="{{ route('eys.member-groups.index') }}" class="ip-nav-item {{ request()->routeIs('eys.member-groups.*') ? 'is-active' : '' }}"><x-eys.icon name="layers" />{{ __('eys.nav.member_groups') }}</a>
+                            @endcan
+                            @can('eys.capture_devices.manage')
+                                <a href="{{ route('eys.capture-devices.index') }}" class="ip-nav-item {{ request()->routeIs('eys.capture-devices.*') ? 'is-active' : '' }}"><x-eys.icon name="camera" />{{ __('eys.nav.capture_devices') }}</a>
                             @endcan
                             @can('eys.participant_approval_processes.manage')
                                 <a href="{{ route('eys.participant-approval-processes.index') }}" class="ip-nav-item {{ request()->routeIs('eys.participant-approval-processes.*') ? 'is-active' : '' }}">

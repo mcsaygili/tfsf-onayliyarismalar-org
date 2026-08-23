@@ -5,12 +5,17 @@ namespace Tests\Feature\Institution;
 use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
+use App\Models\AgeEligibilityRule;
+use App\Models\CaptureDevice;
 use App\Models\Competition;
 use App\Models\CompetitionType;
 use App\Models\Country;
 use App\Models\Institution;
 use App\Models\InstitutionStaff;
+use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
+use App\Models\ParticipantGender;
+use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Database\Seeders\CompetitionTypeSeeder;
 use Database\Seeders\ParticipantApprovalProcessSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +30,20 @@ class CompetitionTest extends TestCase
         $institution = Institution::factory()->create();
 
         return InstitutionStaff::factory()->for($institution)->create();
+    }
+
+    private function completeCategoryStep(Competition $competition): void
+    {
+        $this->seed(CompetitionCategoryReferenceSeeder::class);
+        $category = $competition->categories()->create(['sort_order' => 10, 'age_eligibility_rule_id' => AgeEligibilityRule::firstOrFail()->id]);
+        $translations = ['tr' => ['name' => 'Genel']];
+        if ($competition->requiresEnglishContent()) {
+            $translations['en'] = ['name' => 'General'];
+        }
+        $category->upsertTranslations($translations);
+        $category->genders()->sync([ParticipantGender::firstOrFail()->id]);
+        $category->memberGroups()->sync([MemberGroup::firstOrFail()->id]);
+        $category->captureDevices()->sync([CaptureDevice::firstOrFail()->id]);
     }
 
     public function test_yeni_taslak_basvuru_olusturulabilir(): void
@@ -691,6 +710,7 @@ class CompetitionTest extends TestCase
             'infrastructure_provider' => CompetitionInfrastructureProvider::External,
             'competition_type_id' => null,
         ]);
+        $this->completeCategoryStep($competition);
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
@@ -719,6 +739,7 @@ class CompetitionTest extends TestCase
     {
         $staff = $this->staff();
         $competition = Competition::factory()->for($staff->institution)->for($staff)->create();
+        $this->completeCategoryStep($competition);
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 

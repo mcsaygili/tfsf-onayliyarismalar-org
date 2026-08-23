@@ -33,7 +33,20 @@
                 <div class="ip-card">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
                     @foreach ($stepDef->data($competition) as $field => $fieldValue)
-                        @if (is_array($fieldValue))
+                        @if ($field === 'categories')
+                            @foreach ($competition->categories as $category)
+                                <div class="ia-field" style="padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border);">
+                                    <strong style="color: var(--ia-cream);">{{ $category->getTranslation('tr', false)?->name ?: '—' }}</strong>
+                                    @if ($category->getTranslation('en', false)?->name)<span style="color: var(--ia-muted);"> / {{ $category->getTranslation('en', false)?->name }}</span>@endif
+                                    <div style="margin-top: .65rem; color: var(--ia-muted); font-size: .82rem; line-height: 1.7;">
+                                        <div><b>{{ __('eys.competitions.fields.genders') }}:</b> {{ $category->genders->pluck('name')->join(', ') }}</div>
+                                        <div><b>{{ __('eys.competitions.fields.birth_date') }}:</b> {{ $category->ageEligibilityRule?->name ?: '—' }}</div>
+                                        <div><b>{{ __('eys.competitions.fields.member_groups') }}:</b> {{ $category->memberGroups->pluck('name')->join(', ') }}</div>
+                                        <div><b>{{ __('eys.competitions.fields.capture_devices') }}:</b> {{ $category->captureDevices->pluck('name')->join(', ') }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @elseif (is_array($fieldValue))
                             <div class="ia-field">
                                 <x-eys.label :value="config('locales.supported.'.$field, strtoupper($field))" />
                                 @foreach ($fieldValue as $translatedField => $translatedValue)

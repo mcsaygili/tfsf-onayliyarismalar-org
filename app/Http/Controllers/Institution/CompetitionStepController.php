@@ -10,6 +10,7 @@ use App\Models\Country;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use App\Support\CompetitionWizard\Step4;
 use App\Support\CompetitionWizard\Step5;
+use App\Support\CompetitionWizard\Step6;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -69,6 +70,11 @@ class CompetitionStepController extends Controller
             $viewData['countries'] = $stepDef->countries();
             $viewData['cities'] = $stepDef->cities(old('country', $competition->country_id));
             $viewData['approvalProcesses'] = $stepDef->approvalProcesses();
+        }
+
+        if ($stepDef instanceof Step6) {
+            $viewData['categoryFormData'] = $stepDef->formData($competition);
+            $viewData = array_merge($viewData, $stepDef->options());
         }
 
         return view($view, $viewData);

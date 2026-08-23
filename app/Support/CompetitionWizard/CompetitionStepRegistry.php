@@ -25,9 +25,10 @@ class CompetitionStepRegistry
             3 => new Step3,
             4 => new Step4,
             5 => new Step5,
+            6 => new Step6,
         ];
 
-        for ($i = 6; $i <= self::TOTAL_STEPS; $i++) {
+        for ($i = 7; $i <= self::TOTAL_STEPS; $i++) {
             $steps[$i] = new PlaceholderStep($i);
         }
 

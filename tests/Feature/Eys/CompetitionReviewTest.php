@@ -6,12 +6,17 @@ use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Enums\Module;
+use App\Models\AgeEligibilityRule;
+use App\Models\CaptureDevice;
 use App\Models\Competition;
 use App\Models\CompetitionType;
 use App\Models\Country;
 use App\Models\EysUser;
+use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
+use App\Models\ParticipantGender;
 use App\Models\Permission;
+use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -29,6 +34,16 @@ class CompetitionReviewTest extends TestCase
         $user->givePermissionTo('institution.competitions.manage');
 
         return $user;
+    }
+
+    private function completeCategoryStep(Competition $competition): void
+    {
+        $this->seed(CompetitionCategoryReferenceSeeder::class);
+        $category = $competition->categories()->create(['sort_order' => 10, 'age_eligibility_rule_id' => AgeEligibilityRule::firstOrFail()->id]);
+        $category->upsertTranslations(['tr' => ['name' => 'Genel']]);
+        $category->genders()->sync([ParticipantGender::firstOrFail()->id]);
+        $category->memberGroups()->sync([MemberGroup::firstOrFail()->id]);
+        $category->captureDevices()->sync([CaptureDevice::firstOrFail()->id]);
     }
 
     public function test_yetkisiz_kullanici_yarisma_listesini_goremez(): void
@@ -179,6 +194,7 @@ class CompetitionReviewTest extends TestCase
     {
         $competition = Competition::factory()->needsInfo()->create();
         $staff = $competition->institutionStaff;
+        $this->completeCategoryStep($competition);
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 

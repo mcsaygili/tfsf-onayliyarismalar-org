@@ -83,6 +83,11 @@ class Competition extends Model
         return $this->hasMany(CompetitionStatusLog::class)->latest();
     }
 
+    public function categories(): HasMany
+    {
+        return $this->hasMany(CompetitionCategory::class)->orderBy('sort_order');
+    }
+
     public function isEditable(): bool
     {
         return $this->status->isEditableByInstitution();
