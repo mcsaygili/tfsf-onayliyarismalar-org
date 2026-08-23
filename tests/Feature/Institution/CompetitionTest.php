@@ -482,6 +482,47 @@ class CompetitionTest extends TestCase
         $this->assertSame(6, $competition->current_step);
     }
 
+    public function test_adim_gostergesi_kosullu_adimlari_gizlemek_yerine_pasif_gosterir(): void
+    {
+        $staff = $this->staff();
+        $competitionType = CompetitionType::factory()->create(['code' => 'standard']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $competitionType->id,
+            'infrastructure_provider' => CompetitionInfrastructureProvider::Tfsf,
+            'current_step' => 6,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->get(
+            route('institution.competitions.step.show', [$competition, 6])
+        );
+
+        $response->assertOk()
+            ->assertSee(__('institution.competitions.steps.5.label'))
+            ->assertSee(__('institution.competitions.steps.5.inactive_hint'))
+            ->assertSee('class="ip-step has-tooltip is-unavailable"', false)
+            ->assertDontSee('href="'.route('institution.competitions.step.show', [$competition, 5]).'"', false);
+        $this->assertSame(10, substr_count($response->getContent(), '<span class="ip-step-dot">'));
+    }
+
+    public function test_maraton_yarismasinda_adim_5_aktif_baglanti_olarak_gosterilir(): void
+    {
+        $staff = $this->staff();
+        $competitionType = CompetitionType::factory()->create(['code' => 'photographers-marathon']);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'competition_type_id' => $competitionType->id,
+            'current_step' => 6,
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->get(
+            route('institution.competitions.step.show', [$competition, 6])
+        );
+
+        $response->assertOk()
+            ->assertSee('href="'.route('institution.competitions.step.show', [$competition, 5]).'"', false)
+            ->assertDontSee(__('institution.competitions.steps.5.inactive_hint'));
+        $this->assertSame(10, substr_count($response->getContent(), '<span class="ip-step-dot">'));
+    }
+
     public function test_adim_4_fotografcilar_maratonu_secilince_adim_5e_gecilir(): void
     {
         $staff = $this->staff();

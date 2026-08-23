@@ -35,6 +35,7 @@
             --ia-muted: #c0c0c0;
             --ia-muted-dim: #7a7a8c;
             --ia-focus: rgba(201, 168, 76, .28);
+            --ia-z-tooltip: 40;
             min-height: 100vh;
             display: grid;
             grid-template-columns: 264px 1fr;
@@ -285,6 +286,7 @@
             border-radius: 12px;
             padding: 1.5rem;
         }
+        .ip-card-spaced { margin-bottom: 1.5rem; }
 
         .ip-status {
             margin-bottom: 1.25rem;
@@ -614,6 +616,35 @@
         .ip-step.is-current { color: var(--ia-cream); background: rgba(201,168,76,.1); border-color: rgba(201,168,76,.35); }
         .ip-step.is-current .ip-step-dot { background: var(--ia-copper); border-color: transparent; color: #14161f; }
         .ip-step.is-locked { color: var(--ia-muted-dim); cursor: default; opacity: .55; }
+        .ip-step.is-unavailable { color: var(--ia-muted-dim); cursor: not-allowed; opacity: .45; }
+        .ip-step.is-unavailable .ip-step-dot { border-style: dashed; }
+        .ip-step.has-tooltip { position: relative; }
+        .ip-step.has-tooltip:focus-visible { outline: 2px solid var(--ia-focus); outline-offset: 2px; }
+        .ip-step.has-tooltip::after {
+            position: absolute;
+            z-index: var(--ia-z-tooltip);
+            top: calc(100% + .55rem);
+            left: 50%;
+            width: max-content;
+            max-width: min(280px, calc(100vw - 2rem));
+            padding: .55rem .65rem;
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 8px;
+            background: #20232f;
+            color: var(--ia-cream);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, .24);
+            content: attr(data-tooltip);
+            font-size: .74rem;
+            font-weight: 500;
+            line-height: 1.45;
+            opacity: 0;
+            pointer-events: none;
+            text-align: left;
+            transform: translate(-50%, -4px);
+            transition: opacity .15s ease, transform .15s ease;
+        }
+        .ip-step.has-tooltip:hover::after,
+        .ip-step.has-tooltip:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
 
         .ip-row-icon-btn {
             display: inline-flex;
