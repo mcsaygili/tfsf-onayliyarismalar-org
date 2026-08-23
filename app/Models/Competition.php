@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionStatus;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * bilinçli olarak Fillable DIŞINDA — bunlar yalnızca controller mantığıyla
  * (CompetitionController::submit / CompetitionReviewController) değişmeli.
  */
-#[Fillable(['institution_id', 'institution_staff_id', 'name', 'partners', 'subject', 'purpose'])]
+#[Fillable(['institution_id', 'institution_staff_id', 'audience', 'name', 'partners', 'subject', 'purpose'])]
 class Competition extends Model
 {
     use HasFactory, HasUuids;
@@ -27,6 +28,7 @@ class Competition extends Model
     protected function casts(): array
     {
         return [
+            'audience' => CompetitionAudience::class,
             'status' => CompetitionStatus::class,
             'current_step' => 'integer',
             'submitted_at' => 'datetime',
@@ -63,5 +65,10 @@ class Competition extends Model
     public function canSubmit(): bool
     {
         return CompetitionStepRegistry::canSubmit($this);
+    }
+
+    public function requiresEnglishContent(): bool
+    {
+        return $this->audience === CompetitionAudience::International;
     }
 }

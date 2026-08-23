@@ -825,10 +825,18 @@ return [
         ],
 
         'fields' => [
+            'audience' => 'Competition Audience',
             'name' => 'Competition Name',
             'partners' => 'Partners and Collaborators',
             'subject' => 'Competition Subject',
             'purpose' => 'Competition Purpose',
+        ],
+
+        'field_values' => [
+            'audience' => [
+                'national' => 'National Competition',
+                'international' => 'International Competition',
+            ],
         ],
 
         'latest_message_title' => 'Latest review note',

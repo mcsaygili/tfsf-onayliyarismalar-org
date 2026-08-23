@@ -19,9 +19,12 @@ class CompetitionStepRegistry
      */
     public static function all(): array
     {
-        $steps = [1 => new Step1];
+        $steps = [
+            1 => new Step1,
+            2 => new Step2,
+        ];
 
-        for ($i = 2; $i <= self::TOTAL_STEPS; $i++) {
+        for ($i = 3; $i <= self::TOTAL_STEPS; $i++) {
             $steps[$i] = new PlaceholderStep($i);
         }
 

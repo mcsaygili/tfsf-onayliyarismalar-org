@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\Institution;
@@ -22,6 +23,7 @@ class CompetitionFactory extends Factory
         return [
             'institution_id' => $institution->id,
             'institution_staff_id' => InstitutionStaff::factory()->for($institution)->create()->id,
+            'audience' => CompetitionAudience::National,
             'name' => fake()->sentence(3),
             'partners' => fake()->sentence(),
             'subject' => fake()->paragraph(),

@@ -825,10 +825,18 @@ return [
         ],
 
         'fields' => [
+            'audience' => 'Yarışma Kitlesi',
             'name' => 'Yarışma Adı',
             'partners' => 'Paydaş ve İşbirlikçileri',
             'subject' => 'Yarışmanın Konusu',
             'purpose' => 'Yarışmanın Amacı',
+        ],
+
+        'field_values' => [
+            'audience' => [
+                'national' => 'Ulusal Yarışma',
+                'international' => 'Uluslararası Yarışma',
+            ],
         ],
 
         'latest_message_title' => 'Son inceleme notu',

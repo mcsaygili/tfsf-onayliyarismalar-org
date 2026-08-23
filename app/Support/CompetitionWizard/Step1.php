@@ -2,11 +2,12 @@
 
 namespace App\Support\CompetitionWizard;
 
+use App\Enums\CompetitionAudience;
+use Illuminate\Validation\Rule;
+
 /**
- * Adım 1 — Yarışma Bilgileri: Yarışma Adı, Paydaş ve İşbirlikçileri,
- * Yarışmanın Konusu, Yarışmanın Amacı. Düzenleyen kurum form verisi değildir;
- * yarışmanın Institution ilişkisi üzerinden salt okunur gösterilir. Paydaşlar
- * opsiyoneldir; konu ve amaç en fazla 1000 karakter olabilir.
+ * Adım 1 — Yarışma Kitlesi: ulusal/uluslararası seçimi. Bu seçim ilerleyen
+ * adımlarda İngilizce içerik alanlarının gerekip gerekmediğini belirler.
  */
 class Step1 implements CompetitionStep
 {
@@ -27,18 +28,16 @@ class Step1 implements CompetitionStep
 
     public function fillable(): array
     {
-        return ['name', 'partners', 'subject', 'purpose'];
+        return ['audience'];
     }
 
     public function rules(bool $isDraftSave): array
     {
-        $required = $isDraftSave ? 'nullable' : 'required';
-
         return [
-            'name' => [$required, 'string', 'max:255'],
-            'partners' => ['nullable', 'string', 'max:2000'],
-            'subject' => [$required, 'string', 'max:1000'],
-            'purpose' => [$required, 'string', 'max:1000'],
+            'audience' => [
+                $isDraftSave ? 'nullable' : 'required',
+                Rule::enum(CompetitionAudience::class),
+            ],
         ];
     }
 }

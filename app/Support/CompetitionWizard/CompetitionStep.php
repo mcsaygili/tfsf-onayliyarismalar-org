@@ -15,7 +15,7 @@ interface CompetitionStep
     public function label(): string;
 
     /**
-     * Henüz gerçek alanları tasarlanmamış adımlar (şu an 2-10) için false
+     * Henüz gerçek alanları tasarlanmamış adımlar (şu an 3-10) için false
      * döner — view'da "yakında" içeriği gösterilir, rules() boş kalır.
      */
     public function isImplemented(): bool;

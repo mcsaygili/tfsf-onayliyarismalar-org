@@ -3,7 +3,7 @@
 namespace App\Support\CompetitionWizard;
 
 /**
- * Alanları henüz tasarlanmamış adımlar için (şu an 2-10) — "ileri"
+ * Alanları henüz tasarlanmamış adımlar için (şu an 3-10) — "ileri"
  * tıklanınca hep geçer (rules() boş), view "yakında" içeriği gösterir.
  * Bir adımın gerçek alanları belirlenince bu sınıfın yerine kendi
  * CompetitionStep implementasyonu (Step1 gibi) geçirilir.

@@ -33,9 +33,15 @@
                 <div class="ip-card">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
                     @foreach ($stepDef->fillable() as $field)
+                        @php
+                            $fieldValue = $competition->{$field};
+                            $displayValue = $fieldValue instanceof \BackedEnum
+                                ? __('eys.competitions.field_values.'.$field.'.'.$fieldValue->value)
+                                : $fieldValue;
+                        @endphp
                         <div class="ia-field">
                             <x-eys.label :value="__('eys.competitions.fields.'.$field)" />
-                            <div style="color: var(--ia-cream); white-space: pre-line;">{{ $competition->{$field} ?: '—' }}</div>
+                            <div style="color: var(--ia-cream); white-space: pre-line;">{{ $displayValue ?: '—' }}</div>
                         </div>
                     @endforeach
                 </div>

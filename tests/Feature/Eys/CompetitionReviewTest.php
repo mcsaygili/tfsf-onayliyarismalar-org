@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Eys;
 
+use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionStatus;
 use App\Enums\Module;
 use App\Models\Competition;
@@ -33,6 +34,20 @@ class CompetitionReviewTest extends TestCase
         $response = $this->actingAs($user, 'eys')->get(route('eys.competitions.index'));
 
         $response->assertForbidden();
+    }
+
+    public function test_inceleme_ekrani_yarisma_kitlesini_okunabilir_gosterir(): void
+    {
+        $reviewer = $this->reviewer();
+        $competition = Competition::factory()->create([
+            'audience' => CompetitionAudience::International,
+        ]);
+
+        $response = $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.show', $competition));
+
+        $response->assertOk();
+        $response->assertSee(__('eys.competitions.fields.audience'));
+        $response->assertSee(__('eys.competitions.field_values.audience.international'));
     }
 
     public function test_onaylama_durumu_ve_yayin_tarihini_gunceller_ve_log_yazar(): void
@@ -95,7 +110,7 @@ class CompetitionReviewTest extends TestCase
         $staff = $competition->institutionStaff;
 
         $this->actingAs($staff, 'institution')->put(
-            route('institution.competitions.step.update', [$competition, 1]),
+            route('institution.competitions.step.update', [$competition, 2]),
             [
                 'name' => $competition->name,
                 'partners' => $competition->partners,

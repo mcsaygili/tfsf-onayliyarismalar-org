@@ -173,8 +173,8 @@ return [
         ],
 
         'steps' => [
-            1 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, organizing institution, partners, subject, and purpose.'],
-            2 => ['label' => 'Step 2'],
+            1 => ['label' => 'Competition Audience', 'hint' => 'Select the target audience. This determines whether English content is required.'],
+            2 => ['label' => 'Competition Details', 'hint' => 'Your competition\'s name, organizing institution, partners, subject, and purpose.'],
             3 => ['label' => 'Step 3'],
             4 => ['label' => 'Step 4'],
             5 => ['label' => 'Step 5'],
@@ -186,6 +186,7 @@ return [
         ],
 
         'fields' => [
+            'audience' => 'Competition Audience',
             'name' => 'Competition Name',
             'organizing_institution' => 'Organizing Institution',
             'organizing_institution_hint' => 'The institution you are signed in as is used automatically and cannot be changed here.',
@@ -197,7 +198,27 @@ return [
             'characters_remaining' => ':remaining characters remaining (maximum :max).',
         ],
 
+        'audience_definition' => 'Audience definition',
+        'audiences' => [
+            'national' => [
+                'title' => 'National Competition',
+                'language' => 'Turkish content only',
+                'description' => 'The application, regulations, and related competition content are prepared only in Turkish.',
+                'definition' => "Competitions organized at the national level are open only to citizens of the Republic of Türkiye who hold a valid Republic of Türkiye identity number.\n\nForeign nationals who apply to institutions authorized to issue work permits or a “Work Permit Exemption Confirmation Document”, which also serves as a residence permit—including the Ministry of Labour and Social Security, the Ministry of Economy, the Ministry of Culture and Tourism, and the Council of Higher Education—may obtain a foreigner identification number if those institutions electronically submit their records to the General Directorate of Population and Citizenship Affairs. Persons in Türkiye who hold a “Stateless Person Identity Document”, have been granted a residence permit for at least ninety days for any purpose, are held as detainees or convicts in prisons or under administrative detention in removal centers, hold an “International Protection Applicant Identity Document”, are under “temporary protection”, or are “foreign nationals legally present in Türkiye” may also obtain a foreigner identification number by applying to the Provincial Directorates of Migration Management.\n\nPersons holding this type of identification number may not enter these national competitions. They may instead enter TFSF-approved international competitions.",
+            ],
+            'international' => [
+                'title' => 'International Competition',
+                'language' => 'Turkish and English content',
+                'description' => 'The application, regulations, and related competition content are prepared in both Turkish and English.',
+                'definition' => 'International competitions are open to participants from Türkiye and every country worldwide. No Republic of Türkiye identity number check or other identity verification is performed during entry.',
+            ],
+        ],
+
         'field_help' => [
+            'audience' => [
+                'description' => 'Select the audience the competition will reach. National competitions require Turkish content only; international competitions require both Turkish and English content.',
+                'example' => 'Select “International Competition” when participants outside Türkiye may enter.',
+            ],
             'name' => [
                 'description' => 'Enter the clear, official competition name that will appear in announcements, regulations, and results.',
                 'example' => 'TFSF 2026 National Nature Photography Competition',

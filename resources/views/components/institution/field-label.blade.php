@@ -3,6 +3,7 @@
     'value',
     'description',
     'example',
+    'group' => false,
 ])
 
 @php
@@ -12,7 +13,11 @@
 
 <div class="ip-field-label-wrap" x-data="{ helpOpen: false }" x-on:keydown.escape.window="if (helpOpen) { helpOpen = false; $nextTick(() => $refs.trigger.focus()) }">
     <div class="ip-field-label-row">
-        <label for="{{ $for }}" class="ia-label">{{ $value }}</label>
+        @if ($group)
+            <span class="ia-label">{{ $value }}</span>
+        @else
+            <label for="{{ $for }}" class="ia-label">{{ $value }}</label>
+        @endif
         <button
             type="button"
             class="ip-field-help-button"

@@ -370,7 +370,7 @@
             cursor: pointer;
         }
         .ip-field-help-description { margin: 0; color: var(--ia-muted); font-size: .9rem; line-height: 1.6; }
-        .ip-field-help-example { margin-top: 1rem; padding: .85rem 1rem; border-left: 3px solid var(--ia-copper); background: rgba(201, 168, 76, .07); border-radius: 0 8px 8px 0; }
+        .ip-field-help-example { margin-top: 1rem; padding: .85rem 1rem; border: 1px solid rgba(201, 168, 76, .28); background: rgba(201, 168, 76, .07); border-radius: 8px; }
         .ip-field-help-example strong { display: block; margin-bottom: .3rem; color: var(--ia-copper-bright); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; }
         .ip-field-help-example span { color: var(--ia-cream); font-size: .88rem; line-height: 1.5; }
         .ia-input {
@@ -392,6 +392,31 @@
             box-shadow: 0 0 0 3px var(--ia-focus);
         }
         .ia-error { margin-top: .5rem; font-size: .8rem; color: #e0857a; }
+        .ip-visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        .ip-audience-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 1rem; }
+        .ip-audience-option {
+            display: flex;
+            align-items: flex-start;
+            gap: .8rem;
+            padding: 1.15rem;
+            border: 1px solid var(--ia-surface-border);
+            border-radius: 10px;
+            background: var(--ia-bg);
+            cursor: pointer;
+            transition: border-color .18s ease, background-color .18s ease;
+        }
+        .ip-audience-option:hover { border-color: rgba(201, 168, 76, .55); background: rgba(201, 168, 76, .035); }
+        .ip-audience-option:has(input:checked) { border-color: var(--ia-copper); background: rgba(201, 168, 76, .09); }
+        .ip-audience-option:focus-within { box-shadow: 0 0 0 3px var(--ia-focus); }
+        .ip-audience-option input { width: 18px; height: 18px; margin: .15rem 0 0; flex-shrink: 0; accent-color: var(--ia-copper); }
+        .ip-audience-content { display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
+        .ip-audience-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .55rem; }
+        .ip-audience-heading strong { color: var(--ia-cream); font-size: 1rem; }
+        .ip-audience-language { padding: .25rem .5rem; border-radius: 999px; background: rgba(201, 168, 76, .12); color: var(--ia-copper-bright); font-size: .72rem; font-weight: 700; }
+        .ip-audience-description { color: var(--ia-muted); font-size: .86rem; line-height: 1.55; }
+        .ip-audience-definition { max-width: 75ch; padding-top: .7rem; border-top: 1px solid var(--ia-surface-border); color: var(--ia-muted); font-size: .8rem; line-height: 1.5; white-space: pre-line; }
+        .ip-audience-definition strong { display: block; margin-bottom: .2rem; color: var(--ia-cream); }
+        @media (prefers-reduced-motion: reduce) { .ip-audience-option { transition: none; } }
         .ia-btn {
             display: inline-flex;
             align-items: center;
@@ -419,7 +444,10 @@
         .ia-btn-secondary svg { width: 14px; height: 14px; }
 
         .ip-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-        @media (max-width: 640px) { .ip-grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+            .ip-grid-2,
+            .ip-audience-options { grid-template-columns: 1fr; }
+        }
 
         /* ---- Liste araç çubuğu / tablo / rozet (ör. Yetkili Bilgileri) ---- */
         .ip-toolbar {

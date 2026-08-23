@@ -9,8 +9,8 @@ return new class extends Migration
     /**
      * Bir kurumun yarışma başvurusu — taslaktan yayına kadar tek kayıt
      * (bkz. proje planı "Kurum Paneli — Yarışma Ekleme Sihirbazı"). Sihirbaz
-     * 10 adımlı tasarlandı ama şimdilik sadece 1. adımın alanları
-     * (name/partners/subject/purpose) gerçek. Düzenleyen kurum ayrıca
+     * 10 adımlı tasarlandı. Yarışma bilgileri (name/partners/subject/purpose)
+     * 2. adımda yönetilir. Düzenleyen kurum ayrıca
      * kopyalanmaz; institution_id ilişkisi üzerinden salt okunur gösterilir.
      * Kalan adımlar
      * app/Support/CompetitionWizard/PlaceholderStep üzerinden ilerliyor,
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->foreignUuid('institution_id')->constrained('institutions')->restrictOnDelete();
             $table->foreignUuid('institution_staff_id')->nullable()->constrained('institution_staff')->nullOnDelete();
 
-            // Adım 1 — Yarışma Bilgileri
+            // Adım 2 — Yarışma Bilgileri
             $table->string('name')->nullable();
             $table->text('partners')->nullable();
             $table->text('subject')->nullable();

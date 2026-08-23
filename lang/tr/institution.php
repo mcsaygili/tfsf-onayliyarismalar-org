@@ -173,8 +173,8 @@ return [
         ],
 
         'steps' => [
-            1 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, düzenleyen kurumu, paydaşları, konusu ve amacı.'],
-            2 => ['label' => 'Adım 2'],
+            1 => ['label' => 'Yarışma Kitlesi', 'hint' => 'Yarışmanın hedef kitlesini seçin. Bu seçim, İngilizce içerik girilmesi gerekip gerekmediğini belirler.'],
+            2 => ['label' => 'Yarışma Bilgileri', 'hint' => 'Yarışmanızın adı, düzenleyen kurumu, paydaşları, konusu ve amacı.'],
             3 => ['label' => 'Adım 3'],
             4 => ['label' => 'Adım 4'],
             5 => ['label' => 'Adım 5'],
@@ -186,6 +186,7 @@ return [
         ],
 
         'fields' => [
+            'audience' => 'Yarışma Kitlesi',
             'name' => 'Yarışma Adı',
             'organizing_institution' => 'Düzenleyen Kurum',
             'organizing_institution_hint' => 'Oturum açtığınız kurum bilgisi otomatik olarak kullanılır ve bu alanda değiştirilemez.',
@@ -197,7 +198,27 @@ return [
             'characters_remaining' => ':remaining karakter kaldı (en fazla :max).',
         ],
 
+        'audience_definition' => 'Kitle tanımı',
+        'audiences' => [
+            'national' => [
+                'title' => 'Ulusal Yarışma',
+                'language' => 'Yalnızca Türkçe içerik',
+                'description' => 'Yarışma başvurusu, şartnamesi ve ilgili içerikler yalnızca Türkçe hazırlanır.',
+                'definition' => "Ulusal düzeyde düzenlenen yarışmalar sadece geçerli Türkiye Cumhuriyeti kimlik numarası taşıyan T.C. vatandaşlara açıktır.\n\nÇalışma izni veya aynı zamanda ikamet izni yerine geçen “Çalışma İzni Muafiyet Teyit Belgesi” düzenlemeye yetkili kurumlardan; Çalışma ve Sosyal Güvenlik Bakanlığına, Ekonomi Bakanlığına, Kültür ve Turizm Bakanlığına, YÖK Başkanlığına, müracaat eden yabancıların kayıtlarının bu kurumlar tarafından Nüfus ve Vatandaşlık İşleri Genel Müdürlüğüne elektronik ortamda gönderilmesi halinde yabancılara mahsus kimlik numarası almaları mümkündür. Ayrıca Türkiye’de “Vatansız Kişi Kimlik Belgesi” alanlar ve herhangi bir amaçla “en az doksan gün süreli ikamet izni” verilenler, “tutuklu veya hükümlü olarak cezaevlerinde ya da idari gözetim altında geri gönderme merkezlerinde bulunan yabancılar”, “Uluslararası Koruma Başvuru Sahibi Kimlik Belgesi” düzenlenen yabancılar, “geçici koruma” statüsünde bulunan yabancılar ve “Türkiye’de yasal olarak bulunan yabancılar” ın da Göç İdaresi İl Müdürlüklerine müracaatları halinde yabancılara mahsus kimlik numarası almaları mümkündür.\n\nBu tip kimlik numarası taşıyan kişiler bu ulusal yarışmalara katılamazlar. Bu kişiler dilerlerse TFSF onaylı uluslararası yarışmalara katılabilirler.",
+            ],
+            'international' => [
+                'title' => 'Uluslararası Yarışma',
+                'language' => 'Türkçe ve İngilizce içerik',
+                'description' => 'Yarışma başvurusu, şartnamesi ve ilgili içerikler Türkçe ve İngilizce hazırlanır.',
+                'definition' => 'Uluslararası yarışmalar Türkiye’den ve dünyanın tüm ülkelerinden katılımcılara açıktır. Katılım sırasında T.C. kimlik numarası kontrolü veya başka bir kimlik doğrulaması yapılmaz.',
+            ],
+        ],
+
         'field_help' => [
+            'audience' => [
+                'description' => 'Yarışmanın ulaşacağı kitleyi seçin. Ulusal yarışmalarda yalnızca Türkçe, uluslararası yarışmalarda Türkçe ve İngilizce içerik istenir.',
+                'example' => 'Türkiye dışından katılım kabul ediliyorsa “Uluslararası Yarışma” seçin.',
+            ],
             'name' => [
                 'description' => 'Yarışmanın duyuru, şartname ve sonuç ekranlarında kullanılacak açık ve resmî adını yazın.',
                 'example' => 'TFSF 2026 Ulusal Doğa Fotoğraf Yarışması',
