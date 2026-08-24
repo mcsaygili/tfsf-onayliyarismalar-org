@@ -39,6 +39,7 @@ class RegulationSectionTest extends TestCase
         $user = $this->admin();
 
         $response = $this->actingAs($user, 'eys')->post(route('eys.regulation-sections.store'), [
+            'code' => 'competition-conditions',
             'status' => '1',
             'sort_order' => '50',
             'tr' => ['name' => 'Yarışma Koşulları'],
@@ -74,6 +75,7 @@ class RegulationSectionTest extends TestCase
         $section->upsertTranslations(['tr' => ['name' => 'Eski Ad'], 'en' => ['name' => 'Old Name']]);
 
         $response = $this->actingAs($user, 'eys')->patch(route('eys.regulation-sections.update', $section), [
+            'code' => 'updated-section',
             'status' => '0',
             'sort_order' => '99',
             'tr' => ['name' => 'Yeni Ad'],

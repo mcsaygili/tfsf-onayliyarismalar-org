@@ -8,6 +8,13 @@
     <div class="ip-card" style="margin-bottom: 1.5rem;">
         <div class="ip-section-title">{{ __('eys.regulation_section.title') }}</div>
 
+        <div class="ia-field">
+            <x-eys.label for="code" :value="__('eys.regulation_section.code')" />
+            @if ($section->is_system)<input type="hidden" name="code" value="{{ $section->code }}">@endif
+            <x-eys.input id="code" :name="$section->is_system ? null : 'code'" :disabled="$section->is_system" :value="old('code', $section->code)" />
+            <x-eys.input-error :messages="$errors->get('code')" />
+        </div>
+
         <div class="ip-grid-2">
             <div class="ia-field" style="margin-bottom: 0;">
                 <x-eys.label for="sort_order" :value="__('eys.regulation_section.sort_order')" />

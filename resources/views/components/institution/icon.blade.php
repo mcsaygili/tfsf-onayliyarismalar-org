@@ -6,6 +6,10 @@
     bir ikon eklerken burada bir @case tanımlamak yeterli.
 --}}
 @switch($name)
+    @case('menu')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" {{ $attributes }}><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        @break
+
     @case('dashboard')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
         @break

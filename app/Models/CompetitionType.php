@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['code', 'sort_order', 'status'])]
+#[Fillable(['code', 'requires_location', 'requires_approval_process', 'sort_order', 'status', 'is_system', 'version'])]
 class CompetitionType extends Model
 {
     use HasFactory, HasTranslations, HasUuids, SoftDeletes;
@@ -22,6 +22,10 @@ class CompetitionType extends Model
     {
         return [
             'status' => 'boolean',
+            'requires_location' => 'boolean',
+            'requires_approval_process' => 'boolean',
+            'is_system' => 'boolean',
+            'version' => 'integer',
             'sort_order' => 'integer',
         ];
     }

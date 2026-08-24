@@ -6,6 +6,21 @@
         $englishHasErrors = $errors->hasAny(['en.name', 'en.subject', 'en.purpose']);
         $initialLocale = old('_locale', $englishHasErrors ? 'en' : config('locales.default'));
         $requiresEnglish = $competition->requiresEnglishContent();
+        $dateFields = ['application_starts_at', 'application_ends_at', 'competition_ends_at'];
+        $calendarParts = [];
+        $calendarValues = [];
+
+        foreach ($dateFields as $dateField) {
+            $date = $competition->{$dateField};
+            $calendarValues[$dateField] = old($dateField, $date?->format('Y-m-d\TH:i'));
+            $calendarParts[$dateField] = [
+                'day' => old($dateField.'_day', $date?->format('d')),
+                'month' => old($dateField.'_month', $date?->format('m')),
+                'year' => old($dateField.'_year', $date?->format('Y')),
+                'hour' => old($dateField.'_hour', $date?->format('H')),
+                'minute' => old($dateField.'_minute', $date?->format('i')),
+            ];
+        }
     @endphp
 
     @if ($competition->status->value === 'needs_info' && $competition->latest_review_message)
@@ -18,8 +33,55 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('institution.competitions.step.update', [$competition, $step]) }}" novalidate autocomplete="off"
-          x-data="{ locale: @js($initialLocale) }">
+    <form method="POST" action="{{ route('institution.competitions.step.update', [$competition, $step]) }}" novalidate autocomplete="off" data-wizard-form
+          x-data="{
+              locale: @js($initialLocale),
+              partners: @js(collect(explode(',', (string) old('partners', $competition->partners)))->map(fn ($partner) => trim($partner))->filter()->values()),
+              partnerInput: '',
+              calendar: @js($calendarParts),
+              calendarLimits: {
+                  day: { min: 1, max: 31 },
+                  month: { min: 1, max: 12 },
+                  year: { min: 2020, max: 2040 },
+                  hour: { min: 0, max: 23 },
+                  minute: { min: 0, max: 59 },
+              },
+              dateTimeValue(field) {
+                  const parts = this.calendar[field];
+                  const values = ['day', 'month', 'year', 'hour', 'minute'].map(part => String(parts[part] ?? '').trim());
+                  if (values.some(value => value === '')) return '';
+
+                  const [day, month, year, hour, minute] = values;
+                  return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+              },
+              constrainCalendarPart(field, part, event) {
+                  const limits = this.calendarLimits[part];
+                  const rawValue = String(event.target.value ?? '');
+
+                  if (rawValue === '') {
+                      this.calendar[field][part] = '';
+                      return;
+                  }
+
+                  const value = Math.min(limits.max, Number.parseInt(rawValue, 10));
+                  event.target.value = String(value);
+                  this.calendar[field][part] = String(value);
+              },
+              finalizeCalendarPart(field, part, event) {
+                  if (event.target.value === '') return;
+
+                  const limits = this.calendarLimits[part];
+                  const value = Math.min(limits.max, Math.max(limits.min, Number.parseInt(event.target.value, 10)));
+                  event.target.value = String(value);
+                  this.calendar[field][part] = String(value);
+              },
+              addPartners() {
+                  this.partnerInput.split(',').map(value => value.trim()).filter(Boolean).forEach(value => {
+                      if (!this.partners.some(existing => existing.toLocaleLowerCase('tr-TR') === value.toLocaleLowerCase('tr-TR'))) this.partners.push(value);
+                  });
+                  this.partnerInput = '';
+              },
+          }">
         @csrf
         @method('PUT')
 
@@ -39,12 +101,83 @@
                     </div>
 
                     <div class="ia-field">
-                        <x-institution.field-label for="partners" :value="__('institution.competitions.fields.partners')" :description="__('institution.competitions.field_help.partners.description')" :example="__('institution.competitions.field_help.partners.example')" />
-                        <x-institution.input id="partners" type="text" name="partners" :value="old('partners', $competition->partners)" :placeholder="__('institution.competitions.fields.partners_placeholder')" autocomplete="off" />
+                        <x-institution.field-label for="partners_entry" :value="__('institution.competitions.fields.partners')" :description="__('institution.competitions.field_help.partners.description')" :example="__('institution.competitions.field_help.partners.example')" />
+                        <input id="partners" type="hidden" name="partners" :value="partners.join(', ')">
+                        <div class="ip-token-input" @click="$refs.partnerEntry.focus()">
+                            <template x-for="(partner, index) in partners" :key="partner"><span class="ip-token"><span x-text="partner"></span><button type="button" @click.stop="partners.splice(index, 1)" :aria-label="@js(__('institution.competitions.remove_partner')) + ' ' + partner">×</button></span></template>
+                            <input id="partners_entry" x-ref="partnerEntry" type="text" x-model="partnerInput" @keydown.enter.prevent="addPartners" @keydown="if ($event.key === ',') { $event.preventDefault(); addPartners(); }" @blur="addPartners" :placeholder="partners.length ? '' : @js(__('institution.competitions.fields.partners_placeholder'))" autocomplete="off">
+                        </div>
                         <div class="ip-field-hint">{{ __('institution.competitions.fields.partners_hint') }}</div>
                         <x-institution.input-error :messages="$errors->get('partners')" />
                     </div>
                 </div>
+            </section>
+
+            <section class="ip-form-section" aria-labelledby="competition-calendar-title">
+                <h2 id="competition-calendar-title" class="ip-form-section-title">{{ __('institution.competitions.calendar_title') }}</h2>
+                <p class="ip-form-section-hint">{{ __('institution.competitions.calendar_hint') }}</p>
+                <div class="ip-grid-3 ip-calendar-grid">
+                    @foreach ($dateFields as $dateField)
+                        <div class="ia-field ip-field-last">
+                            <x-institution.field-label :for="$dateField" :value="__('institution.competitions.fields.'.$dateField)" :description="__('institution.competitions.field_help.'.$dateField.'.description')" :example="__('institution.competitions.field_help.'.$dateField.'.example')" group />
+                            <input type="hidden" name="{{ $dateField }}" value="{{ $calendarValues[$dateField] }}" :value="dateTimeValue(@js($dateField))">
+
+                            <div class="ip-date-time-control" role="group" aria-label="{{ __('institution.competitions.fields.'.$dateField) }}">
+                                @foreach ([
+                                    'date' => [
+                                        'separator' => '/',
+                                        'parts' => [
+                                            'day' => ['min' => 1, 'max' => 31, 'placeholder' => 'GG', 'class' => ''],
+                                            'month' => ['min' => 1, 'max' => 12, 'placeholder' => 'AA', 'class' => ''],
+                                            'year' => ['min' => 2020, 'max' => 2040, 'placeholder' => 'YYYY', 'class' => 'is-year'],
+                                        ],
+                                    ],
+                                    'time' => [
+                                        'separator' => ':',
+                                        'parts' => [
+                                            'hour' => ['min' => 0, 'max' => 23, 'placeholder' => 'SS', 'class' => ''],
+                                            'minute' => ['min' => 0, 'max' => 59, 'placeholder' => 'DD', 'class' => ''],
+                                        ],
+                                    ],
+                                ] as $group => $groupOptions)
+                                    <div class="ip-date-time-group is-{{ $group }}">
+                                        @foreach ($groupOptions['parts'] as $part => $options)
+                                            @php
+                                                $partId = $dateField.'_'.$part;
+                                            @endphp
+                                            @if (! $loop->first)
+                                                <span class="ip-date-time-separator" aria-hidden="true">{{ $groupOptions['separator'] }}</span>
+                                            @endif
+                                            <div class="ip-date-time-part {{ $options['class'] }}">
+                                                <label for="{{ $partId }}">{{ __('institution.competitions.calendar_parts.'.$part) }}</label>
+                                                <input
+                                                    id="{{ $partId }}"
+                                                    name="{{ $partId }}"
+                                                    type="number"
+                                                    class="ip-date-time-input"
+                                                    min="{{ $options['min'] }}"
+                                                    max="{{ $options['max'] }}"
+                                                    step="1"
+                                                    inputmode="numeric"
+                                                    placeholder="{{ $options['placeholder'] }}"
+                                                    value="{{ $calendarParts[$dateField][$part] }}"
+                                                    x-model="calendar.{{ $dateField }}.{{ $part }}"
+                                                    @keydown="if (['e', 'E', '+', '-', '.', ','].includes($event.key)) $event.preventDefault()"
+                                                    @input="constrainCalendarPart(@js($dateField), @js($part), $event)"
+                                                    @blur="finalizeCalendarPart(@js($dateField), @js($part), $event)"
+                                                    aria-describedby="calendar-format-hint{{ $errors->has($dateField) ? ' '.$dateField.'_error' : '' }}"
+                                                    @if ($errors->has($dateField)) aria-invalid="true" @endif
+                                                >
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                            <x-institution.input-error :id="$dateField.'_error'" :messages="$errors->get($dateField)" />
+                        </div>
+                    @endforeach
+                </div>
+                <p id="calendar-format-hint" class="ip-calendar-format-hint">{{ __('institution.competitions.calendar_numeric_hint') }}</p>
             </section>
 
             <section class="ip-form-section" aria-labelledby="translated-information-title">
@@ -146,7 +279,8 @@
             </section>
         </div>
 
-        <div class="ip-form-actions">
+        <div class="ip-form-actions ip-form-actions-sticky">
+            <span class="ip-save-meta">{{ __('institution.competitions.last_saved_at', ['time' => $competition->updated_at->format('d.m.Y H:i')]) }}</span>
             <button type="submit" name="action" value="draft" class="ia-btn ia-btn-secondary">{{ __('institution.competitions.save_draft') }}</button>
             <button type="submit" name="action" value="next" class="ia-btn">{{ __('institution.competitions.next_step') }} →</button>
         </div>

@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             EducationLevelSeeder::class,
             InstitutionTypeSeeder::class,
             RegulationSectionSeeder::class,
+            RegulationItemSeeder::class,
             CompetitionTypeSeeder::class,
             ParticipantApprovalProcessSeeder::class,
             CompetitionCategoryReferenceSeeder::class,

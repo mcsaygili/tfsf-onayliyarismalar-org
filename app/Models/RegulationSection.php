@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['sort_order', 'status'])]
+#[Fillable(['code', 'sort_order', 'status', 'is_system', 'version'])]
 class RegulationSection extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -22,6 +22,8 @@ class RegulationSection extends Model
         return [
             'status' => 'boolean',
             'sort_order' => 'integer',
+            'is_system' => 'boolean',
+            'version' => 'integer',
         ];
     }
 

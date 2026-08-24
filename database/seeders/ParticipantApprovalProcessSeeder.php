@@ -38,7 +38,7 @@ class ParticipantApprovalProcessSeeder extends Seeder
     {
         foreach (self::PROCESSES as $item) {
             $process = ParticipantApprovalProcess::withTrashed()->firstOrNew(['code' => $item['code']]);
-            $process->fill(['sort_order' => $item['sort_order'], 'status' => true]);
+            $process->fill(['sort_order' => $item['sort_order'], 'status' => true, 'is_system' => true]);
             $process->save();
 
             if ($process->trashed()) {

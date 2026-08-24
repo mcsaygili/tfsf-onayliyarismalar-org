@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['code', 'sort_order', 'status'])]
+#[Fillable(['code', 'sort_order', 'status', 'is_system', 'version'])]
 class ParticipantGender extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -17,7 +17,7 @@ class ParticipantGender extends Model
 
     protected function casts(): array
     {
-        return ['sort_order' => 'integer', 'status' => 'boolean'];
+        return ['sort_order' => 'integer', 'status' => 'boolean', 'is_system' => 'boolean', 'version' => 'integer'];
     }
 
     public function scopeActive($query)

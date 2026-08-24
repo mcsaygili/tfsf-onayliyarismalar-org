@@ -26,9 +26,10 @@ class CompetitionStepRegistry
             4 => new Step4,
             5 => new Step5,
             6 => new Step6,
+            7 => new Step7,
         ];
 
-        for ($i = 7; $i <= self::TOTAL_STEPS; $i++) {
+        for ($i = 8; $i <= self::TOTAL_STEPS; $i++) {
             $steps[$i] = new PlaceholderStep($i);
         }
 
@@ -43,7 +44,11 @@ class CompetitionStepRegistry
     public static function canSubmit(Competition $competition): bool
     {
         foreach (self::all() as $step) {
-            if ($step->isApplicable($competition) && $step->isImplemented() && ! self::stepIsComplete($competition, $step)) {
+            if (! $step->isApplicable($competition)) {
+                continue;
+            }
+
+            if (! $step->isImplemented() || ! self::stepIsComplete($competition, $step)) {
                 return false;
             }
         }
@@ -73,7 +78,42 @@ class CompetitionStepRegistry
         return null;
     }
 
-    private static function stepIsComplete(Competition $competition, CompetitionStep $step): bool
+    public static function firstBlockingStepNumber(Competition $competition): ?int
+    {
+        foreach (self::all() as $number => $step) {
+            if (! $step->isApplicable($competition)) {
+                continue;
+            }
+
+            if (! $step->isImplemented() || ! self::stepIsComplete($competition, $step)) {
+                return $number;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return 'complete'|'incomplete'|'not_applicable'|'locked'|'current' */
+    public static function stateFor(Competition $competition, CompetitionStep $step, int $viewedStep): string
+    {
+        if (! $step->isApplicable($competition)) {
+            return 'not_applicable';
+        }
+
+        if ($step->number() > $competition->current_step) {
+            return 'locked';
+        }
+
+        if ($step->number() === $viewedStep) {
+            return 'current';
+        }
+
+        return $step->isImplemented() && self::stepIsComplete($competition, $step)
+            ? 'complete'
+            : 'incomplete';
+    }
+
+    public static function stepIsComplete(Competition $competition, CompetitionStep $step): bool
     {
         return Validator::make(
             $step->data($competition),

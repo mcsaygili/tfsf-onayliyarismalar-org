@@ -8,6 +8,7 @@ use App\Models\RegulationSectionTranslation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 /**
  * EYS yönetici paneli — Şartname Bölümü (referans veri) yönetimi. Yarışma
@@ -59,6 +60,7 @@ class RegulationSectionController extends Controller
         $data = $this->validateData($request);
 
         $section = RegulationSection::create([
+            'code' => $data['code'],
             'sort_order' => $data['sort_order'] ?: 0,
             'status' => (bool) $data['status'],
         ]);
@@ -83,8 +85,10 @@ class RegulationSectionController extends Controller
         $data = $this->validateData($request);
 
         $regulationSection->update([
+            'code' => $regulationSection->is_system ? $regulationSection->code : $data['code'],
             'sort_order' => $data['sort_order'] ?: 0,
             'status' => (bool) $data['status'],
+            'version' => $regulationSection->version + 1,
         ]);
 
         $regulationSection->upsertTranslations($this->translationPayload($data));
@@ -94,7 +98,7 @@ class RegulationSectionController extends Controller
 
     public function destroy(RegulationSection $regulationSection): RedirectResponse
     {
-        if ($regulationSection->items()->exists()) {
+        if ($regulationSection->is_system || $regulationSection->items()->exists()) {
             return redirect()->route('eys.regulation-sections.index')->with('status', __('eys.regulation_section.has_items'));
         }
 
@@ -110,13 +114,14 @@ class RegulationSectionController extends Controller
         $defaultLocale = config('locales.default');
 
         $rules = [
+            'code' => ['required', 'string', 'max:100', 'alpha_dash:ascii', Rule::unique('regulation_sections', 'code')->ignore($request->route('regulationSection')?->id)],
             'status' => ['required', 'in:0,1'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
         ];
 
         foreach ($locales as $locale) {
             $rules["{$locale}.name"] = [
-                $locale === $defaultLocale ? 'required' : 'nullable',
+                'required',
                 'string', 'max:255',
             ];
         }

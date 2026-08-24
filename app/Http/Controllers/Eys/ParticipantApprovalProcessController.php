@@ -79,9 +79,10 @@ class ParticipantApprovalProcessController extends Controller
     {
         $data = $this->validateData($request, $participantApprovalProcess);
         $participantApprovalProcess->update([
-            'code' => $data['code'],
+            'code' => $participantApprovalProcess->is_system ? $participantApprovalProcess->code : $data['code'],
             'sort_order' => $data['sort_order'] ?: 0,
             'status' => (bool) $data['status'],
+            'version' => $participantApprovalProcess->version + 1,
         ]);
         $participantApprovalProcess->upsertTranslations($this->translationPayload($data));
 
@@ -91,6 +92,10 @@ class ParticipantApprovalProcessController extends Controller
 
     public function destroy(ParticipantApprovalProcess $participantApprovalProcess): RedirectResponse
     {
+        if ($participantApprovalProcess->is_system || $participantApprovalProcess->competitions()->exists()) {
+            return back()->with('error', __('eys.reference_in_use'));
+        }
+
         $participantApprovalProcess->delete();
 
         return redirect()->route('eys.participant-approval-processes.index')
@@ -115,8 +120,8 @@ class ParticipantApprovalProcessController extends Controller
         ];
 
         foreach ($locales as $locale) {
-            $rules["{$locale}.name"] = [$locale === $defaultLocale ? 'required' : 'nullable', 'string', 'max:255'];
-            $rules["{$locale}.description"] = [$locale === $defaultLocale ? 'required' : 'nullable', 'string', 'max:1000'];
+            $rules["{$locale}.name"] = ['required', 'string', 'max:255'];
+            $rules["{$locale}.description"] = ['required', 'string', 'max:1000'];
         }
 
         return $request->validate($rules);

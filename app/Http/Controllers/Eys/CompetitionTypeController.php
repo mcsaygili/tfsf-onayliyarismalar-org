@@ -57,6 +57,8 @@ class CompetitionTypeController extends Controller
 
         $competitionType = CompetitionType::create([
             'code' => $data['code'],
+            'requires_location' => (bool) $data['requires_location'],
+            'requires_approval_process' => (bool) $data['requires_approval_process'],
             'sort_order' => $data['sort_order'] ?: 0,
             'status' => (bool) $data['status'],
         ]);
@@ -81,9 +83,12 @@ class CompetitionTypeController extends Controller
         $data = $this->validateData($request, $competitionType);
 
         $competitionType->update([
-            'code' => $data['code'],
+            'code' => $competitionType->is_system ? $competitionType->code : $data['code'],
+            'requires_location' => (bool) $data['requires_location'],
+            'requires_approval_process' => (bool) $data['requires_approval_process'],
             'sort_order' => $data['sort_order'] ?: 0,
             'status' => (bool) $data['status'],
+            'version' => $competitionType->version + 1,
         ]);
 
         $competitionType->upsertTranslations($this->translationPayload($data));
@@ -93,6 +98,10 @@ class CompetitionTypeController extends Controller
 
     public function destroy(CompetitionType $competitionType): RedirectResponse
     {
+        if ($competitionType->is_system || $competitionType->competitions()->exists()) {
+            return back()->with('error', __('eys.reference_in_use'));
+        }
+
         $competitionType->delete();
 
         return redirect()->route('eys.competition-types.index')->with('status', __('eys.competition_type.deleted'));
@@ -113,16 +122,18 @@ class CompetitionTypeController extends Controller
             'code' => ['required', 'string', 'alpha_dash:ascii', 'max:100', $codeRule],
             'status' => ['required', 'in:0,1'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'requires_location' => ['required', 'boolean'],
+            'requires_approval_process' => ['required', 'boolean'],
         ];
 
         foreach ($locales as $locale) {
             $rules["{$locale}.name"] = [
-                $locale === $defaultLocale ? 'required' : 'nullable',
+                'required',
                 'string',
                 'max:255',
             ];
             $rules["{$locale}.description"] = [
-                $locale === $defaultLocale ? 'required' : 'nullable',
+                'required',
                 'string',
                 'max:1000',
             ];

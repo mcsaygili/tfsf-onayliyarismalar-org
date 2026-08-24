@@ -11,6 +11,8 @@ use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use App\Support\CompetitionWizard\Step4;
 use App\Support\CompetitionWizard\Step5;
 use App\Support\CompetitionWizard\Step6;
+use App\Support\CompetitionWizard\Step7;
+use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -68,13 +70,27 @@ class CompetitionStepController extends Controller
 
         if ($stepDef instanceof Step5) {
             $viewData['countries'] = $stepDef->countries();
-            $viewData['cities'] = $stepDef->cities(old('country', $competition->country_id));
+            $viewData['regionFormData'] = $stepDef->formRegions($competition);
+            $viewData['regionCities'] = collect($viewData['regionFormData'])
+                ->pluck('country')
+                ->filter()
+                ->unique()
+                ->mapWithKeys(fn (string $countryId) => [
+                    $countryId => $stepDef->cities($countryId)
+                        ->map(fn ($city) => ['id' => $city->id, 'name' => $city->official_name])
+                        ->values(),
+                ]);
             $viewData['approvalProcesses'] = $stepDef->approvalProcesses();
         }
 
         if ($stepDef instanceof Step6) {
             $viewData['categoryFormData'] = $stepDef->formData($competition);
             $viewData = array_merge($viewData, $stepDef->options());
+        }
+
+        if ($stepDef instanceof Step7) {
+            $viewData['editableRegulationItems'] = $stepDef->editableItems();
+            $viewData['regulationPreview'] = app(CompetitionRegulationCompiler::class)->compile($competition);
         }
 
         return view($view, $viewData);

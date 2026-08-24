@@ -43,9 +43,33 @@
                                         <div><b>{{ __('eys.competitions.fields.birth_date') }}:</b> {{ $category->ageEligibilityRule?->name ?: '—' }}</div>
                                         <div><b>{{ __('eys.competitions.fields.member_groups') }}:</b> {{ $category->memberGroups->pluck('name')->join(', ') }}</div>
                                         <div><b>{{ __('eys.competitions.fields.capture_devices') }}:</b> {{ $category->captureDevices->pluck('name')->join(', ') }}</div>
+                                        <div><b>{{ __('eys.competitions.fields.processing_methods') }}:</b> {{ $category->processingMethods->pluck('name')->join(', ') }}</div>
                                     </div>
                                 </div>
                             @endforeach
+                        @elseif ($field === 'regions')
+                            <div class="ia-field">
+                                <x-eys.label :value="__('eys.competitions.fields.capture_regions')" />
+                                @php
+                                    $reviewRegions = $competition->captureRegions->isNotEmpty()
+                                        ? $competition->captureRegions
+                                        : collect([$competition]);
+                                @endphp
+                                @foreach ($reviewRegions as $region)
+                                    <div style="margin-top: .5rem; color: var(--ia-cream);">
+                                        {{ $region->country?->official_name ?: '—' }} / {{ $region->city?->official_name ?: '—' }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        @elseif ($field === 'regulation_inputs')
+                            <div class="ia-field">
+                                <x-eys.label :value="__('eys.competitions.fields.regulation_inputs')" />
+                                @forelse ($competition->regulationInputs as $input)
+                                    <div style="margin-top: .5rem; color: var(--ia-cream); white-space: pre-line;">{{ strtoupper($input->locale) }} — {{ $input->content ?: '—' }}</div>
+                                @empty
+                                    <div style="color: var(--ia-cream);">—</div>
+                                @endforelse
+                            </div>
                         @elseif (is_array($fieldValue))
                             <div class="ia-field">
                                 <x-eys.label :value="config('locales.supported.'.$field, strtoupper($field))" />

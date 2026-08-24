@@ -11,7 +11,8 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('institution.competitions.step.update', [$competition, $step]) }}" novalidate autocomplete="off">
+    <form method="POST" action="{{ route('institution.competitions.step.update', [$competition, $step]) }}" novalidate autocomplete="off" data-wizard-form
+          x-data="{ type: @js(old('competition_type', $competition->competition_type_id)), initialType: @js($competition->competition_type_id) }">
         @csrf
         @method('PUT')
 
@@ -44,6 +45,7 @@
                                     type="radio"
                                     name="competition_type"
                                     value="{{ $competitionType->id }}"
+                                    x-model="type"
                                     @checked(old('competition_type', $competition->competition_type_id) === $competitionType->id)
                                     @if ($errors->has('competition_type')) aria-invalid="true" aria-describedby="competition-type-error" @endif
                                 >
@@ -62,7 +64,13 @@
             </fieldset>
         </div>
 
-        <div class="ip-form-actions">
+        <div class="ip-alert ip-alert-warning" x-show="initialType && type !== initialType" x-cloak role="status">
+            <x-institution.icon name="warning" />
+            <div class="ip-alert-text">{{ __('institution.competitions.competition_type_change_warning') }}</div>
+        </div>
+
+        <div class="ip-form-actions ip-form-actions-sticky">
+            <span class="ip-save-meta">{{ __('institution.competitions.last_saved_at', ['time' => $competition->updated_at->format('d.m.Y H:i')]) }}</span>
             <button type="submit" name="action" value="draft" class="ia-btn ia-btn-secondary">{{ __('institution.competitions.save_draft') }}</button>
             <button type="submit" name="action" value="next" class="ia-btn" @disabled($competitionTypes->isEmpty())>{{ __('institution.competitions.next_step') }} →</button>
         </div>

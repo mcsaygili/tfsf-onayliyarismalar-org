@@ -28,10 +28,31 @@
             </div>
             <div class="ia-field">
                 <x-eys.label for="code" :value="__('eys.regulation_item.code')" />
-                <x-eys.input id="code" type="text" name="code" :value="old('code', $item->code)" autocomplete="off" />
+                @if ($item->is_system)<input type="hidden" name="code" value="{{ $item->code }}">@endif
+                <x-eys.input id="code" type="text" :name="$item->is_system ? null : 'code'" :disabled="$item->is_system" :value="old('code', $item->code)" autocomplete="off" />
                 <div style="font-size: .78rem; color: var(--ia-muted-dim); margin-top: .35rem;">{{ __('eys.regulation_item.code_hint') }}</div>
                 <x-eys.input-error :messages="$errors->get('code')" />
             </div>
+        </div>
+
+        <div class="ip-grid-2">
+            <div class="ia-field">
+                <x-eys.label for="content_type" :value="__('eys.regulation_item.content_type')" />
+                <select id="content_type" name="content_type" class="ia-input">
+                    @foreach (['fixed', 'source', 'institution_input'] as $type)<option value="{{ $type }}" @selected(old('content_type', $item->content_type ?: 'fixed') === $type)>{{ __('eys.regulation_item.content_types.'.$type) }}</option>@endforeach
+                </select>
+                <x-eys.input-error :messages="$errors->get('content_type')" />
+            </div>
+            <div class="ia-field">
+                <x-eys.label for="source_key" :value="__('eys.regulation_item.source_key')" />
+                <x-eys.input id="source_key" name="source_key" :value="old('source_key', $item->source_key)" />
+                <x-eys.input-error :messages="$errors->get('source_key')" />
+            </div>
+        </div>
+        <div class="ia-field">
+            <x-eys.label for="conditions" :value="__('eys.regulation_item.conditions')" />
+            <textarea id="conditions" name="conditions" class="ia-input" rows="3" placeholder='{"audience":["international"]}'>{{ old('conditions', $item->conditions ? json_encode($item->conditions, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT) : '') }}</textarea>
+            <x-eys.input-error :messages="$errors->get('conditions')" />
         </div>
 
         <div class="ia-field" style="margin-bottom: 0;" x-data="{ active: {{ old('status', (int) $item->status ?: 1) ? 'true' : 'false' }} }">

@@ -8,7 +8,8 @@
         <div class="ip-grid-2">
             <div class="ia-field">
                 <x-eys.label for="code" :value="__('eys.participant_approval_process.code')" />
-                <x-eys.input id="code" type="text" name="code" :value="old('code', $process->code)" autocomplete="off" />
+                @if ($process->is_system)<input type="hidden" name="code" value="{{ $process->code }}">@endif
+                <x-eys.input id="code" type="text" :name="$process->is_system ? null : 'code'" :value="old('code', $process->code)" autocomplete="off" :disabled="$process->is_system" />
                 <div class="ip-field-hint">{{ __('eys.participant_approval_process.code_hint') }}</div>
                 <x-eys.input-error :messages="$errors->get('code')" />
             </div>

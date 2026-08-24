@@ -84,6 +84,7 @@ return [
                 'age_eligibility_rules' => ['label' => 'Yaş Uygunluk Kuralları', 'actions' => ['manage']],
                 'member_groups' => ['label' => 'Üye Grupları', 'actions' => ['manage']],
                 'capture_devices' => ['label' => 'Fotoğraf Üretim Cihazları', 'actions' => ['manage']],
+                'processing_methods' => ['label' => 'Fotoğraf Düzenleme Yöntemleri', 'actions' => ['manage']],
                 'file_manager' => [
                     'label' => 'Dosya Yöneticisi',
                     'actions' => ['view', 'create', 'delete', 'manage'],

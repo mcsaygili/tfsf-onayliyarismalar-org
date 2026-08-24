@@ -7,11 +7,13 @@ use App\Models\AgeEligibilityRule;
 use App\Models\CaptureDevice;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
+use App\Models\ProcessingMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class CompetitionCategoryReferenceController extends Controller
 {
@@ -20,6 +22,7 @@ class CompetitionCategoryReferenceController extends Controller
         'age-eligibility-rules' => [AgeEligibilityRule::class, 'age_eligibility_rules', 'age_eligibility_rule', 'eys.age-eligibility-rules', true],
         'member-groups' => [MemberGroup::class, 'member_groups', 'member_group', 'eys.member-groups', false],
         'capture-devices' => [CaptureDevice::class, 'capture_devices', 'capture_device', 'eys.capture-devices', false],
+        'processing-methods' => [ProcessingMethod::class, 'processing_methods', 'processing_method', 'eys.processing-methods', false],
     ];
 
     public function index(Request $request): View
@@ -69,7 +72,10 @@ class CompetitionCategoryReferenceController extends Controller
         [$model, $table, $translation, $route, $hasAgeConstraints] = $this->config($request);
         $reference = $model::findOrFail($reference);
         $data = $this->validateData($request, $table, $reference, $hasAgeConstraints);
-        $reference->update($this->basePayload($data, $hasAgeConstraints));
+        $payload = $this->basePayload($data, $hasAgeConstraints);
+        $payload['code'] = $reference->is_system ? $reference->code : $payload['code'];
+        $payload['version'] = $reference->version + 1;
+        $reference->update($payload);
         $reference->upsertTranslations($this->translationPayload($data));
 
         return redirect()->route($route.'.index')->with('status', __("eys.$translation.updated"));
@@ -78,7 +84,13 @@ class CompetitionCategoryReferenceController extends Controller
     public function destroy(Request $request, string $reference): RedirectResponse
     {
         [$model, , $translation, $route] = $this->config($request);
-        $model::findOrFail($reference)->delete();
+        $referenceModel = $model::findOrFail($reference);
+
+        if ($referenceModel->is_system || $this->isInUse($referenceModel)) {
+            return back()->with('error', __('eys.reference_in_use'));
+        }
+
+        $referenceModel->delete();
 
         return redirect()->route($route.'.index')->with('status', __("eys.$translation.deleted"));
     }
@@ -104,8 +116,8 @@ class CompetitionCategoryReferenceController extends Controller
             ];
         }
         foreach (array_keys(config('locales.supported')) as $locale) {
-            $rules["$locale.name"] = [$locale === config('locales.default') ? 'required' : 'nullable', 'string', 'max:255'];
-            $rules["$locale.description"] = ['nullable', 'string', 'max:1000'];
+            $rules["$locale.name"] = ['required', 'string', 'max:255'];
+            $rules["$locale.description"] = ['required', 'string', 'max:1000'];
         }
 
         return $request->validate($rules);
@@ -136,5 +148,17 @@ class CompetitionCategoryReferenceController extends Controller
         }
 
         return $payload;
+    }
+
+    private function isInUse(Model $reference): bool
+    {
+        return match (true) {
+            $reference instanceof ParticipantGender => DB::table('competition_category_gender')->where('participant_gender_id', $reference->getKey())->exists(),
+            $reference instanceof AgeEligibilityRule => DB::table('competition_categories')->where('age_eligibility_rule_id', $reference->getKey())->exists(),
+            $reference instanceof MemberGroup => DB::table('competition_category_member_group')->where('member_group_id', $reference->getKey())->exists(),
+            $reference instanceof CaptureDevice => DB::table('competition_category_capture_device')->where('capture_device_id', $reference->getKey())->exists(),
+            $reference instanceof ProcessingMethod => DB::table('competition_category_processing_method')->where('processing_method_id', $reference->getKey())->exists(),
+            default => false,
+        };
     }
 }

@@ -21,6 +21,14 @@ class CompetitionFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Competition $competition) {
+            if ($competition->infrastructure_provider === CompetitionInfrastructureProvider::External && blank($competition->external_provider_name)) {
+                $competition->update([
+                    'external_provider_name' => 'Test Competition Platform',
+                    'external_entry_url' => 'https://competitions.example.test',
+                    'external_responsibility_accepted_at' => now(),
+                ]);
+            }
+
             $translations = [
                 'tr' => [
                     'name' => fake()->sentence(3),
@@ -55,6 +63,9 @@ class CompetitionFactory extends Factory
             'city_id' => null,
             'participant_approval_process_id' => null,
             'partners' => fake()->sentence(),
+            'application_starts_at' => now()->addMonth()->startOfHour(),
+            'application_ends_at' => now()->addMonths(2)->startOfHour(),
+            'competition_ends_at' => now()->addMonths(3)->startOfHour(),
             'current_step' => 1,
             'status' => CompetitionStatus::Draft,
         ];

@@ -42,12 +42,13 @@ class Step4 implements CompetitionStep
             $attributes = ['competition_type_id' => $validated['competition_type']];
             $type = CompetitionType::query()->find($validated['competition_type']);
 
-            if ($type?->code !== Step5::PHOTOGRAPHERS_MARATHON_CODE) {
+            if (! $type?->requires_location && ! $type?->requires_approval_process) {
                 $attributes += [
                     'country_id' => null,
                     'city_id' => null,
                     'participant_approval_process_id' => null,
                 ];
+                $competition->captureRegions()->delete();
             }
 
             $competition->update($attributes);

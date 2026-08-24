@@ -22,7 +22,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * bilinçli olarak Fillable DIŞINDA — bunlar yalnızca controller mantığıyla
  * (CompetitionController::submit / CompetitionReviewController) değişmeli.
  */
-#[Fillable(['institution_id', 'institution_staff_id', 'audience', 'infrastructure_provider', 'competition_type_id', 'country_id', 'city_id', 'participant_approval_process_id', 'partners'])]
+#[Fillable([
+    'institution_id', 'institution_staff_id', 'audience', 'infrastructure_provider',
+    'external_provider_name', 'external_entry_url', 'external_responsibility_accepted_at',
+    'competition_type_id', 'country_id', 'city_id', 'participant_approval_process_id', 'partners',
+    'application_starts_at', 'application_ends_at', 'competition_ends_at',
+])]
 class Competition extends Model
 {
     use HasFactory, HasTranslations, HasUuids;
@@ -35,6 +40,10 @@ class Competition extends Model
         return [
             'audience' => CompetitionAudience::class,
             'infrastructure_provider' => CompetitionInfrastructureProvider::class,
+            'application_starts_at' => 'datetime',
+            'application_ends_at' => 'datetime',
+            'competition_ends_at' => 'datetime',
+            'external_responsibility_accepted_at' => 'datetime',
             'status' => CompetitionStatus::class,
             'current_step' => 'integer',
             'submitted_at' => 'datetime',
@@ -86,6 +95,21 @@ class Competition extends Model
     public function categories(): HasMany
     {
         return $this->hasMany(CompetitionCategory::class)->orderBy('sort_order');
+    }
+
+    public function captureRegions(): HasMany
+    {
+        return $this->hasMany(CompetitionCaptureRegion::class)->orderBy('sort_order');
+    }
+
+    public function regulationInputs(): HasMany
+    {
+        return $this->hasMany(CompetitionRegulationInput::class);
+    }
+
+    public function regulationSnapshots(): HasMany
+    {
+        return $this->hasMany(CompetitionRegulationSnapshot::class)->orderByDesc('version');
     }
 
     public function isEditable(): bool

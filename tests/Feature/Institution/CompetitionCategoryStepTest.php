@@ -10,6 +10,7 @@ use App\Models\Institution;
 use App\Models\InstitutionStaff;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
+use App\Models\ProcessingMethod;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -37,6 +38,8 @@ class CompetitionCategoryStepTest extends TestCase
             'gender_id' => ParticipantGender::where('code', 'no-check')->firstOrFail()->id,
             'member_group_ids' => [MemberGroup::firstOrFail()->id],
             'capture_device_ids' => [CaptureDevice::firstOrFail()->id],
+            'processing_method_ids' => [ProcessingMethod::where('code', 'no-processing-check')->firstOrFail()->id],
+            'member_group_match_mode' => 'any',
         ];
     }
 
@@ -50,7 +53,7 @@ class CompetitionCategoryStepTest extends TestCase
             ->assertSee(__('institution.competitions.participant_information_title'))
             ->assertSee(__('institution.competitions.device_information_title'))
             ->assertSee('Fotoğraf Makinesi')
-            ->assertSee('Software (Uygulama)')
+            ->assertSee('Fotoğraf Düzenleme Uygulaması')
             ->assertSee('Cinsiyet Kontrolü Yok')
             ->assertSee('18 Yaş Altı Katılımcı')
             ->assertSee('x-text="categories.length"', false)
@@ -74,12 +77,13 @@ class CompetitionCategoryStepTest extends TestCase
         $response = $this->actingAs($staff, 'institution')->put(route('institution.competitions.step.update', [$competition, 6]), $payload);
 
         $response->assertRedirect(route('institution.competitions.step.show', [$competition, 7]));
-        $category = $competition->categories()->with(['translations', 'genders', 'memberGroups', 'captureDevices'])->firstOrFail();
+        $category = $competition->categories()->with(['translations', 'genders', 'memberGroups', 'captureDevices', 'processingMethods'])->firstOrFail();
         $this->assertSame('Siyah-Beyaz', $category->getTranslation('tr', false)?->name);
         $this->assertNull($category->getTranslation('en', false));
         $this->assertCount(1, $category->genders);
         $this->assertCount(1, $category->memberGroups);
         $this->assertCount(1, $category->captureDevices);
+        $this->assertCount(1, $category->processingMethods);
     }
 
     public function test_uluslararasi_yarismada_ingilizce_kategori_adi_zorunludur(): void

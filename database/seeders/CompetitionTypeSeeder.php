@@ -11,6 +11,8 @@ class CompetitionTypeSeeder extends Seeder
         [
             'code' => 'standard',
             'sort_order' => 10,
+            'requires_location' => false,
+            'requires_approval_process' => false,
             'tr' => [
                 'name' => 'Standart Yarışma',
                 'description' => 'Belirlenen tema ve kategoriler kapsamında eserlerin çevrim içi yüklendiği ve jüri tarafından değerlendirildiği klasik yarışma modelidir.',
@@ -23,6 +25,8 @@ class CompetitionTypeSeeder extends Seeder
         [
             'code' => 'photographers-marathon',
             'sort_order' => 20,
+            'requires_location' => true,
+            'requires_approval_process' => true,
             'tr' => [
                 'name' => 'Fotoğrafçılar Maratonu',
                 'description' => 'Belirli bir süre ve alanda, ilan edilen konu başlıklarına göre fotoğraf üretilen etkinlik tabanlı yarışma modelidir.',
@@ -35,6 +39,8 @@ class CompetitionTypeSeeder extends Seeder
         [
             'code' => 'cup',
             'sort_order' => 30,
+            'requires_location' => false,
+            'requires_approval_process' => false,
             'tr' => [
                 'name' => 'Kupa Yarışması',
                 'description' => 'Katılımcıların birden fazla etap veya kategoride elde ettiği sonuçların toplam puanla değerlendirildiği yarışma modelidir.',
@@ -47,6 +53,8 @@ class CompetitionTypeSeeder extends Seeder
         [
             'code' => 'biennial-team-selection',
             'sort_order' => 40,
+            'requires_location' => false,
+            'requires_approval_process' => false,
             'tr' => [
                 'name' => 'Bienal (Takım Seçmesi)',
                 'description' => 'Kurum, dernek veya ülke takımlarının seçilmiş fotoğraf setleriyle temsil edildiği ve takım başarısının değerlendirildiği yarışma modelidir.',
@@ -62,7 +70,13 @@ class CompetitionTypeSeeder extends Seeder
     {
         foreach (self::TYPES as $type) {
             $competitionType = CompetitionType::withTrashed()->firstOrNew(['code' => $type['code']]);
-            $competitionType->fill(['sort_order' => $type['sort_order'], 'status' => true]);
+            $competitionType->fill([
+                'sort_order' => $type['sort_order'],
+                'requires_location' => $type['requires_location'],
+                'requires_approval_process' => $type['requires_approval_process'],
+                'status' => true,
+                'is_system' => true,
+            ]);
             $competitionType->save();
 
             if ($competitionType->trashed()) {

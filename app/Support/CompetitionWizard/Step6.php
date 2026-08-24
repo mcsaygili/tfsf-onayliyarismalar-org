@@ -8,6 +8,7 @@ use App\Models\Competition;
 use App\Models\CompetitionCategory;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
+use App\Models\ProcessingMethod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
 
@@ -36,7 +37,7 @@ class Step6 implements CompetitionStep
 
     public function data(Competition $competition): array
     {
-        $competition->loadMissing('categories.translations', 'categories.ageEligibilityRule.translations', 'categories.genders', 'categories.memberGroups', 'categories.captureDevices');
+        $competition->loadMissing('categories.translations', 'categories.ageEligibilityRule.translations', 'categories.genders', 'categories.memberGroups', 'categories.captureDevices', 'categories.processingMethods');
 
         return ['categories' => $competition->categories->map(fn (CompetitionCategory $category) => [
             'id' => $category->id,
@@ -44,8 +45,10 @@ class Step6 implements CompetitionStep
             'en' => ['name' => $category->getTranslation('en', false)?->name],
             'age_eligibility_rule' => $category->age_eligibility_rule_id,
             'gender_id' => $category->genders->first()?->id,
+            'member_group_match_mode' => $category->member_group_match_mode,
             'member_group_ids' => $category->memberGroups->pluck('id')->all(),
             'capture_device_ids' => $category->captureDevices->pluck('id')->all(),
+            'processing_method_ids' => $category->processingMethods->pluck('id')->all(),
         ])->values()->all()];
     }
 
@@ -64,6 +67,7 @@ class Step6 implements CompetitionStep
             $category->fill([
                 'sort_order' => ($index + 1) * 10,
                 'age_eligibility_rule_id' => $payload['age_eligibility_rule'] ?? null,
+                'member_group_match_mode' => $payload['member_group_match_mode'] ?? 'any',
                 'birth_date_restricted' => false,
                 'birth_date_from' => null,
                 'birth_date_to' => null,
@@ -83,6 +87,7 @@ class Step6 implements CompetitionStep
             $category->genders()->sync(isset($payload['gender_id']) ? [$payload['gender_id']] : []);
             $category->memberGroups()->sync($payload['member_group_ids'] ?? []);
             $category->captureDevices()->sync($payload['capture_device_ids'] ?? []);
+            $category->processingMethods()->sync($payload['processing_method_ids'] ?? []);
         }
 
         $competition->categories()->whereNotIn('id', $keptIds)->delete();
@@ -94,18 +99,29 @@ class Step6 implements CompetitionStep
         $required = $isDraftSave ? 'nullable' : 'required';
         $categoryId = Rule::exists('competition_categories', 'id')->where('competition_id', $competition->id)->whereNull('deleted_at');
         $activeReference = fn (string $table) => Rule::exists($table, 'id')->where('status', true)->whereNull('deleted_at');
+        $exclusiveNoCheck = function (string $table, string $code) {
+            return function (string $attribute, mixed $value, \Closure $fail) use ($table, $code) {
+                $noCheckId = \Illuminate\Support\Facades\DB::table($table)->where('code', $code)->value('id');
+                if (is_array($value) && count($value) > 1 && in_array($noCheckId, $value, true)) {
+                    $fail(__('institution.competitions.validation.no_check_exclusive'));
+                }
+            };
+        };
 
         return [
             'categories' => [$required, 'array', $isDraftSave ? 'max:20' : 'min:1', 'max:20'],
             'categories.*.id' => ['nullable', 'uuid', $categoryId],
-            'categories.*.tr.name' => [$required, 'string', 'max:255'],
-            'categories.*.en.name' => [$isDraftSave || ! $competition->requiresEnglishContent() ? 'nullable' : 'required', 'nullable', 'string', 'max:255'],
+            'categories.*.tr.name' => [$required, 'string', 'max:255', 'distinct:ignore_case'],
+            'categories.*.en.name' => [$isDraftSave || ! $competition->requiresEnglishContent() ? 'nullable' : 'required', 'string', 'max:255', 'distinct:ignore_case'],
             'categories.*.age_eligibility_rule' => [$required, 'uuid', $activeReference('age_eligibility_rules')],
             'categories.*.gender_id' => [$required, 'uuid', $activeReference('participant_genders')],
-            'categories.*.member_group_ids' => [$required, 'array', $isDraftSave ? 'max:30' : 'min:1', 'max:30'],
+            'categories.*.member_group_match_mode' => [$required, Rule::in(['any', 'all'])],
+            'categories.*.member_group_ids' => [$required, 'array', $isDraftSave ? 'max:30' : 'min:1', 'max:30', $exclusiveNoCheck('member_groups', 'no-membership-check')],
             'categories.*.member_group_ids.*' => ['uuid', 'distinct', $activeReference('member_groups')],
-            'categories.*.capture_device_ids' => [$required, 'array', $isDraftSave ? 'max:30' : 'min:1', 'max:30'],
+            'categories.*.capture_device_ids' => [$required, 'array', $isDraftSave ? 'max:30' : 'min:1', 'max:30', $exclusiveNoCheck('capture_devices', 'no-device-check')],
             'categories.*.capture_device_ids.*' => ['uuid', 'distinct', $activeReference('capture_devices')],
+            'categories.*.processing_method_ids' => [$required, 'array', $isDraftSave ? 'max:30' : 'min:1', 'max:30', $exclusiveNoCheck('processing_methods', 'no-processing-check')],
+            'categories.*.processing_method_ids.*' => ['uuid', 'distinct', $activeReference('processing_methods')],
         ];
     }
 
@@ -116,11 +132,11 @@ class Step6 implements CompetitionStep
         return $categories ?: [[
             'id' => null, 'tr' => ['name' => ''], 'en' => ['name' => ''],
             'age_eligibility_rule' => null, 'gender_id' => null,
-            'member_group_ids' => [], 'capture_device_ids' => [],
+            'member_group_match_mode' => 'any', 'member_group_ids' => [], 'capture_device_ids' => [], 'processing_method_ids' => [],
         ]];
     }
 
-    /** @return array{genders: Collection, ageRules: Collection, memberGroups: Collection, captureDevices: Collection} */
+    /** @return array{genders: Collection, ageRules: Collection, memberGroups: Collection, captureDevices: Collection, processingMethods: Collection} */
     public function options(): array
     {
         return [
@@ -128,6 +144,7 @@ class Step6 implements CompetitionStep
             'ageRules' => AgeEligibilityRule::active()->ordered()->with('translations')->get(),
             'memberGroups' => MemberGroup::active()->ordered()->with('translations')->get(),
             'captureDevices' => CaptureDevice::active()->ordered()->with('translations')->get(),
+            'processingMethods' => ProcessingMethod::active()->ordered()->with('translations')->get(),
         ];
     }
 }

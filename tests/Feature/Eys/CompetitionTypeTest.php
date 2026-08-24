@@ -41,6 +41,8 @@ class CompetitionTypeTest extends TestCase
             'code' => 'standard',
             'status' => '1',
             'sort_order' => '10',
+            'requires_location' => '0',
+            'requires_approval_process' => '0',
             'tr' => ['name' => 'Standart Yarışma', 'description' => 'Türkçe açıklama'],
             'en' => ['name' => 'Standard Competition', 'description' => 'English description'],
         ]);
@@ -74,6 +76,8 @@ class CompetitionTypeTest extends TestCase
             'code' => 'new-code',
             'status' => '0',
             'sort_order' => '99',
+            'requires_location' => '1',
+            'requires_approval_process' => '1',
             'tr' => ['name' => 'Güncel Tür', 'description' => 'Güncel açıklama'],
             'en' => ['name' => 'Updated Type', 'description' => 'Updated description'],
         ]);

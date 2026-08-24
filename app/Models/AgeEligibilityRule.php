@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['code', 'minimum_age', 'maximum_age', 'minimum_inclusive', 'maximum_inclusive', 'sort_order', 'status'])]
+#[Fillable(['code', 'minimum_age', 'maximum_age', 'minimum_inclusive', 'maximum_inclusive', 'sort_order', 'status', 'is_system', 'version'])]
 class AgeEligibilityRule extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -17,7 +17,7 @@ class AgeEligibilityRule extends Model
 
     protected function casts(): array
     {
-        return ['minimum_age' => 'integer', 'maximum_age' => 'integer', 'minimum_inclusive' => 'boolean', 'maximum_inclusive' => 'boolean', 'sort_order' => 'integer', 'status' => 'boolean'];
+        return ['minimum_age' => 'integer', 'maximum_age' => 'integer', 'minimum_inclusive' => 'boolean', 'maximum_inclusive' => 'boolean', 'sort_order' => 'integer', 'status' => 'boolean', 'is_system' => 'boolean', 'version' => 'integer'];
     }
 
     public function scopeActive($query)

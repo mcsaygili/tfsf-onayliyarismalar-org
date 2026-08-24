@@ -55,6 +55,7 @@ class RegulationItemTest extends TestCase
             'sort_order' => '1',
             'code' => 'a',
             'status' => '1',
+            'content_type' => 'fixed',
             'tr' => ['content' => 'Yarışmaya katılım ücretsizdir.'],
             'en' => ['content' => 'Participation in the competition is free.'],
         ]);
@@ -108,7 +109,9 @@ class RegulationItemTest extends TestCase
             'regulation_section_id' => $otherSection->id,
             'sort_order' => '2',
             'status' => '0',
+            'content_type' => 'fixed',
             'tr' => ['content' => 'Yeni içerik.'],
+            'en' => ['content' => 'Updated content.'],
         ]);
 
         $updateResponse->assertRedirect(route('eys.regulation-items.index'));

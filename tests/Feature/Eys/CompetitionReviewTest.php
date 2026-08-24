@@ -16,6 +16,8 @@ use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
 use App\Models\ParticipantGender;
 use App\Models\Permission;
+use App\Models\ProcessingMethod;
+use App\Models\RegulationItem;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -44,6 +46,15 @@ class CompetitionReviewTest extends TestCase
         $category->genders()->sync([ParticipantGender::firstOrFail()->id]);
         $category->memberGroups()->sync([MemberGroup::firstOrFail()->id]);
         $category->captureDevices()->sync([CaptureDevice::firstOrFail()->id]);
+        $category->processingMethods()->sync([ProcessingMethod::firstOrFail()->id]);
+
+        RegulationItem::active()->where('content_type', 'institution_input')->each(function (RegulationItem $item) use ($competition): void {
+            $competition->regulationInputs()->create([
+                'regulation_item_id' => $item->id,
+                'locale' => 'tr',
+                'content' => 'Kuruma özel koşul.',
+            ]);
+        });
     }
 
     public function test_yetkisiz_kullanici_yarisma_listesini_goremez(): void
@@ -190,7 +201,7 @@ class CompetitionReviewTest extends TestCase
         $this->assertSame(['Eski Konu', 'Yeni Konu'], $log->changes['tr.subject']);
     }
 
-    public function test_needs_info_sonrasi_yeniden_gonderilince_resubmitted_logu_yazilir_ve_pending_reviewe_doner(): void
+    public function test_needs_info_sonrasi_eksik_adimlar_yeniden_gondermeyi_engeller(): void
     {
         $competition = Competition::factory()->needsInfo()->create();
         $staff = $competition->institutionStaff;
@@ -200,8 +211,8 @@ class CompetitionReviewTest extends TestCase
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.index'));
-        $this->assertSame(CompetitionStatus::PendingReview, $competition->status);
-        $this->assertSame('resubmitted', $competition->statusLogs()->first()->action);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 8]));
+        $this->assertSame(CompetitionStatus::NeedsInfo, $competition->status);
+        $this->assertNotSame('resubmitted', $competition->statusLogs()->first()?->action);
     }
 }

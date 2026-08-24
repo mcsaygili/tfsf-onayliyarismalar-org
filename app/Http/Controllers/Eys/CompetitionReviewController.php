@@ -53,6 +53,10 @@ class CompetitionReviewController extends Controller
             'categories.genders.translations',
             'categories.memberGroups.translations',
             'categories.captureDevices.translations',
+            'categories.processingMethods.translations',
+            'captureRegions.country.translations',
+            'captureRegions.city.translations',
+            'regulationInputs',
             'translations',
             'statusLogs.actor',
         ]);

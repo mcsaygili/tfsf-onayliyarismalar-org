@@ -16,6 +16,10 @@ class CompetitionTypeFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (CompetitionType $competitionType) {
+            if ($competitionType->code === 'photographers-marathon') {
+                $competitionType->update(['requires_location' => true, 'requires_approval_process' => true]);
+            }
+
             $name = fake()->unique()->words(3, true);
 
             $competitionType->upsertTranslations([

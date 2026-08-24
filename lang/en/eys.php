@@ -97,6 +97,7 @@ return [
         'age_eligibility_rules' => 'Age Eligibility Rules',
         'member_groups' => 'Member Groups',
         'capture_devices' => 'Photo Capture Devices',
+        'processing_methods' => 'Photo Processing Methods',
     ],
 
     'modules' => [
@@ -437,6 +438,7 @@ return [
         'new' => 'Add New Section',
         'edit_title' => 'Edit Section',
         'name' => 'Section Name',
+        'code' => 'System Code',
         'sort_order' => 'Sort Order',
         'sort_order_hint' => 'Lower values are shown first.',
         'status' => 'Status',
@@ -470,6 +472,10 @@ return [
         'code' => 'Code',
         'code_hint' => 'Optional reference label (e.g. a, 5.b) — for matching against the source text, has no effect on display.',
         'content' => 'Content',
+        'content_type' => 'Content Type',
+        'content_types' => ['fixed' => 'Fixed / Read-only', 'source' => 'Automatic from Competition Data', 'institution_input' => 'Completed by Institution'],
+        'source_key' => 'Data Source Key',
+        'conditions' => 'Display Conditions (JSON)',
         'status' => 'Status',
         'status_active' => 'Active',
         'status_inactive' => 'Inactive',
@@ -500,6 +506,8 @@ return [
         'name' => 'Name',
         'description' => 'Description',
         'description_hint' => 'A short, distinctive explanation shown to institutions while choosing.',
+        'requires_location' => 'Photography area required',
+        'requires_approval_process' => 'Participant approval process required',
         'sort_order' => 'Sort Order',
         'sort_order_hint' => 'Lower values are shown first.',
         'status' => 'Status',
@@ -571,6 +579,12 @@ return [
         'code' => 'System Code', 'code_hint' => 'Unique technical code used by the entry validation engine.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
         'created' => 'Device option created.', 'updated' => 'Device option updated.', 'deleted' => 'Device option deleted.', 'delete_confirm' => 'Are you sure you want to delete this device?',
     ],
+    'processing_method' => [
+        'title' => 'Photo Processing Methods', 'list_hint' => 'Manage processing methods permitted for photographs entered in a category.', 'new' => 'New Processing Method', 'edit_title' => 'Edit Processing Method',
+        'code' => 'System Code', 'code_hint' => 'Unique technical code used by entry and regulation engines.', 'name' => 'Name', 'description' => 'Description', 'sort_order' => 'Order', 'status' => 'Status', 'filter_name' => 'Search by name', 'empty' => 'No records yet.',
+        'created' => 'Processing method created.', 'updated' => 'Processing method updated.', 'deleted' => 'Processing method deleted.', 'delete_confirm' => 'Are you sure you want to delete this processing method?',
+    ],
+    'reference_in_use' => 'A system-owned or in-use reference cannot be deleted.',
 
     'education_level' => [
         'title' => 'Education Level',
@@ -927,6 +941,9 @@ return [
             'birth_date' => 'Date of Birth',
             'member_groups' => 'Member Groups',
             'capture_devices' => 'Device Used to Produce the Photograph',
+            'processing_methods' => 'Photo Processing Methods',
+            'capture_regions' => 'Photo Capture Regions',
+            'regulation_inputs' => 'Institution Regulation Details',
             'name' => 'Competition Name',
             'partners' => 'Partners and Collaborators',
             'subject' => 'Competition Subject',

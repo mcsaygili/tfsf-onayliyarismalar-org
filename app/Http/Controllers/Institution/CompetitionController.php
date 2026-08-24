@@ -6,6 +6,8 @@ use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
+use App\Support\CompetitionWizard\CompetitionStepRegistry;
+use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -49,11 +51,19 @@ class CompetitionController extends Controller
         $this->authorizeSameInstitution($competition);
 
         abort_unless($competition->isEditable(), 403);
-        abort_unless($competition->canSubmit(), 422, __('institution.competitions.cannot_submit_incomplete'));
+        if (! $competition->canSubmit()) {
+            $blockingStep = CompetitionStepRegistry::firstBlockingStepNumber($competition) ?? $competition->current_step;
+
+            return redirect()
+                ->route('institution.competitions.step.show', [$competition, $blockingStep])
+                ->with('error', __('institution.competitions.cannot_submit_incomplete'));
+        }
 
         $fromStatus = $competition->status;
 
         DB::transaction(function () use ($competition, $fromStatus) {
+            app(CompetitionRegulationCompiler::class)->snapshot($competition);
+
             $competition->forceFill([
                 'status' => CompetitionStatus::PendingReview,
                 'submitted_at' => now(),

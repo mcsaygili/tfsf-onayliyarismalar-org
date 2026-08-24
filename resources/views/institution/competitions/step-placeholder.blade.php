@@ -14,5 +14,11 @@
         </form>
     @else
         @include('institution.competitions._submit-cta')
+        @unless ($competition->canSubmit())
+            <div class="ip-alert ip-alert-warning" role="status" style="margin-top: 1.5rem;">
+                <x-institution.icon name="warning" />
+                <div class="ip-alert-text">{{ __('institution.competitions.unimplemented_steps_block_submission') }}</div>
+            </div>
+        @endunless
     @endif
 </x-institution.app-layout>

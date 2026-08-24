@@ -6,6 +6,7 @@ use App\Models\AgeEligibilityRule;
 use App\Models\CaptureDevice;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
+use App\Models\ProcessingMethod;
 use Illuminate\Database\Seeder;
 
 class CompetitionCategoryReferenceSeeder extends Seeder
@@ -26,6 +27,7 @@ class CompetitionCategoryReferenceSeeder extends Seeder
         $this->seedAgeRules();
 
         $this->seed(MemberGroup::class, [
+            ['no-membership-check', 5, 'Üyelik Kontrolü Yok', 'No Membership Check', 'Katılım sırasında üyelik grubu kontrol edilmez.', 'Membership group is not checked during entry.'],
             ['0', 10, 'Üye', 'Member', 'TFSF üyesi kullanıcılar.', 'TFSF member users.'],
             ['1', 20, 'Dernek Üyesi', 'Association Member', 'Bir fotoğraf derneğine bağlı kullanıcılar.', 'Users affiliated with a photography association.'],
             ['2', 30, 'Dernek Alt Üyesi', 'Association Sub-member', 'Dernek alt üyeliği bulunan kullanıcılar.', 'Users holding an association sub-membership.'],
@@ -33,10 +35,18 @@ class CompetitionCategoryReferenceSeeder extends Seeder
         ]);
 
         $this->seed(CaptureDevice::class, [
+            ['no-device-check', 5, 'Cihaz Kontrolü Yok', 'No Device Check', 'Fotoğrafın çekildiği cihaz türü kontrol edilmez.', 'The capture device type is not checked.'],
             ['camera', 10, 'Fotoğraf Makinesi', 'Camera', 'Dijital veya analog fotoğraf makinesiyle üretilen fotoğraflar.', 'Photographs produced with a digital or analogue camera.'],
             ['mobile-device', 20, 'Cep Telefonu veya Tablet', 'Mobile Phone or Tablet', 'Mobil cihaz kamerasıyla üretilen fotoğraflar.', 'Photographs produced with a mobile device camera.'],
             ['drone', 30, 'Drone', 'Drone', 'İnsansız hava aracı kamerasıyla üretilen fotoğraflar.', 'Photographs produced with an unmanned aerial vehicle camera.'],
-            ['software', 40, 'Software (Uygulama)', 'Software (Application)', 'Photoshop, GIMP ve benzeri fotoğraf düzenleme uygulamalarıyla üretilen veya düzenlenen görseller.', 'Images produced or edited using Photoshop, GIMP, or similar photo-editing applications.'],
+        ]);
+
+        $softwareDevice = CaptureDevice::withTrashed()->where('code', 'software')->first();
+        $softwareDevice?->update(['status' => false, 'is_system' => true]);
+
+        $this->seed(ProcessingMethod::class, [
+            ['no-processing-check', 5, 'Düzenleme Kontrolü Yok', 'No Processing Check', 'Fotoğrafın düzenlenme yöntemi kontrol edilmez.', 'The image-processing method is not checked.'],
+            ['photo-editing-software', 10, 'Fotoğraf Düzenleme Uygulaması', 'Photo-editing Application', 'Photoshop, GIMP ve benzeri fotoğraf düzenleme uygulamalarıyla işlenen görseller.', 'Images processed using Photoshop, GIMP, or similar photo-editing applications.'],
         ]);
     }
 
@@ -52,7 +62,7 @@ class CompetitionCategoryReferenceSeeder extends Seeder
 
         foreach ($rules as [$code, $minimum, $maximum, $minimumInclusive, $maximumInclusive, $sortOrder, $trName, $enName, $trDescription, $enDescription]) {
             $rule = AgeEligibilityRule::withTrashed()->firstOrNew(['code' => $code]);
-            $rule->fill(['minimum_age' => $minimum, 'maximum_age' => $maximum, 'minimum_inclusive' => $minimumInclusive, 'maximum_inclusive' => $maximumInclusive, 'sort_order' => $sortOrder, 'status' => true]);
+            $rule->fill(['minimum_age' => $minimum, 'maximum_age' => $maximum, 'minimum_inclusive' => $minimumInclusive, 'maximum_inclusive' => $maximumInclusive, 'sort_order' => $sortOrder, 'status' => true, 'is_system' => true]);
             $rule->save();
             if ($rule->trashed()) {
                 $rule->restore();
@@ -61,12 +71,12 @@ class CompetitionCategoryReferenceSeeder extends Seeder
         }
     }
 
-    /** @param class-string<ParticipantGender|MemberGroup|CaptureDevice> $model */
+    /** @param class-string<ParticipantGender|MemberGroup|CaptureDevice|ProcessingMethod> $model */
     private function seed(string $model, array $items): void
     {
         foreach ($items as [$code, $sortOrder, $trName, $enName, $trDescription, $enDescription]) {
             $reference = $model::withTrashed()->firstOrNew(['code' => $code]);
-            $reference->fill(['sort_order' => $sortOrder, 'status' => true]);
+            $reference->fill(['sort_order' => $sortOrder, 'status' => true, 'is_system' => true]);
             $reference->save();
 
             if ($reference->trashed()) {

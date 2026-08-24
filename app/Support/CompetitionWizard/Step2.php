@@ -3,6 +3,7 @@
 namespace App\Support\CompetitionWizard;
 
 use App\Models\Competition;
+use App\Rules\ValidLocalDateTime;
 
 /**
  * Adım 2 — Yarışma Bilgileri: Yarışma Adı, Paydaş ve İşbirlikçileri,
@@ -36,7 +37,12 @@ class Step2 implements CompetitionStep
 
     public function data(Competition $competition): array
     {
-        $data = ['partners' => $competition->partners];
+        $data = [
+            'partners' => $competition->partners,
+            'application_starts_at' => $competition->application_starts_at?->format('Y-m-d\TH:i'),
+            'application_ends_at' => $competition->application_ends_at?->format('Y-m-d\TH:i'),
+            'competition_ends_at' => $competition->competition_ends_at?->format('Y-m-d\TH:i'),
+        ];
 
         foreach (array_keys(config('locales.supported')) as $locale) {
             $translation = $competition->getTranslation($locale, false);
@@ -55,6 +61,10 @@ class Step2 implements CompetitionStep
         if (array_key_exists('partners', $validated)) {
             $competition->update(['partners' => $validated['partners']]);
         }
+
+        $competition->update(array_intersect_key($validated, array_flip([
+            'application_starts_at', 'application_ends_at', 'competition_ends_at',
+        ])));
 
         $translations = [];
 
@@ -78,6 +88,9 @@ class Step2 implements CompetitionStep
     {
         $rules = [
             'partners' => ['nullable', 'string', 'max:2000'],
+            'application_starts_at' => [$isDraftSave || $competition->application_starts_at ? 'nullable' : 'required', new ValidLocalDateTime],
+            'application_ends_at' => [$isDraftSave || $competition->application_ends_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after:application_starts_at'],
+            'competition_ends_at' => [$isDraftSave || $competition->competition_ends_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after_or_equal:application_ends_at'],
         ];
 
         foreach (array_keys(config('locales.supported')) as $locale) {

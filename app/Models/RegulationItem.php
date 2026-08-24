@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['regulation_section_id', 'sort_order', 'code', 'status'])]
+#[Fillable(['regulation_section_id', 'sort_order', 'code', 'content_type', 'source_key', 'conditions', 'status', 'is_system', 'version'])]
 class RegulationItem extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -22,12 +23,20 @@ class RegulationItem extends Model
         return [
             'status' => 'boolean',
             'sort_order' => 'integer',
+            'conditions' => 'array',
+            'is_system' => 'boolean',
+            'version' => 'integer',
         ];
     }
 
     public function section(): BelongsTo
     {
         return $this->belongsTo(RegulationSection::class, 'regulation_section_id');
+    }
+
+    public function competitionRegulationInputs(): HasMany
+    {
+        return $this->hasMany(CompetitionRegulationInput::class);
     }
 
     public function scopeActive($query)

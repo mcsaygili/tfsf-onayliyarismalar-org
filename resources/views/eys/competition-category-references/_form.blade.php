@@ -14,7 +14,8 @@
         <div class="ip-grid-2">
             <div class="ia-field">
                 <x-eys.label for="code" :value="$codeLabel" />
-                <x-eys.input id="code" name="code" :value="old('code', $reference->code)" />
+                @if ($reference->is_system)<input type="hidden" name="code" value="{{ $reference->code }}">@endif
+                <x-eys.input id="code" :name="$reference->is_system ? null : 'code'" :value="old('code', $reference->code)" :disabled="$reference->is_system" />
                 <div class="ip-field-hint">{{ __("eys.$translation.code_hint") }}</div>
                 <x-eys.input-error :messages="$errors->get('code')" />
             </div>

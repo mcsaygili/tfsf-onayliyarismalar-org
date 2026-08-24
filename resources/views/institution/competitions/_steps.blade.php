@@ -2,11 +2,12 @@
 <div class="ip-steps">
     @foreach ($steps as $number => $stepDef)
         @php
-            $isApplicable = $stepDef->isApplicable($competition);
-            $isLocked = $number > $competition->current_step;
-            $isUnavailable = ! $isLocked && ! $isApplicable;
-            $isDone = $isApplicable && $number < $competition->current_step;
-            $isCurrent = $isApplicable && $number === $step;
+            $stepState = \App\Support\CompetitionWizard\CompetitionStepRegistry::stateFor($competition, $stepDef, $step);
+            $isLocked = $stepState === 'locked';
+            $isUnavailable = $stepState === 'not_applicable';
+            $isDone = $stepState === 'complete';
+            $isIncomplete = $stepState === 'incomplete';
+            $isCurrent = $stepState === 'current';
             $inactiveHint = data_get(
                 trans('institution.competitions.steps'),
                 $number.'.inactive_hint',
@@ -30,7 +31,7 @@
         @else
             <a
                 href="{{ route('institution.competitions.step.show', [$competition, $number]) }}"
-                class="ip-step {{ $isDone ? 'is-done' : '' }} {{ $isCurrent ? 'is-current' : '' }}"
+                class="ip-step {{ $isDone ? 'is-done' : '' }} {{ $isIncomplete ? 'is-incomplete' : '' }} {{ $isCurrent ? 'is-current' : '' }}"
                 @if ($isCurrent) aria-current="step" @endif
             >
                 <span class="ip-step-dot">{{ $number }}</span>

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['competition_id', 'sort_order', 'age_eligibility_rule_id', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
+#[Fillable(['competition_id', 'sort_order', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
 class CompetitionCategory extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -45,5 +45,10 @@ class CompetitionCategory extends Model
     public function captureDevices(): BelongsToMany
     {
         return $this->belongsToMany(CaptureDevice::class, 'competition_category_capture_device');
+    }
+
+    public function processingMethods(): BelongsToMany
+    {
+        return $this->belongsToMany(ProcessingMethod::class, 'competition_category_processing_method');
     }
 }

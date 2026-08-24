@@ -11,7 +11,8 @@
         <div class="ip-grid-2">
             <div class="ia-field">
                 <x-eys.label for="code" :value="__('eys.competition_type.code')" />
-                <x-eys.input id="code" type="text" name="code" :value="old('code', $competitionType->code)" autocomplete="off" />
+                @if ($competitionType->is_system)<input type="hidden" name="code" value="{{ $competitionType->code }}">@endif
+                <x-eys.input id="code" type="text" :name="$competitionType->is_system ? null : 'code'" :value="old('code', $competitionType->code)" autocomplete="off" :disabled="$competitionType->is_system" />
                 <div class="ip-field-hint">{{ __('eys.competition_type.code_hint') }}</div>
                 <x-eys.input-error :messages="$errors->get('code')" />
             </div>
@@ -21,6 +22,11 @@
                 <div class="ip-field-hint">{{ __('eys.competition_type.sort_order_hint') }}</div>
                 <x-eys.input-error :messages="$errors->get('sort_order')" />
             </div>
+        </div>
+
+        <div class="ip-grid-2" style="margin-top: 1rem;">
+            <label class="ip-switch"><input type="hidden" name="requires_location" value="0"><input type="checkbox" class="ip-switch-checkbox" name="requires_location" value="1" @checked(old('requires_location', $competitionType->requires_location))><span class="ip-switch-track"><span class="ip-switch-thumb"></span></span><span class="ip-switch-label">{{ __('eys.competition_type.requires_location') }}</span></label>
+            <label class="ip-switch"><input type="hidden" name="requires_approval_process" value="0"><input type="checkbox" class="ip-switch-checkbox" name="requires_approval_process" value="1" @checked(old('requires_approval_process', $competitionType->requires_approval_process))><span class="ip-switch-track"><span class="ip-switch-thumb"></span></span><span class="ip-switch-label">{{ __('eys.competition_type.requires_approval_process') }}</span></label>
         </div>
 
         <div class="ia-field ip-field-last" x-data="{ active: {{ old('status', (int) $competitionType->status ?: 1) ? 'true' : 'false' }} }">

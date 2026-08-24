@@ -8,6 +8,7 @@ use App\Models\RegulationSection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 /**
  * EYS yönetici paneli — Şartname Maddesi (referans veri) yönetimi. Her
@@ -59,6 +60,9 @@ class RegulationItemController extends Controller
             'sort_order' => $data['sort_order'] ?: 0,
             'code' => $data['code'] ?? null,
             'status' => (bool) $data['status'],
+            'content_type' => $data['content_type'],
+            'source_key' => $data['source_key'] ?? null,
+            'conditions' => filled($data['conditions'] ?? null) ? json_decode($data['conditions'], true, 512, JSON_THROW_ON_ERROR) : null,
         ]);
 
         $item->upsertTranslations($this->translationPayload($data));
@@ -84,8 +88,12 @@ class RegulationItemController extends Controller
         $regulationItem->update([
             'regulation_section_id' => $data['regulation_section_id'],
             'sort_order' => $data['sort_order'] ?: 0,
-            'code' => $data['code'] ?? null,
+            'code' => $regulationItem->is_system ? $regulationItem->code : ($data['code'] ?? null),
             'status' => (bool) $data['status'],
+            'content_type' => $data['content_type'],
+            'source_key' => $data['source_key'] ?? null,
+            'conditions' => filled($data['conditions'] ?? null) ? json_decode($data['conditions'], true, 512, JSON_THROW_ON_ERROR) : null,
+            'version' => $regulationItem->version + 1,
         ]);
 
         $regulationItem->upsertTranslations($this->translationPayload($data));
@@ -95,6 +103,10 @@ class RegulationItemController extends Controller
 
     public function destroy(RegulationItem $regulationItem): RedirectResponse
     {
+        if ($regulationItem->is_system || $regulationItem->competitionRegulationInputs()->exists()) {
+            return back()->with('error', __('eys.reference_in_use'));
+        }
+
         $regulationItem->delete();
 
         return redirect()->route('eys.regulation-items.index')->with('status', __('eys.regulation_item.deleted'));
@@ -110,12 +122,15 @@ class RegulationItemController extends Controller
             'regulation_section_id' => ['required', 'uuid', 'exists:regulation_sections,id'],
             'status' => ['required', 'in:0,1'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
-            'code' => ['nullable', 'string', 'max:50'],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('regulation_items', 'code')->ignore($request->route('regulationItem')?->id)],
+            'content_type' => ['required', 'in:fixed,source,institution_input'],
+            'source_key' => ['nullable', 'required_if:content_type,source', 'string', 'max:100'],
+            'conditions' => ['nullable', 'json'],
         ];
 
         foreach ($locales as $locale) {
             $rules["{$locale}.content"] = [
-                $locale === $defaultLocale ? 'required' : 'nullable',
+                'required',
                 'string',
             ];
         }

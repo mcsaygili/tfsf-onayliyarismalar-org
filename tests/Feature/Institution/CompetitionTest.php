@@ -15,6 +15,7 @@ use App\Models\InstitutionStaff;
 use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
 use App\Models\ParticipantGender;
+use App\Models\ProcessingMethod;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Database\Seeders\CompetitionTypeSeeder;
 use Database\Seeders\ParticipantApprovalProcessSeeder;
@@ -44,6 +45,7 @@ class CompetitionTest extends TestCase
         $category->genders()->sync([ParticipantGender::firstOrFail()->id]);
         $category->memberGroups()->sync([MemberGroup::firstOrFail()->id]);
         $category->captureDevices()->sync([CaptureDevice::firstOrFail()->id]);
+        $category->processingMethods()->sync([ProcessingMethod::firstOrFail()->id]);
     }
 
     public function test_yeni_taslak_basvuru_olusturulabilir(): void
@@ -136,6 +138,7 @@ class CompetitionTest extends TestCase
         $response->assertSee(__('institution.competitions.audiences.national.definition'));
         $response->assertSee(__('institution.competitions.audiences.international.description'));
         $response->assertSee(__('institution.competitions.audiences.international.definition'));
+        $response->assertSee('class="ip-wizard-stage"', false);
         $response->assertSee('aria-controls="field-help-audience"', false);
     }
 
@@ -250,10 +253,108 @@ class CompetitionTest extends TestCase
         $response->assertSee('aria-controls="field-help-tr_name"', false);
         $response->assertSee('aria-controls="field-help-en_name"', false);
         $response->assertSee('aria-controls="field-help-organizing_institution"', false);
-        $response->assertSee('aria-controls="field-help-partners"', false);
+        $response->assertSee('aria-controls="field-help-partners_entry"', false);
         $response->assertSee('aria-controls="field-help-tr_subject"', false);
         $response->assertSee('aria-controls="field-help-tr_purpose"', false);
+        $response->assertSee('class="ip-field-help-panel"', false);
+        $response->assertSee(__('institution.field_help.done'));
         $response->assertSee(__('institution.competitions.field_help.subject.example'));
+    }
+
+    public function test_adim_2_takvim_alanlarini_sayisal_parcalar_olarak_gosterir(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
+            'current_step' => 2,
+            'application_starts_at' => '2026-10-01 09:05:00',
+        ]);
+
+        $response = $this->actingAs($staff, 'institution')->get(
+            route('institution.competitions.step.show', [$competition, 2])
+        );
+
+        $response->assertOk();
+        $response->assertDontSee('type="datetime-local"', false);
+        $response->assertSee('id="application_starts_at_day"', false);
+        $response->assertSee('name="application_starts_at_day"', false);
+        $response->assertSee('type="number"', false);
+        $response->assertSee('value="01"', false);
+        $response->assertSee('id="application_ends_at_month"', false);
+        $response->assertSee('id="competition_ends_at_minute"', false);
+        $response->assertSee('class="ip-date-time-group is-date"', false);
+        $response->assertSee('class="ip-date-time-group is-time"', false);
+        $response->assertSee('max="2040"', false);
+        $response->assertSee('max="23"', false);
+        $response->assertSee('max="59"', false);
+        $response->assertSee(__('institution.competitions.calendar_numeric_hint'));
+        $this->assertSame(15, substr_count($response->getContent(), 'type="number"'));
+    }
+
+    public function test_adim_2_parcali_takvim_degerlerini_datetime_olarak_kaydeder(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 2]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 2]),
+            [
+                'application_starts_at' => '2026-10-01T09:05',
+                'application_ends_at' => '2026-10-31T18:10',
+                'competition_ends_at' => '2026-11-05T20:15',
+                'tr' => ['name' => 'Test Yarışması', 'subject' => 'Test Konu', 'purpose' => 'Test Amaç'],
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertSessionDoesntHaveErrors();
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 3]));
+        $competition->refresh();
+        $this->assertSame('2026-10-01 09:05', $competition->application_starts_at?->format('Y-m-d H:i'));
+        $this->assertSame('2026-10-31 18:10', $competition->application_ends_at?->format('Y-m-d H:i'));
+        $this->assertSame('2026-11-05 20:15', $competition->competition_ends_at?->format('Y-m-d H:i'));
+    }
+
+    public function test_adim_2_gecersiz_takvim_bilesimi_reddedilir(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 2]);
+
+        $response = $this->actingAs($staff, 'institution')->put(
+            route('institution.competitions.step.update', [$competition, 2]),
+            [
+                'application_starts_at' => '2026-02-31T09:00',
+                'application_ends_at' => '2026-03-10T18:00',
+                'competition_ends_at' => '2026-03-15T18:00',
+                'tr' => ['name' => 'Test Yarışması', 'subject' => 'Test Konu', 'purpose' => 'Test Amaç'],
+                'action' => 'next',
+            ]
+        );
+
+        $response->assertSessionHasErrors('application_starts_at');
+        $this->assertSame(2, $competition->fresh()->current_step);
+    }
+
+    public function test_adim_2_takvim_yil_saat_ve_dakika_sinirlarini_zorlar(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 2]);
+
+        foreach (['2019-10-01T09:00', '2041-10-01T09:00', '2026-10-01T24:00', '2026-10-01T23:60'] as $invalidDateTime) {
+            $response = $this->actingAs($staff, 'institution')->put(
+                route('institution.competitions.step.update', [$competition, 2]),
+                [
+                    'application_starts_at' => $invalidDateTime,
+                    'application_ends_at' => '2030-10-31T18:00',
+                    'competition_ends_at' => '2030-11-05T20:00',
+                    'tr' => ['name' => 'Test Yarışması', 'subject' => 'Test Konu', 'purpose' => 'Test Amaç'],
+                    'action' => 'next',
+                ]
+            );
+
+            $response->assertSessionHasErrors('application_starts_at');
+        }
+
+        $this->assertSame(2, $competition->fresh()->current_step);
     }
 
     public function test_adim_2_tamamlaninca_adim_3e_gecilir_ve_current_step_ilerler(): void
@@ -378,7 +479,13 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->put(
             route('institution.competitions.step.update', [$competition, 3]),
-            ['infrastructure_provider' => 'external', 'action' => 'next']
+            [
+                'infrastructure_provider' => 'external',
+                'external_provider_name' => 'Kurum Portalı',
+                'external_entry_url' => 'https://yarismalar.example.test',
+                'external_responsibility' => '1',
+                'action' => 'next',
+            ]
         );
 
         $competition->refresh();
@@ -584,8 +691,8 @@ class CompetitionTest extends TestCase
         $response->assertSee('Kurum');
         $response->assertSee(__('institution.competitions.location_information_title'));
         $response->assertSee(__('institution.competitions.location_information_hint'));
-        $response->assertSee('aria-controls="field-help-country"', false);
-        $response->assertSee('aria-controls="field-help-city"', false);
+        $response->assertSee(__('institution.competitions.field_help.country.example'));
+        $response->assertSee(__('institution.competitions.field_help.city.example'));
         $response->assertSee('aria-controls="field-help-participant_approval_process"', false);
     }
 
@@ -618,7 +725,7 @@ class CompetitionTest extends TestCase
             ['action' => 'next']
         );
 
-        $response->assertSessionHasErrors(['country', 'city', 'participant_approval_process']);
+        $response->assertSessionHasErrors(['regions', 'participant_approval_process']);
         $this->assertSame(5, $competition->fresh()->current_step);
     }
 
@@ -639,8 +746,7 @@ class CompetitionTest extends TestCase
         $response = $this->actingAs($staff, 'institution')->put(
             route('institution.competitions.step.update', [$competition, 5]),
             [
-                'country' => $country->id,
-                'city' => $city->id,
+                'regions' => [['country' => $country->id, 'city' => $city->id]],
                 'participant_approval_process' => $process->id,
                 'action' => 'next',
             ]
@@ -670,14 +776,13 @@ class CompetitionTest extends TestCase
         $response = $this->actingAs($staff, 'institution')->put(
             route('institution.competitions.step.update', [$competition, 5]),
             [
-                'country' => $country->id,
-                'city' => $city->id,
+                'regions' => [['country' => $country->id, 'city' => $city->id]],
                 'participant_approval_process' => $process->id,
                 'action' => 'next',
             ]
         );
 
-        $response->assertSessionHasErrors('city');
+        $response->assertSessionHasErrors('regions.0.city');
     }
 
     public function test_baska_kurumun_basvurusuna_erisilemez(): void
@@ -703,7 +808,7 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertStatus(422);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 2]));
         $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
@@ -714,7 +819,7 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertStatus(422);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 1]));
         $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
@@ -727,7 +832,7 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertStatus(422);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 3]));
         $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
@@ -740,11 +845,11 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertStatus(422);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 4]));
         $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
-    public function test_harici_alt_yapida_yarisma_turu_secilmeden_onaya_gonderilebilir(): void
+    public function test_harici_alt_yapida_tamamlanmamis_adimlar_onaya_gondermeyi_engeller(): void
     {
         $staff = $this->staff();
         $competition = Competition::factory()->for($staff->institution)->for($staff)->create([
@@ -755,8 +860,8 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertRedirect(route('institution.competitions.index'));
-        $this->assertSame(CompetitionStatus::PendingReview, $competition->fresh()->status);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 8]));
+        $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
     public function test_fotografcilar_maratonu_adim_5_tamamlanmadan_onaya_gonderilemez(): void
@@ -772,11 +877,11 @@ class CompetitionTest extends TestCase
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
-        $response->assertStatus(422);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 5]));
         $this->assertSame(CompetitionStatus::Draft, $competition->fresh()->status);
     }
 
-    public function test_tamamlanan_adimlar_onaya_gonderilebilir_ve_submitted_log_yazilir(): void
+    public function test_henuz_uygulanmayan_adimlar_onaya_gondermeyi_engeller(): void
     {
         $staff = $this->staff();
         $competition = Competition::factory()->for($staff->institution)->for($staff)->create();
@@ -786,11 +891,10 @@ class CompetitionTest extends TestCase
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.index'));
-        $this->assertSame(CompetitionStatus::PendingReview, $competition->status);
-        $this->assertNotNull($competition->submitted_at);
-        $this->assertSame(1, $competition->statusLogs()->count());
-        $this->assertSame('submitted', $competition->statusLogs()->first()->action);
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 8]));
+        $this->assertSame(CompetitionStatus::Draft, $competition->status);
+        $this->assertNull($competition->submitted_at);
+        $this->assertSame(0, $competition->statusLogs()->count());
     }
 
     public function test_onaylanan_basvuru_duzenlenemez(): void

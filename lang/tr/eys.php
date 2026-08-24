@@ -97,6 +97,7 @@ return [
         'age_eligibility_rules' => 'Yaş Uygunluk Kuralları',
         'member_groups' => 'Üye Grupları',
         'capture_devices' => 'Fotoğraf Üretim Cihazları',
+        'processing_methods' => 'Fotoğraf Düzenleme Yöntemleri',
     ],
 
     'modules' => [
@@ -437,6 +438,7 @@ return [
         'new' => 'Yeni Bölüm Ekle',
         'edit_title' => 'Bölümü Düzenle',
         'name' => 'Bölüm Adı',
+        'code' => 'Sistem Kodu',
         'sort_order' => 'Sıra',
         'sort_order_hint' => 'Küçük değer önce gösterilir.',
         'status' => 'Durum',
@@ -470,6 +472,10 @@ return [
         'code' => 'Kod',
         'code_hint' => 'Opsiyonel referans etiketi (ör. a, 5.b) — kaynak metinle eşleştirme için, görünüme etkisi yoktur.',
         'content' => 'İçerik',
+        'content_type' => 'İçerik Türü',
+        'content_types' => ['fixed' => 'Sabit / Değiştirilemez', 'source' => 'Yarışma Verisinden Otomatik', 'institution_input' => 'Kurum Tarafından Doldurulur'],
+        'source_key' => 'Veri Kaynağı Anahtarı',
+        'conditions' => 'Gösterim Koşulları (JSON)',
         'status' => 'Durum',
         'status_active' => 'Aktif',
         'status_inactive' => 'Pasif',
@@ -500,6 +506,8 @@ return [
         'name' => 'Ad',
         'description' => 'Açıklama',
         'description_hint' => 'Kurumun seçim yaparken göreceği kısa ve ayırt edici açıklama.',
+        'requires_location' => 'Çekim bölgesi zorunlu',
+        'requires_approval_process' => 'Katılımcı onay süreci zorunlu',
         'sort_order' => 'Sıra',
         'sort_order_hint' => 'Küçük değer önce gösterilir.',
         'status' => 'Durum',
@@ -571,6 +579,12 @@ return [
         'code' => 'Sistem Kodu', 'code_hint' => 'Katılım motorunda kullanılacak benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
         'created' => 'Cihaz seçeneği oluşturuldu.', 'updated' => 'Cihaz seçeneği güncellendi.', 'deleted' => 'Cihaz seçeneği silindi.', 'delete_confirm' => 'Bu cihazı silmek istediğinize emin misiniz?',
     ],
+    'processing_method' => [
+        'title' => 'Fotoğraf Düzenleme Yöntemleri', 'list_hint' => 'Kategoriye gönderilecek fotoğraflar için izin verilen düzenleme yöntemlerini yönetin.', 'new' => 'Yeni Düzenleme Yöntemi', 'edit_title' => 'Düzenleme Yöntemini Düzenle',
+        'code' => 'Sistem Kodu', 'code_hint' => 'Katılım ve şartname motorunda kullanılan benzersiz teknik kod.', 'name' => 'Ad', 'description' => 'Açıklama', 'sort_order' => 'Sıra', 'status' => 'Durum', 'filter_name' => 'Ada göre ara', 'empty' => 'Henüz kayıt yok.',
+        'created' => 'Düzenleme yöntemi oluşturuldu.', 'updated' => 'Düzenleme yöntemi güncellendi.', 'deleted' => 'Düzenleme yöntemi silindi.', 'delete_confirm' => 'Bu düzenleme yöntemini silmek istediğinize emin misiniz?',
+    ],
+    'reference_in_use' => 'Sistem kaydı veya kullanımda olan referans veri silinemez.',
 
     'education_level' => [
         'title' => 'Öğrenim Durumu',
@@ -927,6 +941,9 @@ return [
             'birth_date' => 'Doğum Tarihi',
             'member_groups' => 'Üye Grupları',
             'capture_devices' => 'Fotoğrafın Üretildiği Cihaz',
+            'processing_methods' => 'Fotoğraf Düzenleme Yöntemleri',
+            'capture_regions' => 'Fotoğraf Çekim Bölgeleri',
+            'regulation_inputs' => 'Şartname Kurum Bilgileri',
             'name' => 'Yarışma Adı',
             'partners' => 'Paydaş ve İşbirlikçileri',
             'subject' => 'Yarışmanın Konusu',

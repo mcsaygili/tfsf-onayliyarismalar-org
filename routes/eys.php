@@ -221,6 +221,7 @@ Route::domain(config('domains.eys'))->group(function () {
             'yas-uygunluk-kurallari' => ['age-eligibility-rules', 'age-eligibility-rules'],
             'uye-gruplari' => ['member-groups', 'member-groups'],
             'fotograf-uretim-cihazlari' => ['capture-devices', 'capture-devices'],
+            'fotograf-duzenleme-yontemleri' => ['processing-methods', 'processing-methods'],
         ] as $prefix => [$name, $type]) {
             Route::prefix($prefix)->name("eys.$name.")->middleware('permission:eys.'.str_replace('-', '_', $name).'.manage')->group(function () use ($type) {
                 Route::get('/', [CompetitionCategoryReferenceController::class, 'index'])->defaults('referenceType', $type)->name('index');
