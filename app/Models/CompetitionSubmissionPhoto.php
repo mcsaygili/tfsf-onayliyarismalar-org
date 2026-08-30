@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['competition_submission_id', 'source_photo_id', 'capture_device_id', 'disk_path', 'jury_path', 'original_filename', 'mime_type', 'file_size_bytes', 'width', 'height', 'sha256', 'metadata_snapshot', 'processing_method_ids', 'eligibility_snapshot', 'sort_order'])]
+#[Fillable(['competition_submission_id', 'source_photo_id', 'capture_device_id', 'disk_path', 'jury_path', 'original_filename', 'mime_type', 'file_size_bytes', 'width', 'height', 'sha256', 'metadata_snapshot', 'processing_method_ids', 'eligibility_snapshot', 'sort_order', 'withdrawn_at', 'withdrawal_reason'])]
 class CompetitionSubmissionPhoto extends Model
 {
     use HasUuids;
@@ -23,6 +23,7 @@ class CompetitionSubmissionPhoto extends Model
             'width' => 'integer',
             'height' => 'integer',
             'sort_order' => 'integer',
+            'withdrawn_at' => 'datetime',
         ];
     }
 
@@ -49,5 +50,10 @@ class CompetitionSubmissionPhoto extends Model
     public function results(): HasMany
     {
         return $this->hasMany(CompetitionPhotoResult::class, 'submission_photo_id');
+    }
+
+    public function committeeDecisions(): HasMany
+    {
+        return $this->hasMany(CompetitionCommitteeDecision::class, 'submission_photo_id');
     }
 }

@@ -11,10 +11,12 @@ use App\Models\CompetitionSubmission;
 use App\Models\CompetitionSubmissionPhoto;
 use App\Models\Photo;
 use App\Models\ProcessingMethod;
+use App\Services\CompetitionEntryMutationPolicy;
 use App\Services\CompetitionEntryService;
 use App\Services\CompetitionPhaseService;
 use App\Services\CompetitionSubmissionPhotoService;
 use App\Services\MemberEligibilityService;
+use App\Services\MemberScorecardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -69,7 +71,7 @@ class CompetitionController extends Controller
         return redirect()->route('competitions.entry.show', $entry);
     }
 
-    public function entry(Request $request, CompetitionEntry $entry, CompetitionPhaseService $phases): View
+    public function entry(Request $request, CompetitionEntry $entry, CompetitionPhaseService $phases, CompetitionEntryMutationPolicy $mutations, MemberScorecardService $scorecards): View
     {
         $this->ownsEntry($request, $entry);
         $entry->load(['competition.translations', 'competition.categories.translations', 'competition.regulationSnapshots', 'submissions.category.translations', 'submissions.photos.captureDevice.translations', 'submissions.approvals']);
@@ -77,6 +79,8 @@ class CompetitionController extends Controller
         return view('uye.competitions.entry', [
             'entry' => $entry,
             'editable' => $entry->status->isEditable() && $phases->acceptsApplications($entry->competition),
+            'submissionMutability' => $entry->submissions->mapWithKeys(fn ($submission) => [$submission->id => $mutations->allows($submission)]),
+            'scorecards' => $scorecards->forEntry($entry),
             'portfolioPhotos' => $request->user()->photos()->latest()->get(),
             'captureDevices' => CaptureDevice::active()->ordered()->with('translations')->get(),
             'processingMethods' => ProcessingMethod::active()->ordered()->with('translations')->get(),

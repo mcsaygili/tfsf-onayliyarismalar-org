@@ -209,7 +209,9 @@
         </div>
 
         @php
-            $evaluationRound = $competition->evaluationRounds->first();
+            $individualRound = $competition->evaluationRounds->first(fn ($round) => $round->method?->value === 'individual') ?? $competition->evaluationRounds->first();
+            $finalRound = $competition->evaluationRounds->firstWhere('is_final', true);
+            $evaluationRound = $finalRound ?? $individualRound;
             $resultAwardAssignments = $evaluationRound?->results
                 ->flatMap->awards
                 ->keyBy(fn ($assignment) => $assignment->competition_category_award_id.'.'.$assignment->slot_number)
@@ -219,7 +221,34 @@
             <div class="ip-section-title">{{ __('eys.competitions.results_title') }}</div>
             <div class="ip-section-hint">{{ __('eys.competitions.results_hint') }}</div>
             @if($evaluationRound)
-                <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0;"><span>{{ __('eys.competitions.completed_jury_evaluations') }}: <strong>{{ $evaluationRound->evaluationSubmissions->count() }}</strong></span><span>{{ __('eys.competitions.calculated_results') }}: <strong>{{ $evaluationRound->results->count() }}</strong></span></div>
+                <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0;"><span>{{ __('eys.competitions.active_result_round') }}: <strong>{{ $evaluationRound->round_number }} · {{ $evaluationRound->name }}</strong></span><span>{{ __('eys.competitions.completed_jury_evaluations') }}: <strong>{{ $individualRound?->evaluationSubmissions->count() ?? 0 }}</strong></span><span>{{ __('eys.competitions.calculated_results') }}: <strong>{{ $evaluationRound->results->count() }}</strong></span></div>
+
+                @if(!$finalRound && $individualRound?->results->isNotEmpty() && !$competition->results_published_at)
+                    <form method="POST" action="{{ route('eys.competitions.create-final-round', $competition) }}" style="margin:1rem 0 1.5rem;padding:1rem;border:1px solid rgba(201,168,76,.3);border-radius:.75rem;">@csrf
+                        <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.create_final_round') }}</div>
+                        <div class="ip-section-hint">{{ __('eys.competitions.create_final_round_hint') }}</div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.55rem;margin-top:.85rem;">
+                            @foreach($individualRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
+                                <label style="display:flex;gap:.55rem;align-items:center;padding:.65rem;border:1px solid var(--ia-surface-border);border-radius:.55rem;"><input type="checkbox" name="photo_result_ids[]" value="{{ $result->id }}"><span><strong style="color:var(--ia-cream);">#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><small style="display:block;color:var(--ia-muted-dim);">{{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</small></span></label>
+                            @endforeach
+                        </div>
+                        @error('photo_result_ids')<small style="color:#e0857a;">{{ $message }}</small>@enderror
+                        <div style="display:flex;justify-content:flex-end;margin-top:.85rem;"><button class="ia-btn">{{ __('eys.competitions.start_final_round') }}</button></div>
+                    </form>
+                @endif
+
+                @if($finalRound && !$competition->results_published_at)
+                    <form method="POST" action="{{ route('eys.competitions.save-final-round', $competition) }}" style="margin:1rem 0 1.5rem;">@csrf @method('PUT')
+                        <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.committee_evaluation') }}</div>
+                        <div class="ip-section-hint">{{ __('eys.competitions.committee_evaluation_hint') }}</div>
+                        <div class="ip-table-wrap" style="margin-top:.85rem;"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.committee_decision') }}</th><th>{{ __('eys.competitions.committee_score') }}</th><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.committee_note') }}</th></tr></thead><tbody>
+                            @foreach($finalRound->committeeDecisions as $decision)
+                                <tr><td>{{ $decision->photo->submission->category->name }}</td><td><select class="ia-input" name="decisions[{{ $decision->id }}][decision]">@foreach(['finalist','selected','not_selected'] as $status)<option value="{{ $status }}" @selected(old('decisions.'.$decision->id.'.decision', $decision->decision->value) === $status)>{{ __('eys.competitions.committee_decisions.'.$status) }}</option>@endforeach</select></td><td><input class="ia-input" type="number" min="3" max="9" name="decisions[{{ $decision->id }}][score]" value="{{ old('decisions.'.$decision->id.'.score', $decision->score) }}"></td><td><input class="ia-input" type="number" min="1" name="decisions[{{ $decision->id }}][rank]" value="{{ old('decisions.'.$decision->id.'.rank', $decision->rank) }}">@error('decisions.'.$decision->id.'.rank')<small style="color:#e0857a;">{{ $message }}</small>@enderror</td><td><input class="ia-input" type="text" maxlength="2000" name="decisions[{{ $decision->id }}][note]" value="{{ old('decisions.'.$decision->id.'.note', $decision->note) }}"></td></tr>
+                            @endforeach
+                        </tbody></table></div>
+                        <div style="display:flex;justify-content:flex-end;margin-top:.85rem;"><button class="ia-btn">{{ __('eys.competitions.save_committee_evaluation') }}</button></div>
+                    </form>
+                @endif
                 @if($evaluationRound->results->isNotEmpty())
                     <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.result_total') }}</th><th>{{ __('eys.competitions.result_average') }}</th><th>{{ __('eys.competitions.result_score_count') }}</th><th>{{ __('eys.competitions.result_awards') }}</th></tr></thead><tbody>
                     @foreach($evaluationRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)

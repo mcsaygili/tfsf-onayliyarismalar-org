@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\CompetitionSubmission;
 use App\Models\CompetitionSubmissionPhoto;
+use App\Models\JuryEvaluationSubmission;
+use App\Models\JuryScore;
 use App\Models\Photo;
 use App\Support\CompetitionRules\CompetitionEligibilityEvaluator;
 use App\Support\Photo\ExifReader;
@@ -18,7 +20,7 @@ class CompetitionSubmissionPhotoService
     public function __construct(
         private readonly CompetitionEligibilityEvaluator $eligibility,
         private readonly ExifReader $exif,
-        private readonly CompetitionPhaseService $phases,
+        private readonly CompetitionEntryMutationPolicy $mutations,
     ) {}
 
     public function fromPortfolio(CompetitionSubmission $submission, Photo $photo, ?string $captureDeviceId, array $processingMethodIds): CompetitionSubmissionPhoto
@@ -53,8 +55,21 @@ class CompetitionSubmissionPhotoService
     public function remove(CompetitionSubmissionPhoto $photo): void
     {
         $photo->loadMissing('submission.entry.competition');
-        if (! $photo->submission->status->isEditable() || ! $this->phases->acceptsApplications($photo->submission->entry->competition)) {
+        if (! $this->mutations->allowsPhoto($photo)) {
             throw ValidationException::withMessages(['photo' => __('uye.competitions.errors.submission_locked')]);
+        }
+
+        if (! $photo->submission->status->isEditable()) {
+            $photo->update(['withdrawn_at' => now()]);
+            $this->reopenEvaluations($photo->submission);
+            $photo->submission->entry->events()->create([
+                'event' => 'photo_withdrawn_during_evaluation',
+                'actor_type' => $photo->submission->entry->user::class,
+                'actor_id' => $photo->submission->entry->user_id,
+                'context' => ['submission_photo_id' => $photo->id, 'competition_category_id' => $photo->submission->competition_category_id],
+            ]);
+
+            return;
         }
 
         Storage::disk('local')->delete($photo->disk_path);
@@ -68,13 +83,10 @@ class CompetitionSubmissionPhotoService
     private function store(CompetitionSubmission $submission, string $bytes, string $filename, string $mime, ?int $width, ?int $height, array $metadata, ?string $captureDeviceId, array $processingMethodIds, ?string $sourcePhotoId = null): CompetitionSubmissionPhoto
     {
         $submission->loadMissing('category.captureDevices', 'category.processingMethods', 'entry.competition');
-        if (! $submission->status->isEditable()) {
+        if (! $this->mutations->allows($submission)) {
             throw ValidationException::withMessages(['photo' => __('uye.competitions.errors.submission_locked')]);
         }
-        if (! $this->phases->acceptsApplications($submission->entry->competition)) {
-            throw ValidationException::withMessages(['photo' => __('uye.competitions.violations.applications_not_open')]);
-        }
-        if ($submission->photos()->count() >= $submission->category->max_photos_per_participant) {
+        if ($submission->activePhotos()->count() >= $submission->category->max_photos_per_participant) {
             throw ValidationException::withMessages(['photo' => __('uye.competitions.errors.photo_limit')]);
         }
 
@@ -87,7 +99,15 @@ class CompetitionSubmissionPhotoService
         }
 
         $hash = hash('sha256', $bytes);
-        if ($submission->photos()->where('sha256', $hash)->exists()) {
+        $withdrawn = $submission->photos()->where('sha256', $hash)->whereNotNull('withdrawn_at')->first();
+        if ($withdrawn) {
+            $withdrawn->update(['withdrawn_at' => null, 'withdrawal_reason' => null]);
+            $this->reopenEvaluations($submission);
+            $this->recordRevision($submission, $withdrawn, 'photo_restored_during_evaluation');
+
+            return $withdrawn;
+        }
+        if ($submission->activePhotos()->where('sha256', $hash)->exists()) {
             throw ValidationException::withMessages(['photo' => __('uye.competitions.errors.duplicate_photo')]);
         }
 
@@ -107,7 +127,7 @@ class CompetitionSubmissionPhotoService
             Storage::disk('local')->put($juryPath, $bytes);
         }
 
-        return $submission->photos()->create([
+        $stored = $submission->photos()->create([
             'source_photo_id' => $sourcePhotoId,
             'capture_device_id' => $captureDeviceId,
             'disk_path' => $privatePath,
@@ -123,5 +143,40 @@ class CompetitionSubmissionPhotoService
             'eligibility_snapshot' => $check,
             'sort_order' => ($submission->photos()->max('sort_order') ?? 0) + 10,
         ]);
+
+        if (! $submission->status->isEditable()) {
+            $this->reopenEvaluations($submission);
+            $this->recordRevision($submission, $stored, 'photo_added_during_evaluation');
+        }
+
+        return $stored;
+    }
+
+    private function recordRevision(CompetitionSubmission $submission, CompetitionSubmissionPhoto $photo, string $event): void
+    {
+        $submission->entry->events()->create([
+            'event' => $event,
+            'actor_type' => $submission->entry->user::class,
+            'actor_id' => $submission->entry->user_id,
+            'context' => ['submission_photo_id' => $photo->id, 'competition_category_id' => $submission->competition_category_id],
+        ]);
+    }
+
+    private function reopenEvaluations(CompetitionSubmission $submission): void
+    {
+        $round = $submission->entry->competition->evaluationRounds()->where('round_number', 1)->first();
+        if (! $round) {
+            return;
+        }
+
+        $assignmentIds = $submission->category->jurorAssignments()->pluck('id');
+        JuryEvaluationSubmission::query()
+            ->where('competition_evaluation_round_id', $round->id)
+            ->whereIn('juror_assignment_id', $assignmentIds)
+            ->delete();
+        JuryScore::query()
+            ->where('competition_evaluation_round_id', $round->id)
+            ->whereIn('juror_assignment_id', $assignmentIds)
+            ->update(['submitted_at' => null]);
     }
 }

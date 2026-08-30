@@ -274,6 +274,97 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ->assertSee('First Prize');
     }
 
+    public function test_member_can_revise_photos_during_unfinalized_first_round_and_sees_anonymous_scorecard(): void
+    {
+        $user = $this->member();
+        $competition = $this->competition();
+        $category = $this->category($competition);
+        [$entry, $submission] = $this->submittedEntry($user, $competition, $category);
+        $original = $submission->photos()->firstOrFail();
+        $juror = Juri::factory()->create(['first_name' => 'Gizli', 'last_name' => 'Jüri']);
+        $category->jurorAssignments()->create(['juror_id' => $juror->id, 'sort_order' => 10]);
+        $competition->forceFill([
+            'application_ends_at' => now()->subDay(),
+            'competition_ends_at' => now()->addDay(),
+            'evaluation_starts_at' => now()->subHour(),
+            'evaluation_ends_at' => now()->addDays(2),
+        ])->save();
+
+        $source = Photo::factory()->for($user)->create(['disk_path' => 'portfolio/revision.jpg', 'thumb_path' => null]);
+        Storage::disk('public')->put($source->disk_path, $this->fixture().'revision');
+        $this->actingAs($user)->post(route('competitions.submission.portfolio.store', $submission), ['photo_id' => $source->id])->assertRedirect();
+        $replacement = $submission->photos()->whereNull('withdrawn_at')->whereKeyNot($original->id)->firstOrFail();
+        $this->actingAs($user)->delete(route('competitions.submission.photos.destroy', $original))->assertRedirect();
+        $this->assertNotNull($original->refresh()->withdrawn_at);
+        $this->assertDatabaseHas('competition_entry_events', ['competition_entry_id' => $entry->id, 'event' => 'photo_withdrawn_during_evaluation']);
+
+        $criterion = $category->evaluationCriteria()->firstOrFail();
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), [
+            'scores' => [$replacement->id => [$criterion->id => 8]],
+        ])->assertRedirect();
+
+        $this->actingAs($user)->get(route('competitions.entry.show', $entry))
+            ->assertOk()
+            ->assertSee(__('uye.competitions.scorecard_title', ['round' => 1]))
+            ->assertSee(__('uye.competitions.scorecard_evaluation', ['number' => 1]))
+            ->assertDontSee('Gizli Jüri');
+
+        $thirdSource = Photo::factory()->for($user)->create(['disk_path' => 'portfolio/second-revision.jpg', 'thumb_path' => null]);
+        Storage::disk('public')->put($thirdSource->disk_path, $this->fixture().'second-revision');
+        $this->actingAs($user)->post(route('competitions.submission.portfolio.store', $submission), ['photo_id' => $thirdSource->id])
+            ->assertRedirect();
+        $this->assertDatabaseCount('jury_evaluation_submissions', 0);
+        $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $replacement->id, 'submitted_at' => null]);
+    }
+
+    public function test_eys_can_create_committee_final_round_and_publish_it_on_result_subdomain(): void
+    {
+        $user = $this->member();
+        $competition = $this->competition();
+        $category = $this->category($competition);
+        [, $submission] = $this->submittedEntry($user, $competition, $category);
+        $photo = $submission->photos()->firstOrFail();
+        $criterion = $category->evaluationCriteria()->firstOrFail();
+        $award = $category->awards()->create([
+            'award_reference_id' => AwardReference::where('code', 'first-prize')->value('id'),
+            'quantity' => 1,
+            'sort_order' => 10,
+        ]);
+        $juror = Juri::factory()->create();
+        $category->jurorAssignments()->create(['juror_id' => $juror->id, 'sort_order' => 10]);
+        $this->openEvaluation($competition);
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), [
+            'scores' => [$photo->id => [$criterion->id => 7]],
+        ])->assertRedirect();
+
+        $reviewer = $this->reviewer();
+        $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.aggregate-results', $competition))->assertRedirect();
+        $firstResult = $competition->evaluationRounds()->firstOrFail()->results()->firstOrFail();
+        $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.create-final-round', $competition), [
+            'photo_result_ids' => [$firstResult->id],
+        ])->assertRedirect();
+        $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
+        $decision = $finalRound->committeeDecisions()->firstOrFail();
+        $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-final-round', $competition), [
+            'decisions' => [$decision->id => ['decision' => 'selected', 'score' => 8, 'rank' => 1, 'note' => 'Kurul ortak kararı']],
+        ])->assertRedirect();
+        $finalResult = $finalRound->results()->firstOrFail();
+        $this->assertSame(8, (int) $finalResult->average_score);
+
+        $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-result-awards', $competition), [
+            'award_assignments' => [$award->id => [1 => $finalResult->id]],
+        ])->assertRedirect();
+        Notification::fake();
+        $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.publish-results', $competition))->assertRedirect();
+
+        $this->get(route('result.index'))->assertOk()->assertSee($competition->name);
+        $this->get(route('result.competitions.show', $competition))
+            ->assertOk()
+            ->assertSee(trim($user->first_name.' '.$user->last_name))
+            ->assertSee('First Prize');
+        $this->get(route('result.photos.show', $photo))->assertOk();
+    }
+
     private function competition(array $attributes = []): Competition
     {
         return Competition::factory()->create(array_merge([

@@ -18,6 +18,7 @@ class CompetitionResultService
                 ->join('competition_submissions as submissions', 'submissions.id', '=', 'photos.competition_submission_id')
                 ->where('jury_scores.competition_evaluation_round_id', $round->id)
                 ->whereNotNull('jury_scores.submitted_at')
+                ->whereNull('photos.withdrawn_at')
                 ->selectRaw('jury_scores.submission_photo_id, submissions.competition_category_id, SUM(score * criteria.weight) as total_score, SUM(score * criteria.weight) / SUM(criteria.weight) as average_score, COUNT(*) as score_count')
                 ->groupBy('jury_scores.submission_photo_id', 'submissions.competition_category_id')
                 ->orderBy('submissions.competition_category_id')
@@ -55,6 +56,37 @@ class CompetitionResultService
             CompetitionPhotoResult::query()
                 ->where('competition_evaluation_round_id', $round->id)
                 ->whereNotIn('submission_photo_id', $aggregates->pluck('submission_photo_id'))
+                ->delete();
+        });
+    }
+
+    public function aggregateCommittee(CompetitionEvaluationRound $round): void
+    {
+        DB::transaction(function () use ($round) {
+            $decisions = $round->committeeDecisions()
+                ->where('decision', 'selected')
+                ->whereHas('photo', fn ($query) => $query->whereNull('withdrawn_at'))
+                ->with('photo.submission')
+                ->orderByRaw('rank is null')
+                ->orderBy('rank')
+                ->orderByDesc('score')
+                ->get();
+
+            foreach ($decisions as $decision) {
+                CompetitionPhotoResult::updateOrCreate([
+                    'competition_evaluation_round_id' => $round->id,
+                    'submission_photo_id' => $decision->submission_photo_id,
+                ], [
+                    'total_score' => $decision->score ?? 0,
+                    'average_score' => $decision->score ?? 0,
+                    'score_count' => $decision->score === null ? 0 : 1,
+                    'rank' => $decision->rank,
+                ]);
+            }
+
+            CompetitionPhotoResult::query()
+                ->where('competition_evaluation_round_id', $round->id)
+                ->whereNotIn('submission_photo_id', $decisions->pluck('submission_photo_id'))
                 ->delete();
         });
     }

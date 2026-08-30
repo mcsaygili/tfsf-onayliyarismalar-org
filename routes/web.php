@@ -8,4 +8,5 @@ require __DIR__.'/institution.php';
 require __DIR__.'/temsilci.php';
 require __DIR__.'/juri.php';
 require __DIR__.'/eys.php';
+require __DIR__.'/result.php';
 require __DIR__.'/webhooks.php';

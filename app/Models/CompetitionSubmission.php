@@ -40,6 +40,11 @@ class CompetitionSubmission extends Model
         return $this->hasMany(CompetitionSubmissionPhoto::class)->orderBy('sort_order');
     }
 
+    public function activePhotos(): HasMany
+    {
+        return $this->hasMany(CompetitionSubmissionPhoto::class)->whereNull('withdrawn_at')->orderBy('sort_order');
+    }
+
     public function approvals(): HasMany
     {
         return $this->hasMany(CompetitionSubmissionApproval::class)->orderBy('sequence');

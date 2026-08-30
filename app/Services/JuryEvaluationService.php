@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\CompetitionSubmissionStatus;
+use App\Enums\EvaluationRoundMethod;
 use App\Enums\EvaluationRoundStatus;
 use App\Models\Competition;
 use App\Models\CompetitionCategoryJurorAssignment;
@@ -21,6 +22,8 @@ class JuryEvaluationService
             ['round_number' => 1],
             [
                 'name' => 'Genel Değerlendirme',
+                'method' => EvaluationRoundMethod::Individual,
+                'is_final' => false,
                 'status' => EvaluationRoundStatus::Open,
                 'opens_at' => $competition->evaluation_starts_at,
                 'closes_at' => $competition->evaluation_ends_at,
@@ -42,7 +45,7 @@ class JuryEvaluationService
     {
         $photos = $assignment->category->submissions()
             ->where('status', CompetitionSubmissionStatus::Approved)
-            ->with('photos')
+            ->with(['photos' => fn ($query) => $query->whereNull('withdrawn_at')])
             ->get()
             ->flatMap->photos
             ->values();
@@ -71,7 +74,8 @@ class JuryEvaluationService
 
         $criteria = $assignment->category->evaluationCriteria->keyBy('id');
         $photoIds = $assignment->category->submissions()->where('status', CompetitionSubmissionStatus::Approved)
-            ->with('photos:id,competition_submission_id')->get()->flatMap->photos->pluck('id')->all();
+            ->with(['photos' => fn ($query) => $query->whereNull('withdrawn_at')->select('id', 'competition_submission_id')])
+            ->get()->flatMap->photos->pluck('id')->all();
 
         DB::transaction(function () use ($scores, $criteria, $photoIds, $assignment, $round) {
             foreach ($scores as $photoId => $criterionScores) {

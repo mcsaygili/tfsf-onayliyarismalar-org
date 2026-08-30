@@ -15,17 +15,32 @@
     @endif
 
     @foreach($entry->submissions as $submission)
+        @php
+            $activePhotos = $submission->photos->whereNull('withdrawn_at');
+            $canModifyPhotos = (bool) $submissionMutability->get($submission->id, false);
+        @endphp
         <section class="mp-entry-step">
-            <header><span>{{ $loop->iteration + 1 }}</span><div><h2>{{ $submission->category->name }}</h2><p>{{ trans_choice('uye.competitions.photo_usage', $submission->photos->count(), ['used' => $submission->photos->count(), 'max' => $submission->category->max_photos_per_participant]) }}</p></div><span class="mp-state is-{{ $submission->status->value }}">{{ __('uye.competitions.entry_status.'.$submission->status->value) }}</span></header>
+            <header><span>{{ $loop->iteration + 1 }}</span><div><h2>{{ $submission->category->name }}</h2><p>{{ trans_choice('uye.competitions.photo_usage', $activePhotos->count(), ['used' => $activePhotos->count(), 'max' => $submission->category->max_photos_per_participant]) }}</p></div><span class="mp-state is-{{ $submission->status->value }}">{{ __('uye.competitions.entry_status.'.$submission->status->value) }}</span></header>
             <div class="mp-selected-photos">
-                @foreach($submission->photos as $photo)
+                @foreach($activePhotos as $photo)
                     <article><img src="{{ route('competitions.photos.show', $photo) }}" alt=""><div><strong>{{ __('uye.competitions.work_number', ['number' => $loop->iteration]) }}</strong><span>{{ $photo->captureDevice?->name }}</span></div>
-                        @if($editable)<form method="POST" action="{{ route('competitions.submission.photos.destroy', $photo) }}">@csrf @method('DELETE')<button type="submit">{{ __('uye.common.delete_action') }}</button></form>@endif
+                        @if($canModifyPhotos)<form method="POST" action="{{ route('competitions.submission.photos.destroy', $photo) }}">@csrf @method('DELETE')<button type="submit">{{ $editable ? __('uye.common.delete_action') : __('uye.competitions.withdraw_photo') }}</button></form>@endif
+                        @foreach($scorecards[$photo->id] ?? [] as $scorecard)
+                            <div class="mp-scorecard">
+                                <div><strong>{{ __('uye.competitions.scorecard_title', ['round' => $scorecard['round_number']]) }}</strong><span>{{ __('uye.competitions.scorecard_average', ['score' => number_format($scorecard['average'], 2, ',', '.')]) }}</span></div>
+                                <div class="mp-scorecard-values">@foreach($scorecard['scores'] as $score)<span>{{ $score['label'] }} <b>{{ $score['score'] }}</b></span>@endforeach</div>
+                                <small>{{ __('uye.competitions.scorecard_privacy') }}</small>
+                            </div>
+                        @endforeach
                     </article>
                 @endforeach
             </div>
 
-            @if($editable && $submission->photos->count() < $submission->category->max_photos_per_participant)
+            @if($canModifyPhotos && !$editable)
+                <div class="mp-callout is-warning"><strong>{{ __('uye.competitions.evaluation_revision_title') }}</strong><p>{{ __('uye.competitions.evaluation_revision_hint', ['date' => $entry->competition->competition_ends_at?->format('d.m.Y H:i')]) }}</p></div>
+            @endif
+
+            @if($canModifyPhotos && $activePhotos->count() < $submission->category->max_photos_per_participant)
                 <div class="mp-photo-sources">
                     <form method="POST" action="{{ route('competitions.submission.portfolio.store', $submission) }}">@csrf
                         <h3>{{ __('uye.competitions.from_portfolio') }}</h3>

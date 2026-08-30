@@ -748,6 +748,13 @@
         .mp-selected-photos div { display: flex; flex-direction: column; }
         .mp-selected-photos strong { color: var(--ia-cream); }
         .mp-selected-photos button { border: 0; background: none; color: #f0a0a0; cursor: pointer; }
+        .mp-selected-photos .mp-scorecard { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(150px, .65fr) 1.35fr; gap: .55rem 1rem; padding: .85rem 1rem; margin: .15rem 0 .4rem 4.75rem; border: 1px solid rgba(201,168,76,.24); border-radius: 10px; background: rgba(201,168,76,.055); }
+        .mp-selected-photos .mp-scorecard > div:first-child { display: flex; flex-direction: column; gap: .15rem; }
+        .mp-scorecard-values { display: flex !important; flex-direction: row !important; align-items: center; flex-wrap: wrap; gap: .45rem; }
+        .mp-scorecard-values span { padding: .32rem .5rem; border-radius: 6px; background: rgba(255,255,255,.055); font-size: .78rem; }
+        .mp-scorecard-values b { color: var(--ia-copper-bright); margin-left: .25rem; }
+        .mp-scorecard small { grid-column: 1 / -1; color: var(--ia-muted-dim); }
+        @media (max-width: 640px) { .mp-selected-photos .mp-scorecard { margin-left: 0; grid-template-columns: 1fr; } }
         .mp-photo-sources { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
         .mp-photo-sources > form { padding: 1rem; background: rgba(255,255,255,.025); border-radius: 10px; }
         .mp-photo-sources h3 { color: var(--ia-cream); margin: 0 0 .75rem; font-size: .9rem; }

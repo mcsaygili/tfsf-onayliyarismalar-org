@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Eys;
 
+use App\Enums\CommitteeDecisionStatus;
 use App\Enums\CompetitionStatus;
+use App\Enums\EvaluationRoundMethod;
 use App\Enums\EvaluationRoundStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionCategoryJurorAssignment;
+use App\Models\CompetitionEvaluationRound;
 use App\Models\CompetitionResultAward;
 use App\Models\CompetitionReview;
 use App\Models\CompetitionReviewStep;
@@ -64,6 +67,7 @@ class CompetitionReviewController extends Controller
             'evaluationRounds.results.awards.categoryAward.translations',
             'evaluationRounds.results.awards.categoryAward.awardReference.translations',
             'evaluationRounds.evaluationSubmissions',
+            'evaluationRounds.committeeDecisions.photo.submission.category.translations',
         ]);
 
         $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
@@ -93,17 +97,116 @@ class CompetitionReviewController extends Controller
     {
         abort_if($competition->results_published_at, 422);
 
-        $round = $competition->evaluationRounds()->firstOrFail();
-        $results->aggregate($round);
+        $round = $this->resultRound($competition);
+        $round->method === EvaluationRoundMethod::Committee
+            ? $results->aggregateCommittee($round)
+            : $results->aggregate($round);
 
         return back()->with('status', __('eys.competitions.results_aggregated'));
+    }
+
+    public function createFinalRound(Request $request, Competition $competition): RedirectResponse
+    {
+        abort_if($competition->results_published_at, 422);
+        $validated = $request->validate([
+            'photo_result_ids' => ['required', 'array', 'min:1'],
+            'photo_result_ids.*' => ['required', 'uuid'],
+        ]);
+        $sourceRound = $competition->evaluationRounds()->where('method', EvaluationRoundMethod::Individual->value)->with('results.photo')->firstOrFail();
+        $expected = CompetitionCategoryJurorAssignment::query()
+            ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id)->whereHas('submissions', fn ($submissions) => $submissions->where('status', 'approved')))
+            ->whereNotNull('juror_id')->count();
+        $completed = JuryEvaluationSubmission::where('competition_evaluation_round_id', $sourceRound->id)->count();
+        if ($expected === 0 || $completed < $expected) {
+            throw ValidationException::withMessages(['photo_result_ids' => __('eys.competitions.results_incomplete', ['completed' => $completed, 'expected' => $expected])]);
+        }
+        $photoIds = $sourceRound->results()->whereIn('id', $validated['photo_result_ids'])->pluck('submission_photo_id');
+        if ($photoIds->count() !== count(array_unique($validated['photo_result_ids']))) {
+            throw ValidationException::withMessages(['photo_result_ids' => __('eys.competitions.final_round_invalid_photos')]);
+        }
+
+        DB::transaction(function () use ($competition, $photoIds, $sourceRound): void {
+            $sourceRound->update(['status' => EvaluationRoundStatus::Finalized, 'finalized_at' => now()]);
+            $round = $competition->evaluationRounds()->firstOrCreate(
+                ['round_number' => 2],
+                ['name' => __('eys.competitions.final_round_name'), 'method' => EvaluationRoundMethod::Committee, 'is_final' => true, 'status' => EvaluationRoundStatus::Open, 'opens_at' => now()],
+            );
+            foreach ($photoIds as $photoId) {
+                $round->committeeDecisions()->firstOrCreate(
+                    ['submission_photo_id' => $photoId],
+                    ['decision' => CommitteeDecisionStatus::Finalist],
+                );
+            }
+            CompetitionResultAward::query()
+                ->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
+                ->delete();
+        });
+
+        return back()->with('status', __('eys.competitions.final_round_created'));
+    }
+
+    public function saveFinalRound(Request $request, Competition $competition, CompetitionResultService $results): RedirectResponse
+    {
+        abort_if($competition->results_published_at, 422);
+        $round = $competition->evaluationRounds()->where('is_final', true)->where('method', EvaluationRoundMethod::Committee->value)->firstOrFail();
+        $validated = $request->validate([
+            'decisions' => ['required', 'array'],
+            'decisions.*.decision' => ['required', Rule::enum(CommitteeDecisionStatus::class)],
+            'decisions.*.score' => ['nullable', 'integer', 'between:3,9'],
+            'decisions.*.rank' => ['nullable', 'integer', 'min:1'],
+            'decisions.*.note' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $decisions = $round->committeeDecisions()->with('photo.submission')->get()->keyBy('id');
+        $errors = [];
+        $usedRanks = [];
+        foreach ($validated['decisions'] as $id => $data) {
+            $decision = $decisions->get($id);
+            if (! $decision) {
+                continue;
+            }
+            if ($data['decision'] === CommitteeDecisionStatus::Selected->value && blank($data['rank'] ?? null)) {
+                $errors["decisions.{$id}.rank"] = __('eys.competitions.final_round_rank_required');
+            }
+            if ($data['decision'] === CommitteeDecisionStatus::Selected->value && filled($data['rank'] ?? null)) {
+                $key = $decision->photo->submission->competition_category_id.':'.$data['rank'];
+                if (isset($usedRanks[$key])) {
+                    $errors["decisions.{$id}.rank"] = __('eys.competitions.final_round_rank_duplicate');
+                }
+                $usedRanks[$key] = true;
+            }
+        }
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        DB::transaction(function () use ($validated, $decisions, $round, $results): void {
+            foreach ($validated['decisions'] as $id => $data) {
+                if ($decision = $decisions->get($id)) {
+                    $decision->update([
+                        'decision' => $data['decision'],
+                        'score' => $data['score'] ?? null,
+                        'rank' => $data['decision'] === CommitteeDecisionStatus::Selected->value ? ($data['rank'] ?? null) : null,
+                        'note' => $data['note'] ?? null,
+                        'decided_by' => Auth::guard('eys')->id(),
+                        'decided_at' => now(),
+                    ]);
+                }
+            }
+            $results->aggregateCommittee($round);
+        });
+
+        return back()->with('status', __('eys.competitions.final_round_saved'));
     }
 
     public function saveResultAwards(Request $request, Competition $competition): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
 
-        $round = $competition->evaluationRounds()->with([
+        $round = $competition->evaluationRounds()->when(
+            $competition->evaluationRounds()->where('is_final', true)->exists(),
+            fn ($query) => $query->where('is_final', true),
+            fn ($query) => $query->where('round_number', 1),
+        )->with([
             'results.photo.submission',
         ])->firstOrFail();
         $categoryAwards = $competition->categories()->with('awards')->get()
@@ -171,24 +274,34 @@ class CompetitionReviewController extends Controller
         $expected = CompetitionCategoryJurorAssignment::query()
             ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id)->whereHas('submissions', fn ($submissions) => $submissions->where('status', 'approved')))
             ->whereNotNull('juror_id')->count();
-        $round = $competition->evaluationRounds()->first();
-        $completed = $round
-            ? JuryEvaluationSubmission::where('competition_evaluation_round_id', $round->id)->count()
+        $individualRound = $competition->evaluationRounds()->where('method', EvaluationRoundMethod::Individual->value)->first();
+        $completed = $individualRound
+            ? JuryEvaluationSubmission::where('competition_evaluation_round_id', $individualRound->id)->count()
             : 0;
         if ($expected === 0 || $completed < $expected) {
             return back()->withErrors(['results' => __('eys.competitions.results_incomplete', ['completed' => $completed, 'expected' => $expected])]);
         }
 
+        $round = $this->resultRound($competition);
+        if ($round->method === EvaluationRoundMethod::Committee
+            && ($round->committeeDecisions()->where('decision', CommitteeDecisionStatus::Finalist->value)->exists()
+                || ! $round->committeeDecisions()->where('decision', CommitteeDecisionStatus::Selected->value)->exists())) {
+            return back()->withErrors(['results' => __('eys.competitions.final_round_incomplete')]);
+        }
+
         $requiredAwardSlots = $competition->categories()->withSum('awards as award_slot_count', 'quantity')->get()->sum('award_slot_count');
         $assignedAwardSlots = CompetitionResultAward::query()
             ->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
+            ->whereHas('result', fn ($query) => $query->where('competition_evaluation_round_id', $round->id))
             ->count();
         if ($assignedAwardSlots < $requiredAwardSlots) {
             return back()->withErrors(['results' => __('eys.competitions.result_awards_incomplete', ['assigned' => $assignedAwardSlots, 'required' => $requiredAwardSlots])]);
         }
 
         DB::transaction(function () use ($competition, $round, $results) {
-            $results->aggregate($round);
+            $round->method === EvaluationRoundMethod::Committee
+                ? $results->aggregateCommittee($round)
+                : $results->aggregate($round);
             $round->update(['status' => EvaluationRoundStatus::Finalized, 'finalized_at' => now()]);
             $competition->forceFill(['results_published_at' => now()])->save();
         });
@@ -201,6 +314,12 @@ class CompetitionReviewController extends Controller
         Notification::send($jurors, new JuryResultsPublishedNotification($competition));
 
         return back()->with('status', __('eys.competitions.results_published'));
+    }
+
+    private function resultRound(Competition $competition): CompetitionEvaluationRound
+    {
+        return $competition->evaluationRounds()->where('is_final', true)->first()
+            ?? $competition->evaluationRounds()->firstOrFail();
     }
 
     public function start(Competition $competition, CompetitionWorkflowService $workflow): RedirectResponse

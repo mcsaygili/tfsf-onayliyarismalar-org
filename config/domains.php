@@ -28,7 +28,5 @@ return [
     'temsilci' => env('DOMAIN_TEMSILCI', 'temsilci.'.$base),
     'juri' => env('DOMAIN_JURI', 'juri.'.$base),
     'eys' => env('DOMAIN_EYS', 'eys.'.$base),
-
-    // Faz dışı (Sonuc modülü bu fazda yok):
-    // 'sonuc' => env('DOMAIN_SONUC', 'sonuc.'.$base),
+    'result' => env('DOMAIN_SONUC', 'sonuc.'.$base),
 ];
