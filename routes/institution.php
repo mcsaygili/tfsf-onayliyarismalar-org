@@ -71,6 +71,8 @@ Route::domain(config('domains.institution'))->middleware('maintenance:institutio
                 ->middleware('throttle:30,1')->name('jurors.search');
             Route::post('{competition}/juri-davetleri/{invitation}/yeniden-gonder', [CompetitionStepController::class, 'resendJuryInvitation'])
                 ->middleware('throttle:3,1')->name('jury-invitations.resend');
+            Route::delete('{competition}/juri-davetleri/{invitation}', [CompetitionStepController::class, 'cancelJuryInvitation'])
+                ->name('jury-invitations.cancel');
             Route::get('/', [CompetitionController::class, 'index'])->name('index');
             Route::post('/', [CompetitionController::class, 'store'])->name('store');
             Route::post('{competition}/gonder', [CompetitionController::class, 'submit'])->name('submit');

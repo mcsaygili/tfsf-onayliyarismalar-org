@@ -14,6 +14,7 @@ use App\Http\Controllers\Eys\EducationLevelController;
 use App\Http\Controllers\Eys\EquipmentBrandController;
 use App\Http\Controllers\Eys\EquipmentModelController;
 use App\Http\Controllers\Eys\EquipmentTypeController;
+use App\Http\Controllers\Eys\EvaluationCriterionController;
 use App\Http\Controllers\Eys\FileManagerController;
 use App\Http\Controllers\Eys\InstitutionController;
 use App\Http\Controllers\Eys\InstitutionStaffController;
@@ -226,6 +227,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::delete('{awardReference}', [AwardReferenceController::class, 'destroy'])->name('destroy');
         });
 
+        Route::prefix('degerlendirme-kriterleri')->name('eys.evaluation-criteria.')->middleware('permission:eys.evaluation_criteria.manage')->group(function () {
+            Route::get('/', [EvaluationCriterionController::class, 'index'])->name('index');
+            Route::get('yeni', [EvaluationCriterionController::class, 'create'])->name('create');
+            Route::post('/', [EvaluationCriterionController::class, 'store'])->name('store');
+            Route::get('{evaluationCriterion}/duzenle', [EvaluationCriterionController::class, 'edit'])->name('edit');
+            Route::patch('{evaluationCriterion}', [EvaluationCriterionController::class, 'update'])->name('update');
+            Route::delete('{evaluationCriterion}', [EvaluationCriterionController::class, 'destroy'])->name('destroy');
+        });
+
         foreach ([
             'katilimci-cinsiyetleri' => ['participant-genders', 'participant-genders'],
             'yas-uygunluk-kurallari' => ['age-eligibility-rules', 'age-eligibility-rules'],
@@ -280,9 +290,11 @@ Route::domain(config('domains.eys'))->group(function () {
         Route::prefix('yarismalar')->name('eys.competitions.')->middleware(['team:Institution', 'permission:institution.competitions.manage'])->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
             Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
+            Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
+            Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
             Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
             Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');
-            Route::post('{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
+            Route::match(['post', 'patch'], '{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
         });
 
         Route::prefix('temsilciler')->name('eys.temsilciler.')->middleware(['team:Temsilci', 'permission:representative.representatives.manage'])->group(function () {

@@ -62,4 +62,9 @@ class CompetitionCategory extends Model
     {
         return $this->hasMany(CompetitionCategoryJurorAssignment::class)->orderBy('sort_order');
     }
+
+    public function evaluationCriteria(): HasMany
+    {
+        return $this->hasMany(CompetitionCategoryEvaluationCriterion::class)->orderBy('sort_order');
+    }
 }

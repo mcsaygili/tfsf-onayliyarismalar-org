@@ -10,9 +10,11 @@ use App\Models\AgeEligibilityRule;
 use App\Models\AwardReference;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
+use App\Models\CompetitionReview;
 use App\Models\CompetitionType;
 use App\Models\Country;
 use App\Models\EysUser;
+use App\Models\EvaluationCriterion;
 use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
 use App\Models\ParticipantGender;
@@ -59,6 +61,28 @@ class CompetitionReviewTest extends TestCase
         });
     }
 
+    private function startReview(EysUser $reviewer, Competition $competition): CompetitionReview
+    {
+        $response = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.start', $competition));
+        $response->assertRedirect();
+
+        return $competition->reviews()->with('steps')->firstOrFail();
+    }
+
+    private function approveEveryReviewStep(EysUser $reviewer, Competition $competition): CompetitionReview
+    {
+        $review = $this->startReview($reviewer, $competition);
+        $steps = $review->steps->mapWithKeys(fn ($step) => [
+            $step->step_number => ['status' => 'approved', 'note' => null],
+        ])->all();
+
+        $this->actingAs($reviewer, 'eys')
+            ->patch(route('eys.competitions.save-review', $competition), ['steps' => $steps])
+            ->assertRedirect();
+
+        return $review->fresh('steps');
+    }
+
     public function test_yetkisiz_kullanici_yarisma_listesini_goremez(): void
     {
         $user = EysUser::factory()->create();
@@ -96,7 +120,8 @@ class CompetitionReviewTest extends TestCase
     public function test_onaylama_durumu_ve_yayin_tarihini_gunceller_ve_log_yazar(): void
     {
         $reviewer = $this->reviewer();
-        $competition = Competition::factory()->pendingReview()->create();
+        $competition = Competition::factory()->submitted()->create();
+        $this->approveEveryReviewStep($reviewer, $competition);
 
         $response = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.approve', $competition));
 
@@ -106,13 +131,13 @@ class CompetitionReviewTest extends TestCase
         $this->assertSame(CompetitionStatus::Approved, $competition->status);
         $this->assertNotNull($competition->published_at);
         $this->assertSame($reviewer->id, $competition->reviewed_by);
-        $this->assertSame('approved', $competition->statusLogs()->first()->action);
+        $this->assertTrue($competition->statusLogs()->where('action', 'approved')->exists());
     }
 
     public function test_bekleyen_juri_daveti_eys_onayini_engeller_ama_basvuruyu_beklemede_tutar(): void
     {
         $reviewer = $this->reviewer();
-        $competition = Competition::factory()->pendingReview()->create();
+        $competition = Competition::factory()->submitted()->create();
         $category = $competition->categories()->create(['sort_order' => 10]);
         $category->upsertTranslations(['tr' => ['name' => 'Genel']]);
         $invitation = $competition->juryInvitations()->create([
@@ -129,6 +154,7 @@ class CompetitionReviewTest extends TestCase
             'assigned_by' => $competition->institution_staff_id,
             'sort_order' => 10,
         ]);
+        $this->approveEveryReviewStep($reviewer, $competition);
 
         $showResponse = $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.show', $competition));
         $showResponse->assertOk();
@@ -139,7 +165,7 @@ class CompetitionReviewTest extends TestCase
 
         $approveResponse->assertRedirect();
         $approveResponse->assertSessionHasErrors('approval');
-        $this->assertSame(CompetitionStatus::PendingReview, $competition->fresh()->status);
+        $this->assertSame(CompetitionStatus::WaitingRequirements, $competition->fresh()->status);
         $this->assertNull($competition->fresh()->published_at);
         $this->assertDatabaseMissing('competition_status_logs', [
             'competition_id' => $competition->id,
@@ -207,10 +233,40 @@ class CompetitionReviewTest extends TestCase
         $response->assertSee('10.000 TL + Plaket');
     }
 
+    public function test_degerlendirme_kriterleri_inceleme_ekraninda_kategori_bazli_gosterilir(): void
+    {
+        app()->setLocale('tr');
+        $competition = Competition::factory()->create();
+        $this->completeCategoryStep($competition);
+        $category = $competition->categories()->firstOrFail();
+        $criterion = EvaluationCriterion::create([
+            'code' => 'composition', 'default_min_score' => 0, 'default_max_score' => 10,
+            'default_weight' => 1, 'sort_order' => 10, 'status' => true,
+        ]);
+        $criterion->upsertTranslations(['tr' => ['name' => 'Kompozisyon', 'description' => 'Kadraj ve görsel düzen.']]);
+        $category->evaluationCriteria()->create([
+            'evaluation_criterion_id' => $criterion->id,
+            'min_score' => 1,
+            'max_score' => 15,
+            'weight' => 2,
+            'sort_order' => 10,
+        ]);
+
+        $response = $this->withSession(['locale' => 'tr'])
+            ->actingAs($this->reviewer(), 'eys')
+            ->get(route('eys.competitions.show', $competition));
+
+        $response->assertOk()
+            ->assertSee('Değerlendirme Kriterleri')
+            ->assertSee('Kompozisyon')
+            ->assertSee('1–15')
+            ->assertSee('Göreli Ağırlık');
+    }
+
     public function test_reddetme_mesaj_zorunludur_ve_durumu_gunceller(): void
     {
         $reviewer = $this->reviewer();
-        $competition = Competition::factory()->pendingReview()->create();
+        $competition = Competition::factory()->submitted()->create();
 
         $withoutMessage = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.reject', $competition));
         $withoutMessage->assertSessionHasErrors('message');
@@ -224,24 +280,100 @@ class CompetitionReviewTest extends TestCase
         $response->assertRedirect(route('eys.competitions.index'));
         $this->assertSame(CompetitionStatus::Rejected, $competition->status);
         $this->assertSame('Eksik belge.', $competition->latest_review_message);
-        $this->assertSame('rejected', $competition->statusLogs()->first()->action);
+        $this->assertTrue($competition->statusLogs()->where('action', 'rejected')->exists());
     }
 
     public function test_bilgi_talebi_durumu_needs_info_yapar_ve_log_yazar(): void
     {
         $reviewer = $this->reviewer();
-        $competition = Competition::factory()->pendingReview()->create();
+        $competition = Competition::factory()->submitted()->create();
+        $review = $this->startReview($reviewer, $competition);
+        $steps = $review->steps->mapWithKeys(fn ($step) => [
+            $step->step_number => [
+                'status' => $step->step_number === 2 ? 'correction_required' : 'approved',
+                'note' => $step->step_number === 2 ? 'Konu alanını detaylandırın.' : null,
+            ],
+        ])->all();
 
-        $response = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.request-info', $competition), [
-            'message' => 'Konu alanını detaylandırın.',
+        $response = $this->actingAs($reviewer, 'eys')->patch(route('eys.competitions.request-info', $competition), [
+            'steps' => $steps,
+            'message' => 'Yarışma bilgilerini güncelleyin.',
         ]);
 
         $competition->refresh();
 
         $response->assertRedirect(route('eys.competitions.index'));
         $this->assertSame(CompetitionStatus::NeedsInfo, $competition->status);
-        $this->assertSame('Konu alanını detaylandırın.', $competition->latest_review_message);
-        $this->assertSame('info_requested', $competition->statusLogs()->first()->action);
+        $this->assertSame('Yarışma bilgilerini güncelleyin.', $competition->latest_review_message);
+        $this->assertSame(2, $competition->current_step);
+        $this->assertTrue($competition->statusLogs()->where('action', 'correction_requested')->exists());
+        $this->assertDatabaseHas('competition_review_steps', [
+            'competition_review_id' => $review->id,
+            'step_number' => 2,
+            'status' => 'correction_required',
+            'note' => 'Konu alanını detaylandırın.',
+        ]);
+    }
+
+    public function test_inceleme_baslatilinca_adim_bazli_kontrol_listesi_olusur(): void
+    {
+        $reviewer = $this->reviewer();
+        $competition = Competition::factory()->submitted()->create();
+
+        $review = $this->startReview($reviewer, $competition);
+
+        $this->assertSame(CompetitionStatus::UnderReview, $competition->fresh()->status);
+        $this->assertSame($reviewer->id, $review->reviewer_id);
+        $this->assertTrue($review->steps->contains('step_number', 2));
+        $this->assertFalse($review->steps->contains('step_number', 5));
+        $this->assertTrue($competition->statusLogs()->where('action', 'review_started')->exists());
+    }
+
+    public function test_tum_adimlar_uygun_bulunmadan_onay_verilemez(): void
+    {
+        $reviewer = $this->reviewer();
+        $competition = Competition::factory()->submitted()->create();
+        $this->startReview($reviewer, $competition);
+
+        $response = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.approve', $competition));
+
+        $response->assertSessionHasErrors('approval');
+        $this->assertSame(CompetitionStatus::UnderReview, $competition->fresh()->status);
+    }
+
+    public function test_kurum_sadece_duzeltme_istenen_adimi_duzenleyebilir_ve_yanit_durumu_kaydedilir(): void
+    {
+        $reviewer = $this->reviewer();
+        $competition = Competition::factory()->submitted()->create();
+        $review = $this->startReview($reviewer, $competition);
+        $steps = $review->steps->mapWithKeys(fn ($step) => [
+            $step->step_number => [
+                'status' => $step->step_number === 2 ? 'correction_required' : 'approved',
+                'note' => $step->step_number === 2 ? 'Amaç alanını netleştirin.' : null,
+            ],
+        ])->all();
+
+        $this->actingAs($reviewer, 'eys')->patch(route('eys.competitions.request-info', $competition), ['steps' => $steps]);
+        $competition->refresh();
+        $staff = $competition->institutionStaff;
+
+        $this->actingAs($staff, 'institution')
+            ->get(route('institution.competitions.step.show', [$competition, 1]))
+            ->assertRedirect(route('institution.competitions.step.show', [$competition, 2]));
+
+        $translation = $competition->getTranslation('tr', false);
+        $this->actingAs($staff, 'institution')->put(route('institution.competitions.step.update', [$competition, 2]), [
+            'partners' => $competition->partners,
+            'tr' => [
+                'name' => $translation?->name,
+                'subject' => $translation?->subject,
+                'purpose' => 'Daha açık yarışma amacı.',
+            ],
+            'action' => 'next',
+        ])->assertRedirect(route('institution.competitions.step.show', [$competition, 11]));
+
+        $this->assertNotNull($review->steps()->where('step_number', 2)->firstOrFail()->addressed_at);
+        $this->assertTrue($competition->statusLogs()->where('action', 'correction_addressed')->exists());
     }
 
     public function test_kurum_needs_info_durumundayken_alan_degistirirse_field_updated_logu_yazilir_eski_yeni_degerle(): void

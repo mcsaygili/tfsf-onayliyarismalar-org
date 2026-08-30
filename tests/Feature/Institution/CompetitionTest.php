@@ -11,6 +11,7 @@ use App\Models\CaptureDevice;
 use App\Models\Competition;
 use App\Models\CompetitionType;
 use App\Models\Country;
+use App\Models\EvaluationCriterion;
 use App\Models\Institution;
 use App\Models\InstitutionStaff;
 use App\Models\Juri;
@@ -66,10 +67,28 @@ class CompetitionTest extends TestCase
     private function completeJurorStep(Competition $competition): void
     {
         $juror = Juri::factory()->create();
+        $criterion = EvaluationCriterion::firstOrCreate(['code' => 'general-evaluation'], [
+            'default_min_score' => 3,
+            'default_max_score' => 9,
+            'default_weight' => 1,
+            'sort_order' => 10,
+            'status' => true,
+        ]);
+        $criterion->upsertTranslations([
+            'tr' => ['name' => 'Genel Değerlendirme', 'description' => 'Eserin bütünsel değerlendirmesi.'],
+            'en' => ['name' => 'General Evaluation', 'description' => 'Overall evaluation of the work.'],
+        ]);
         foreach ($competition->categories as $category) {
             $category->jurorAssignments()->create([
                 'juror_id' => $juror->id,
                 'assigned_by' => $competition->institution_staff_id,
+                'sort_order' => 10,
+            ]);
+            $category->evaluationCriteria()->create([
+                'evaluation_criterion_id' => $criterion->id,
+                'min_score' => 3,
+                'max_score' => 9,
+                'weight' => 1,
                 'sort_order' => 10,
             ]);
         }

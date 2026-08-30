@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\Juri\AssignmentController;
 use App\Http\Controllers\Juri\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Juri\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Juri\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Juri\Auth\JuryInvitationController;
 use App\Http\Controllers\Juri\Auth\NewPasswordController;
 use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Juri\Auth\JuryInvitationController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
 use App\Http\Controllers\Juri\PasswordController;
@@ -19,6 +20,8 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
     Route::middleware('guest:juri')->group(function () {
         Route::get('davet/{token}', [JuryInvitationController::class, 'create'])->name('juri.invitation.accept');
         Route::post('davet/{token}', [JuryInvitationController::class, 'store'])->middleware('throttle:6,1');
+        Route::post('davet/{token}/reddet', [JuryInvitationController::class, 'decline'])
+            ->middleware('throttle:6,1')->name('juri.invitation.decline');
 
         Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('juri.login');
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
@@ -46,6 +49,8 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
 
     Route::middleware(['auth:juri', 'verified.guard:juri'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('juri.dashboard');
+        Route::get('gorevlerim', [AssignmentController::class, 'index'])->name('juri.assignments.index');
+        Route::get('gorevlerim/{competition}', [AssignmentController::class, 'show'])->name('juri.assignments.show');
 
         Route::get('juri-bilgilerim', [ProfileController::class, 'edit'])->name('juri.profile.edit');
         Route::patch('juri-bilgilerim', [ProfileController::class, 'update'])->name('juri.profile.update');

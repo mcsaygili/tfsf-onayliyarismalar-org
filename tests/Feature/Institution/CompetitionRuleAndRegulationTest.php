@@ -6,6 +6,7 @@ use App\Enums\CompetitionAudience;
 use App\Models\AgeEligibilityRule;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
+use App\Models\EvaluationCriterion;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
 use App\Models\ProcessingMethod;
@@ -131,5 +132,41 @@ class CompetitionRuleAndRegulationTest extends TestCase
             ->assertSee('Anadolu Fotoğraf Yarışması')
             ->assertSee(__('institution.competitions.regulation.ready'))
             ->assertSee('name="regulation_ready" value="1"', false);
+    }
+
+    public function test_kategori_degerlendirme_kriterleri_sartname_maddesine_donusur(): void
+    {
+        $this->seed([CompetitionCategoryReferenceSeeder::class, RegulationSectionSeeder::class, RegulationItemSeeder::class]);
+        $competition = Competition::factory()->create();
+        $competition->upsertTranslations(['tr' => [
+            'name' => 'Portre Yarışması', 'subject' => 'Portre', 'purpose' => 'Fotoğraf sanatını desteklemek.',
+        ]]);
+        $category = $competition->categories()->create([
+            'sort_order' => 10,
+            'age_eligibility_rule_id' => AgeEligibilityRule::where('code', 'no-age-check')->firstOrFail()->id,
+        ]);
+        $category->upsertTranslations(['tr' => ['name' => 'İnsan']]);
+        $category->genders()->sync([ParticipantGender::where('code', 'no-check')->firstOrFail()->id]);
+        $criterion = EvaluationCriterion::create([
+            'code' => 'visual-impact', 'default_min_score' => 0, 'default_max_score' => 10,
+            'default_weight' => 1, 'sort_order' => 10, 'status' => true,
+        ]);
+        $criterion->upsertTranslations(['tr' => ['name' => 'Görsel Etki', 'description' => 'Eserin izleyicide bıraktığı etki.']]);
+        $category->evaluationCriteria()->create([
+            'evaluation_criterion_id' => $criterion->id,
+            'min_score' => 1,
+            'max_score' => 20,
+            'weight' => 1.5,
+            'sort_order' => 10,
+        ]);
+
+        $items = collect(app(CompetitionRegulationCompiler::class)->compile($competition)['tr'])
+            ->flatMap(fn (array $section) => $section['items']);
+
+        $this->assertTrue($items->contains(fn (array $item) =>
+            $item['code'] === 'category-evaluation-criterion'
+            && str_contains($item['content'], 'Görsel Etki')
+            && str_contains($item['content'], '1–20')
+            && str_contains($item['content'], '1.5 göreli ağırlık')));
     }
 }

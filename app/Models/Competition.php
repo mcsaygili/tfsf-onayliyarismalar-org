@@ -92,6 +92,30 @@ class Competition extends Model
         return $this->hasMany(CompetitionStatusLog::class)->latest();
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(CompetitionReview::class)->orderByDesc('round');
+    }
+
+    public function latestReview(): ?CompetitionReview
+    {
+        return $this->reviews()->with('steps')->first();
+    }
+
+    /** @return array<int, int> */
+    public function requestedCorrectionStepNumbers(): array
+    {
+        if ($this->status !== CompetitionStatus::NeedsInfo) {
+            return [];
+        }
+
+        return $this->latestReview()?->steps
+            ->where('status', CompetitionReviewStep::STATUS_CORRECTION_REQUIRED)
+            ->pluck('step_number')
+            ->values()
+            ->all() ?? [];
+    }
+
     public function categories(): HasMany
     {
         return $this->hasMany(CompetitionCategory::class)->orderBy('sort_order');

@@ -13,6 +13,7 @@ class CompetitionRegulationDefinitionRegistry
             'award' => 'Her ödül için',
             'capture_region' => 'Her çekim bölgesi için',
             'juror' => 'Her jüri için',
+            'criterion' => 'Her değerlendirme kriteri için',
         ];
     }
 
@@ -89,6 +90,15 @@ class CompetitionRegulationDefinitionRegistry
                 'juror.category_name' => 'Kategori adı',
                 'juror.name' => 'Jüri adı',
                 'juror.status_label' => 'Jüri kayıt durumu',
+            ],
+            'criterion' => [
+                'criterion.category_name' => 'Kategori adı',
+                'criterion.name' => 'Değerlendirme kriteri adı',
+                'criterion.description' => 'Değerlendirme kriteri açıklaması',
+                'criterion.min_score' => 'En düşük puan',
+                'criterion.max_score' => 'En yüksek puan',
+                'criterion.score_range' => 'Puan aralığı',
+                'criterion.weight' => 'Göreli ağırlık',
             ],
             default => [],
         };

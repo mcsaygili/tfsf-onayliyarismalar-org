@@ -6,9 +6,11 @@ namespace App\Enums;
  * Bir yarışma başvurusunun onay süreci durumu (bkz. proje planı
  * "Kurum Paneli — Yarışma Ekleme Sihirbazı"). Akış:
  *
- *   Draft -> PendingReview -> Approved (yayına girer)
- *                          -> Rejected (kesin, bu kayıt için son)
- *                          -> NeedsInfo -> (kurum düzenler) -> PendingReview
+ *   Draft/NeedsInfo -> Submitted -> UnderReview -> Approved
+ *                                      |  |  |
+ *                                      |  |  -> Rejected
+ *                                      |  -> WaitingRequirements -> Approved
+ *                                      -> NeedsInfo -> Submitted
  *
  * Rejected kasıtlı olarak salt-okunur/terminal — kurum düzeltip yeniden
  * gönderemez, yeni bir taslak başlatması gerekir. NeedsInfo ise
@@ -17,7 +19,9 @@ namespace App\Enums;
 enum CompetitionStatus: string
 {
     case Draft = 'draft';
-    case PendingReview = 'pending_review';
+    case Submitted = 'submitted';
+    case UnderReview = 'under_review';
+    case WaitingRequirements = 'waiting_requirements';
     case NeedsInfo = 'needs_info';
     case Approved = 'approved';
     case Rejected = 'rejected';
@@ -40,7 +44,9 @@ enum CompetitionStatus: string
     {
         return match ($this) {
             self::Draft => 'is-draft',
-            self::PendingReview => 'is-pending',
+            self::Submitted => 'is-submitted',
+            self::UnderReview => 'is-under-review',
+            self::WaitingRequirements => 'is-waiting-requirements',
             self::NeedsInfo => 'is-needs-info',
             self::Approved => 'is-approved',
             self::Rejected => 'is-rejected',
@@ -50,5 +56,16 @@ enum CompetitionStatus: string
     public function isEditableByInstitution(): bool
     {
         return in_array($this, [self::Draft, self::NeedsInfo], true);
+    }
+
+    public function canTransitionTo(self $status): bool
+    {
+        return in_array($status, match ($this) {
+            self::Draft, self::NeedsInfo => [self::Submitted],
+            self::Submitted => [self::UnderReview, self::Rejected],
+            self::UnderReview => [self::NeedsInfo, self::WaitingRequirements, self::Approved, self::Rejected],
+            self::WaitingRequirements => [self::NeedsInfo, self::Approved, self::Rejected],
+            self::Approved, self::Rejected => [],
+        }, true);
     }
 }

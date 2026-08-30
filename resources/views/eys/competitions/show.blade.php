@@ -30,7 +30,7 @@
 
         @foreach ($steps as $number => $stepDef)
             @if (! in_array($number, [9, 11], true) && $stepDef->isApplicable($competition) && $stepDef->isImplemented())
-                <div class="ip-card">
+                <section class="ip-card" id="competition-step-{{ $number }}">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
                     @foreach ($stepDef->data($competition) as $field => $fieldValue)
                         @if ($field === 'categories' && $number === 6)
@@ -91,18 +91,36 @@
                                         @php
                                             $reviewJuror = $assignment->juror;
                                             $reviewInvitation = $assignment->invitation;
+                                            $reviewInvitationStatus = $reviewInvitation?->status();
                                         @endphp
                                         <div style="display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: .75rem; padding: .75rem; border: 1px solid var(--ia-surface-border); border-radius: .65rem; color: var(--ia-muted); font-size: .82rem;">
                                             <strong style="color: var(--ia-cream);">
                                                 {{ $reviewJuror ? trim($reviewJuror->first_name.' '.$reviewJuror->last_name) : trim(($reviewInvitation?->first_name ?? '').' '.($reviewInvitation?->last_name ?? '')) }}
                                             </strong>
                                             <span>&middot; {{ $reviewJuror?->email ?: $reviewInvitation?->email }}</span>
-                                            <span class="ip-badge {{ $reviewJuror ? 'is-active' : 'is-pending' }}">
-                                                {{ $reviewJuror ? __('eys.competitions.jury_registered') : __('eys.competitions.jury_invited') }}
+                                            <span class="ip-badge {{ $reviewJuror ? 'is-active' : $reviewInvitationStatus?->badgeClass() }}">
+                                                {{ $reviewJuror ? __('eys.competitions.jury_registered') : __('eys.competitions.jury_invitation_status.'.$reviewInvitationStatus?->value) }}
                                             </span>
+                                            @if ($reviewInvitation?->sent_at)
+                                                <span>&middot; {{ __('eys.competitions.jury_last_sent', ['date' => $reviewInvitation->sent_at->format('d.m.Y H:i'), 'count' => $reviewInvitation->send_count]) }}</span>
+                                            @endif
+                                            @if ($reviewInvitation?->expires_at)
+                                                <span>&middot; {{ __('eys.competitions.jury_expires_at', ['date' => $reviewInvitation->expires_at->format('d.m.Y H:i')]) }}</span>
+                                            @endif
                                         </div>
                                     @empty
                                         <div style="margin-top: .65rem; color: var(--ia-muted);">{{ __('eys.competitions.no_category_jurors') }}</div>
+                                    @endforelse
+
+                                    <div style="margin-top: 1rem; color: var(--ia-muted-dim); font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;">{{ __('eys.competitions.fields.evaluation_criteria') }}</div>
+                                    @forelse ($category->evaluationCriteria as $criterionAssignment)
+                                        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 1rem; margin-top: .55rem; padding: .75rem; border: 1px solid var(--ia-surface-border); border-radius: .65rem; color: var(--ia-muted); font-size: .82rem;">
+                                            <span><strong style="color: var(--ia-cream);">{{ $criterionAssignment->criterion?->name ?: '—' }}</strong>@if ($criterionAssignment->criterion?->description)<small style="display:block; margin-top:.2rem; color:var(--ia-muted-dim);">{{ $criterionAssignment->criterion->description }}</small>@endif</span>
+                                            <span>{{ __('eys.competitions.fields.score_range') }}: <strong style="color: var(--ia-cream);">{{ $criterionAssignment->min_score }}–{{ $criterionAssignment->max_score }}</strong></span>
+                                            <span>{{ __('eys.competitions.fields.relative_weight') }}: <strong style="color: var(--ia-cream);">{{ rtrim(rtrim($criterionAssignment->weight, '0'), '.') }}</strong></span>
+                                        </div>
+                                    @empty
+                                        <div style="margin-top: .55rem; color: var(--ia-muted);">{{ __('eys.competitions.no_category_evaluation_criteria') }}</div>
                                     @endforelse
                                 </div>
                             @endforeach
@@ -157,7 +175,7 @@
                             </div>
                         @endif
                     @endforeach
-                </div>
+                </section>
             @endif
         @endforeach
 
@@ -181,58 +199,7 @@
             @endforeach
         </div>
 
-        @if ($competition->status->value === 'pending_review')
-            <div class="ip-card">
-                <div class="ip-section-title">{{ __('eys.competitions.review_title') }}</div>
-
-                @if ($pendingJuryAssignments->isNotEmpty())
-                    <div class="ip-alert ip-alert-warning" role="alert">
-                        <x-eys.icon name="warning" />
-                        <div>
-                            <div class="ip-alert-title">{{ __('eys.competitions.jury_approval_blocked_title', ['count' => $pendingJuryAssignments->count()]) }}</div>
-                            <div class="ip-alert-text">{{ __('eys.competitions.jury_approval_blocked') }}</div>
-                        </div>
-                    </div>
-                @endif
-
-                <x-eys.input-error :messages="$errors->get('approval')" />
-
-                <div style="display: flex; gap: .75rem; margin-bottom: 1.5rem;">
-                    <form method="POST" action="{{ route('eys.competitions.approve', $competition) }}">
-                        @csrf
-                        <button
-                            type="button"
-                            class="ia-btn"
-                            @if ($pendingJuryAssignments->isEmpty()) onclick="eysConfirm(@js(__('eys.competitions.confirm_approve')), this.closest('form'))" @endif
-                            @disabled($pendingJuryAssignments->isNotEmpty())
-                            title="{{ $pendingJuryAssignments->isNotEmpty() ? __('eys.competitions.jury_approval_blocked') : __('eys.competitions.action_approve') }}"
-                        >{{ __('eys.competitions.action_approve') }}</button>
-                    </form>
-                </div>
-
-                <div class="ip-grid-2">
-                    <form method="POST" action="{{ route('eys.competitions.reject', $competition) }}">
-                        @csrf
-                        <div class="ia-field">
-                            <x-eys.label :value="__('eys.competitions.action_reject')" />
-                            <textarea name="message" class="ia-input" rows="3" placeholder="{{ __('eys.competitions.message_placeholder') }}" required></textarea>
-                            <x-eys.input-error :messages="$errors->get('message')" />
-                        </div>
-                        <button type="submit" class="ia-btn ia-btn-secondary">{{ __('eys.competitions.action_reject') }}</button>
-                    </form>
-
-                    <form method="POST" action="{{ route('eys.competitions.request-info', $competition) }}">
-                        @csrf
-                        <div class="ia-field">
-                            <x-eys.label :value="__('eys.competitions.action_request_info')" />
-                            <textarea name="message" class="ia-input" rows="3" placeholder="{{ __('eys.competitions.message_placeholder') }}" required></textarea>
-                            <x-eys.input-error :messages="$errors->get('message')" />
-                        </div>
-                        <button type="submit" class="ia-btn ia-btn-secondary">{{ __('eys.competitions.action_request_info') }}</button>
-                    </form>
-                </div>
-            </div>
-        @endif
+        @include('eys.competitions._review-panel')
 
         <div class="ip-card">
             <div class="ip-section-title">{{ __('eys.competitions.history_title') }}</div>

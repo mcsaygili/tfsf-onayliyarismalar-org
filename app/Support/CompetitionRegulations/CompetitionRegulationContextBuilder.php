@@ -19,6 +19,7 @@ class CompetitionRegulationContextBuilder
             'categories.captureDevices.translations', 'categories.processingMethods.translations',
             'categories.awards.translations', 'categories.awards.awardReference.translations',
             'categories.jurorAssignments.juror', 'categories.jurorAssignments.invitation',
+            'categories.evaluationCriteria.criterion.translations',
             'regulationInputs',
         ]);
 
@@ -83,6 +84,17 @@ class CompetitionRegulationContextBuilder
                             : ($registered ? 'Kayıtlı' : 'Davet bekliyor'),
                     ];
                 });
+            })->values()->all(),
+            'criteria' => $competition->categories->flatMap(function ($category) use ($locale) {
+                return $category->evaluationCriteria->map(fn ($assignment) => [
+                    'category_name' => $this->translated($category, 'name', $locale),
+                    'name' => $this->translated($assignment->criterion, 'name', $locale),
+                    'description' => $this->translated($assignment->criterion, 'description', $locale),
+                    'min_score' => $assignment->min_score,
+                    'max_score' => $assignment->max_score,
+                    'score_range' => $assignment->min_score.'–'.$assignment->max_score,
+                    'weight' => rtrim(rtrim($assignment->weight, '0'), '.'),
+                ]);
             })->values()->all(),
         ];
     }

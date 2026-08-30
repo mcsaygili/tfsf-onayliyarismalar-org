@@ -11,7 +11,7 @@
                 <label for="filter-status">{{ __('eys.competitions.filter_status') }}</label>
                 <select id="filter-status" name="status" class="ia-input" onchange="this.form.submit()">
                     <option value="">{{ __('eys.competitions.filter_all_status') }}</option>
-                    @foreach (['draft', 'pending_review', 'needs_info', 'approved', 'rejected'] as $value)
+                    @foreach (['draft', 'submitted', 'under_review', 'waiting_requirements', 'needs_info', 'approved', 'rejected'] as $value)
                         <option value="{{ $value }}" @selected($filter['status'] === $value)>{{ __('eys.competitions.status.'.$value) }}</option>
                     @endforeach
                 </select>

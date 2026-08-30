@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Institution;
 use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Models\CompetitionReviewStep;
 use App\Models\CompetitionStatusLog;
 use App\Models\Country;
 use App\Models\Juri;
@@ -42,7 +43,14 @@ class CompetitionStepController extends Controller
     {
         $this->authorizeSameInstitution($competition);
 
-        if ($step > $competition->current_step) {
+        $correctionStepNumbers = $competition->requestedCorrectionStepNumbers();
+        if ($competition->status === CompetitionStatus::NeedsInfo
+            && $correctionStepNumbers !== []
+            && ! in_array($step, [...$correctionStepNumbers, 11], true)) {
+            return redirect()->route('institution.competitions.step.show', [$competition, $correctionStepNumbers[0]]);
+        }
+
+        if ($competition->status !== CompetitionStatus::NeedsInfo && $step > $competition->current_step) {
             return redirect()->route('institution.competitions.step.show', [$competition, $competition->current_step]);
         }
 
@@ -69,6 +77,9 @@ class CompetitionStepController extends Controller
             'step' => $step,
             'stepDef' => $stepDef,
             'steps' => CompetitionStepRegistry::all(),
+            'correctionSteps' => $competition->latestReview()?->steps
+                ->where('status', CompetitionReviewStep::STATUS_CORRECTION_REQUIRED)
+                ->keyBy('step_number') ?? collect(),
         ];
 
         if ($stepDef instanceof Step4) {
@@ -102,7 +113,10 @@ class CompetitionStepController extends Controller
         }
 
         if ($stepDef instanceof Step8) {
-            $viewData['categoryJurorFormData'] = $stepDef->formData($competition);
+            $stepFormData = $stepDef->formData($competition);
+            $viewData['categoryJurorFormData'] = $stepFormData;
+            $viewData['categoryCriterionFormData'] = $stepFormData;
+            $viewData['evaluationCriteria'] = $stepDef->criteriaOptions($competition);
             $viewData['categories'] = $competition->categories()->with('translations')->orderBy('sort_order')->get();
         }
 
@@ -129,6 +143,7 @@ class CompetitionStepController extends Controller
                 'categories.awards.awardReference.translations',
                 'categories.jurorAssignments.juror',
                 'categories.jurorAssignments.invitation',
+                'categories.evaluationCriteria.criterion.translations',
             ]);
 
             $readiness = app(CompetitionReadinessService::class);
@@ -165,6 +180,11 @@ class CompetitionStepController extends Controller
 
         abort_unless($competition->isEditable(), 403);
 
+        $correctionStepNumbers = $competition->requestedCorrectionStepNumbers();
+        if ($competition->status === CompetitionStatus::NeedsInfo && $correctionStepNumbers !== []) {
+            abort_unless(in_array($step, $correctionStepNumbers, true), 403);
+        }
+
         $stepDef = CompetitionStepRegistry::get($step);
         abort_unless($stepDef->isApplicable($competition), 404);
         $isDraftSave = $request->input('action') === 'draft';
@@ -182,6 +202,24 @@ class CompetitionStepController extends Controller
 
             if ($wasNeedsInfo && $before !== null) {
                 $this->logFieldChanges($competition, $before, $stepDef->data($competition));
+
+                $competition->latestReview()?->steps()
+                    ->where('step_number', $stepDef->number())
+                    ->where('status', CompetitionReviewStep::STATUS_CORRECTION_REQUIRED)
+                    ->update([
+                        'addressed_at' => now(),
+                        'addressed_by' => Auth::guard('institution')->id(),
+                    ]);
+
+                CompetitionStatusLog::create([
+                    'competition_id' => $competition->id,
+                    'action' => 'correction_addressed',
+                    'from_status' => CompetitionStatus::NeedsInfo->value,
+                    'to_status' => CompetitionStatus::NeedsInfo->value,
+                    'message' => $stepDef->label(),
+                    'actor_id' => Auth::guard('institution')->id(),
+                    'actor_type' => Auth::guard('institution')->user()::class,
+                ]);
             }
         });
 
@@ -193,6 +231,13 @@ class CompetitionStepController extends Controller
             return redirect()
                 ->route('institution.competitions.step.show', [$competition, $step])
                 ->with('status', __('institution.competitions.draft_saved'));
+        }
+
+        if ($wasNeedsInfo && $correctionStepNumbers !== []) {
+            $nextCorrectionStep = collect($correctionStepNumbers)->first(fn (int $number) => $number > $step) ?? 11;
+            $competition->forceFill(['current_step' => $nextCorrectionStep])->save();
+
+            return redirect()->route('institution.competitions.step.show', [$competition, $nextCorrectionStep]);
         }
 
         $competition->refresh();
@@ -247,9 +292,21 @@ class CompetitionStepController extends Controller
         abort_unless($invitation->competition_id === $competition->id && $invitation->isPending(), 404);
         abort_unless($invitation->assignments()->exists(), 422);
 
-        $service->send($invitation);
+        abort_unless($invitation->canResend(), 422);
+        $service->send($invitation, Auth::guard('institution')->user());
 
         return back()->with('status', __('institution.competitions.jury_invitation_resent'));
+    }
+
+    public function cancelJuryInvitation(Competition $competition, JuryInvitation $invitation, JuryInvitationService $service): RedirectResponse
+    {
+        $this->authorizeSameInstitution($competition);
+        abort_unless($competition->isEditable(), 403);
+        abort_unless($invitation->competition_id === $competition->id, 404);
+
+        $service->cancel($invitation, Auth::guard('institution')->user());
+
+        return back()->with('status', __('institution.competitions.jury_invitation_cancelled'));
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\Juri;
 use App\Services\JuryInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -74,7 +75,7 @@ class JuriController extends Controller
         ]);
 
         $juri->forceFill(['email_verified_at' => now()])->save();
-        $invitationService->linkExistingJuror($juri);
+        $invitationService->linkExistingJuror($juri, Auth::guard('eys')->user());
 
         return redirect()->route('eys.juriler.index')->with('status', __('eys.juri.created'));
     }

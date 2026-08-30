@@ -585,7 +585,9 @@
         .ip-badge.is-active { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-inactive { color: #e0857a; background: rgba(224,133,122,.12); }
         .ip-badge.is-draft { color: #9aa0ac; background: rgba(154,160,172,.12); }
-        .ip-badge.is-pending { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-pending, .ip-badge.is-submitted { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-under-review { color: #7eb8dd; background: rgba(111,179,217,.14); }
+        .ip-badge.is-waiting-requirements { color: #d7a96d; background: rgba(215,169,109,.14); }
         .ip-badge.is-needs-info { color: #6fb3d9; background: rgba(111,179,217,.14); }
         .ip-badge.is-approved { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-rejected { color: #e0857a; background: rgba(224,133,122,.12); }
@@ -735,6 +737,8 @@
         .ip-alert-text { font-size: .84rem; color: var(--ia-muted); }
         .ip-alert-text a { color: var(--ia-copper); font-weight: 600; text-decoration: none; }
         .ip-alert-text a:hover { color: var(--ia-copper-bright); }
+        .ip-correction-alert { margin: 1rem 0 1.5rem; }
+        .ip-correction-state { margin-top: .55rem; color: var(--ia-cream); font-size: .76rem; font-weight: 700; }
         .ip-alert-last { margin-bottom: 0; }
 
         /* ---- İstatistik kartları (ör. Gösterge Paneli) ---- */
@@ -814,11 +818,27 @@
         .ip-juror-identity strong { overflow: hidden; color: var(--ia-cream); font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
         .ip-juror-identity small { overflow: hidden; color: var(--ia-muted); font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
         .ip-jury-resend { border: 0; background: transparent; color: var(--ia-copper-bright); font: 600 .72rem/1 'Figtree', sans-serif; cursor: pointer; }
+        .ip-jury-cancel { border: 0; background: transparent; color: var(--ia-red); font: 600 .72rem/1 'Figtree', sans-serif; cursor: pointer; }
         .ip-jury-empty { display: flex; align-items: center; gap: .8rem; min-height: 76px; padding: .8rem; border: 1px dashed rgba(224,178,122,.35); border-radius: 9px; background: rgba(224,178,122,.035); }
         .ip-jury-empty-mark { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: rgba(224,178,122,.1); color: #e6c896; font-size: 1.15rem; }
         .ip-jury-empty strong { color: var(--ia-cream); font-size: .8rem; }
         .ip-jury-empty p { margin: .18rem 0 0; color: var(--ia-muted); font-size: .73rem; }
         .ip-jury-send-note { margin-top: 1.5rem; }
+        .ip-criteria-card { margin-top: 1.5rem; }
+        .ip-criteria-category-stack { display: grid; gap: 1.15rem; margin-top: 1.25rem; }
+        .ip-criterion-picker { padding: 1rem 1.15rem; border-bottom: 1px solid var(--ia-surface-border); }
+        .ip-criterion-default-note { margin: 1rem 1.15rem 0; padding: .75rem .85rem; border: 1px solid rgba(201,168,76,.2); border-radius: 8px; background: rgba(201,168,76,.045); color: var(--ia-muted); font-size: .74rem; line-height: 1.5; }
+        .ip-criterion-add-row { display: flex; align-items: center; gap: .75rem; }
+        .ip-criterion-add-row .ia-input { flex: 1; }
+        .ip-criterion-add-row .ia-btn { flex: 0 0 auto; }
+        .ip-criterion-list { padding: 0 1.15rem 1.15rem; }
+        .ip-criterion-row { padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border); }
+        .ip-criterion-row:last-of-type { border-bottom: 0; }
+        .ip-criterion-row-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+        .ip-criterion-row-heading strong { color: var(--ia-cream); font-size: .84rem; }
+        .ip-criterion-row-heading p { max-width: 70ch; margin-top: .25rem; color: var(--ia-muted); font-size: .73rem; line-height: 1.5; }
+        .ip-criterion-values { margin-top: .85rem; }
+        .ip-criterion-values .ia-input[readonly] { border-color: rgba(255,255,255,.065); background: rgba(255,255,255,.025); color: var(--ia-muted); cursor: default; }
         .ip-form-actions-sticky { position: sticky; bottom: 0; z-index: 9; align-items: center; padding: .8rem; border: 1px solid var(--ia-surface-border); border-radius: 10px; background: #14161f; box-shadow: 0 -12px 28px rgba(0,0,0,.28); }
         .ip-save-meta { margin-right: auto; color: var(--ia-muted-dim); font-size: .75rem; }
         /* ---- Dinamik şartname önizlemesi ---- */
@@ -961,6 +981,7 @@
             .ip-jury-path + .ip-jury-path { border-top: 1px solid var(--ia-surface-border); border-left: 0; }
         }
         @media (max-width: 720px) { .ip-grid-3 { grid-template-columns: 1fr; } }
+        @media (max-width: 560px) { .ip-criterion-add-row { align-items: stretch; flex-direction: column; } .ip-criterion-add-row .ia-btn { justify-content: center; } }
         @media (max-width: 640px) {
             .ip-card { padding: 1rem; }
             .ip-category-heading { align-items: flex-start; flex-direction: column; }

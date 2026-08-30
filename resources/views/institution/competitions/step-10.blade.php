@@ -214,6 +214,18 @@
                             @empty
                                 <p class="ip-summary-empty">{{ $summary['no_jurors'] }}</p>
                             @endforelse
+                            <h4 class="ip-summary-subtitle">{{ $summary['evaluation_criteria'] }}</h4>
+                            @forelse ($category->evaluationCriteria as $criterionAssignment)
+                                <div class="ip-summary-person-row">
+                                    <span>
+                                        <strong>{{ $criterionAssignment->criterion?->name ?: $notProvided }}</strong>
+                                        <small>{{ __('institution.competitions.fields.criterion_min_score') }}: {{ $criterionAssignment->min_score }} · {{ __('institution.competitions.fields.criterion_max_score') }}: {{ $criterionAssignment->max_score }}</small>
+                                    </span>
+                                    <span class="ip-badge is-active">{{ __('institution.competitions.fields.criterion_weight') }}: {{ rtrim(rtrim($criterionAssignment->weight, '0'), '.') }}</span>
+                                </div>
+                            @empty
+                                <p class="ip-summary-empty">{{ $summary['no_evaluation_criteria'] }}</p>
+                            @endforelse
                         </article>
                     @endforeach
                 </div>

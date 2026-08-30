@@ -176,17 +176,121 @@
                                     <input type="hidden" :name="`categories[{{ $category->id }}][jurors][${jurorIndex}][status]`" x-model="juror.status">
 
                                     <span class="ip-juror-avatar" x-text="`${juror.first_name?.[0] || ''}${juror.last_name?.[0] || ''}`.toUpperCase()"></span>
-                                    <span class="ip-juror-identity"><strong x-text="`${juror.first_name} ${juror.last_name}`"></strong><small x-text="juror.email"></small></span>
+                                    <span class="ip-juror-identity">
+                                        <strong x-text="`${juror.first_name} ${juror.last_name}`"></strong>
+                                        <small x-text="juror.email"></small>
+                                        <small x-show="juror.sent_at" x-text="@js(__('institution.competitions.jury_sent_at')).replace(':date', juror.sent_at)"></small>
+                                    </span>
                                     <span class="ip-badge is-active" x-show="juror.status === 'registered'">{{ __('institution.competitions.jury_status_registered') }}</span>
                                     <span class="ip-badge is-draft" x-show="juror.status === 'draft'">{{ __('institution.competitions.jury_status_ready') }}</span>
-                                    <span class="ip-badge is-pending" x-show="juror.status === 'invited'">{{ __('institution.competitions.jury_status_invited') }}</span>
-                                    <button x-show="juror.status === 'invited' && juror.invitation_id" type="submit" class="ip-jury-resend" :form="`resend-invite-${juror.invitation_id}`">{{ __('institution.competitions.resend_invitation') }}</button>
+                                    <span class="ip-badge is-pending" x-show="juror.status === 'sent'">{{ __('institution.competitions.jury_status_invited') }}</span>
+                                    <span class="ip-badge is-under-review" x-show="juror.status === 'opened'">{{ __('institution.competitions.jury_status_opened') }}</span>
+                                    <span class="ip-badge is-waiting-requirements" x-show="juror.status === 'expired'">{{ __('institution.competitions.jury_status_expired') }}</span>
+                                    <span class="ip-badge is-rejected" x-show="juror.status === 'declined'">{{ __('institution.competitions.jury_status_declined') }}</span>
+                                    <button x-show="['sent', 'opened', 'expired'].includes(juror.status) && juror.invitation_id" type="submit" class="ip-jury-resend" :form="`resend-invite-${juror.invitation_id}`">{{ __('institution.competitions.resend_invitation') }}</button>
+                                    <button x-show="['draft', 'sent', 'opened', 'expired'].includes(juror.status) && juror.invitation_id" type="submit" class="ip-jury-cancel" :form="`cancel-invite-${juror.invitation_id}`" onclick="return confirm(@js(__('institution.competitions.cancel_invitation_confirm'))) ">{{ __('institution.competitions.cancel_invitation') }}</button>
                                     <button type="button" class="ip-category-remove" @click="removeJuror(jurorIndex)">{{ __('institution.competitions.remove_juror') }}</button>
                                 </article>
                             </template>
                             <div class="ip-jury-empty" x-show="jurors.length === 0" x-cloak>
                                 <span class="ip-jury-empty-mark">+</span>
                                 <div><strong>{{ __('institution.competitions.jury_required_title') }}</strong><p>{{ __('institution.competitions.jury_required_hint') }}</p></div>
+                            </div>
+                        </div>
+                    </section>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="ip-card ip-criteria-card">
+            <div class="ip-section-title">{{ __('institution.competitions.criteria_configuration_title') }}</div>
+            <div class="ip-section-hint">{{ __('institution.competitions.criteria_configuration_hint') }}</div>
+
+            <div class="ip-criteria-category-stack">
+                @foreach ($categories as $category)
+                    <section
+                        class="ip-category-block"
+                        x-data="{
+                            criteria: @js($categoryCriterionFormData[$category->id]['criteria']),
+                            options: @js($evaluationCriteria->map(fn ($criterion) => [
+                                'id' => $criterion->id,
+                                'code' => $criterion->code,
+                                'name' => $criterion->name,
+                                'description' => $criterion->description,
+                                'min_score' => $criterion->default_min_score,
+                                'max_score' => $criterion->default_max_score,
+                                'weight' => $criterion->default_weight,
+                            ])->values()),
+                            selectedCriterion: '',
+                            criterionName(id) { return this.options.find(option => option.id === id)?.name || @js(__('institution.competitions.unnamed_criterion')); },
+                            criterionDescription(id) { return this.options.find(option => option.id === id)?.description || ''; },
+                            isSelected(id) { return this.criteria.some(criterion => criterion.evaluation_criterion_id === id); },
+                            isDefaultCriterion(id) { return this.options.find(option => option.id === id)?.code === 'general-evaluation'; },
+                            addCriterion() {
+                                const option = this.options.find(item => item.id === this.selectedCriterion);
+                                if (!option || this.isSelected(option.id)) return;
+                                this.criteria.push({ id: '', evaluation_criterion_id: option.id, min_score: option.min_score, max_score: option.max_score, weight: option.weight });
+                                this.selectedCriterion = '';
+                            },
+                            removeCriterion(index) { this.criteria.splice(index, 1); },
+                        }"
+                    >
+                        <div class="ip-category-heading">
+                            <div class="ip-category-toggle">
+                                <span class="ip-category-number">{{ $loop->iteration }}</span>
+                                <span><strong>{{ $category->name }}</strong><small><span x-text="criteria.length"></span> {{ __('institution.competitions.criterion_count') }}</small></span>
+                            </div>
+                            <span class="ip-jury-capacity" x-text="`${criteria.length}/20`"></span>
+                        </div>
+
+                        @if ($evaluationCriteria->where('status', true)->count() > 1)
+                            <div class="ip-criterion-picker">
+                                <div class="ia-field">
+                                    <div class="ip-field-label-row">
+                                        <label class="ia-label" for="criterion-select-{{ $category->id }}">{{ __('institution.competitions.fields.evaluation_criterion') }}</label>
+                                        <button type="button" class="ip-field-help-button" @click="openHelp(@js(__('institution.competitions.fields.evaluation_criterion')), @js(__('institution.competitions.field_help.evaluation_criterion.description')), @js(__('institution.competitions.field_help.evaluation_criterion.example')), $el)">?</button>
+                                    </div>
+                                    <div class="ip-criterion-add-row">
+                                        <select class="ia-input" id="criterion-select-{{ $category->id }}" x-model="selectedCriterion">
+                                            <option value="">{{ __('institution.competitions.select_criterion') }}</option>
+                                            <template x-for="option in options" :key="option.id"><option :value="option.id" :disabled="isSelected(option.id)" x-text="option.name"></option></template>
+                                        </select>
+                                        <button type="button" class="ia-btn ia-btn-secondary" @click="addCriterion" :disabled="!selectedCriterion || criteria.length >= 20">{{ __('institution.competitions.add_criterion') }}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="ip-criterion-default-note">{{ __('institution.competitions.default_criterion_note') }}</div>
+                        @endif
+
+                        <div class="ip-criterion-list">
+                            <template x-for="(criterion, criterionIndex) in criteria" :key="criterion.id || criterion.evaluation_criterion_id">
+                                <article class="ip-criterion-row">
+                                    <input type="hidden" :name="`categories[{{ $category->id }}][criteria][${criterionIndex}][id]`" x-model="criterion.id">
+                                    <input type="hidden" :name="`categories[{{ $category->id }}][criteria][${criterionIndex}][evaluation_criterion_id]`" x-model="criterion.evaluation_criterion_id">
+                                    <div class="ip-criterion-row-heading">
+                                        <div><strong x-text="criterionName(criterion.evaluation_criterion_id)"></strong><p x-show="criterionDescription(criterion.evaluation_criterion_id)" x-text="criterionDescription(criterion.evaluation_criterion_id)"></p></div>
+                                        <button x-show="!isDefaultCriterion(criterion.evaluation_criterion_id)" type="button" class="ip-category-remove" @click="removeCriterion(criterionIndex)">{{ __('institution.competitions.remove_criterion') }}</button>
+                                    </div>
+                                    <div class="ip-grid-3 ip-criterion-values">
+                                        <div class="ia-field">
+                                            <div class="ip-field-label-row"><label class="ia-label" :for="`criterion-min-{{ $category->id }}-${criterionIndex}`">{{ __('institution.competitions.fields.criterion_min_score') }}</label><button type="button" class="ip-field-help-button" @click="openHelp(@js(__('institution.competitions.fields.criterion_min_score')), @js(__('institution.competitions.field_help.criterion_min_score.description')), @js(__('institution.competitions.field_help.criterion_min_score.example')), $el)">?</button></div>
+                                            <input class="ia-input" type="number" min="0" max="9999" :id="`criterion-min-{{ $category->id }}-${criterionIndex}`" :name="`categories[{{ $category->id }}][criteria][${criterionIndex}][min_score]`" x-model.number="criterion.min_score" readonly>
+                                        </div>
+                                        <div class="ia-field">
+                                            <div class="ip-field-label-row"><label class="ia-label" :for="`criterion-max-{{ $category->id }}-${criterionIndex}`">{{ __('institution.competitions.fields.criterion_max_score') }}</label><button type="button" class="ip-field-help-button" @click="openHelp(@js(__('institution.competitions.fields.criterion_max_score')), @js(__('institution.competitions.field_help.criterion_max_score.description')), @js(__('institution.competitions.field_help.criterion_max_score.example')), $el)">?</button></div>
+                                            <input class="ia-input" type="number" min="1" max="10000" :id="`criterion-max-{{ $category->id }}-${criterionIndex}`" :name="`categories[{{ $category->id }}][criteria][${criterionIndex}][max_score]`" x-model.number="criterion.max_score" readonly>
+                                        </div>
+                                        <div class="ia-field">
+                                            <div class="ip-field-label-row"><label class="ia-label" :for="`criterion-weight-{{ $category->id }}-${criterionIndex}`">{{ __('institution.competitions.fields.criterion_weight') }}</label><button type="button" class="ip-field-help-button" @click="openHelp(@js(__('institution.competitions.fields.criterion_weight')), @js(__('institution.competitions.field_help.criterion_weight.description')), @js(__('institution.competitions.field_help.criterion_weight.example')), $el)">?</button></div>
+                                            <input class="ia-input" type="number" min="0.01" max="999.99" step="0.01" :id="`criterion-weight-{{ $category->id }}-${criterionIndex}`" :name="`categories[{{ $category->id }}][criteria][${criterionIndex}][weight]`" x-model="criterion.weight">
+                                        </div>
+                                    </div>
+                                </article>
+                            </template>
+                            <div class="ip-jury-empty" x-show="criteria.length === 0" x-cloak>
+                                <span class="ip-jury-empty-mark">+</span>
+                                <div><strong>{{ __('institution.competitions.criteria_required_title') }}</strong><p>{{ __('institution.competitions.criteria_required_hint') }}</p></div>
                             </div>
                         </div>
                     </section>
@@ -209,9 +313,15 @@
     @php
         $resendInvitations = collect($categoryJurorFormData)
             ->pluck('jurors')->flatten(1)
-            ->where('status', 'invited')->pluck('invitation_id')->filter()->unique();
+            ->whereIn('status', ['sent', 'opened', 'expired'])->pluck('invitation_id')->filter()->unique();
+        $cancelInvitations = collect($categoryJurorFormData)
+            ->pluck('jurors')->flatten(1)
+            ->whereIn('status', ['draft', 'sent', 'opened', 'expired'])->pluck('invitation_id')->filter()->unique();
     @endphp
     @foreach ($resendInvitations as $invitationId)
         <form id="resend-invite-{{ $invitationId }}" method="POST" action="{{ route('institution.competitions.jury-invitations.resend', [$competition, $invitationId]) }}">@csrf</form>
+    @endforeach
+    @foreach ($cancelInvitations as $invitationId)
+        <form id="cancel-invite-{{ $invitationId }}" method="POST" action="{{ route('institution.competitions.jury-invitations.cancel', [$competition, $invitationId]) }}">@csrf @method('DELETE')</form>
     @endforeach
 </x-institution.app-layout>

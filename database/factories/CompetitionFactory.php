@@ -81,8 +81,21 @@ class CompetitionFactory extends Factory
 
     public function pendingReview(): static
     {
+        return $this->submitted();
+    }
+
+    public function submitted(): static
+    {
         return $this->state(fn (array $attributes) => [
-            'status' => CompetitionStatus::PendingReview,
+            'status' => CompetitionStatus::Submitted,
+            'submitted_at' => now(),
+        ]);
+    }
+
+    public function underReview(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => CompetitionStatus::UnderReview,
             'submitted_at' => now(),
         ]);
     }

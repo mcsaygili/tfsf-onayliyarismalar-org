@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\CompetitionCategory;
 use App\Models\Institution;
@@ -56,12 +57,78 @@ class JuriRegistrationTest extends TestCase
 
     public function test_gecerli_davet_kayit_ekranini_gosterir(): void
     {
-        [, , $token] = $this->invitation();
+        [$invitation, , $token] = $this->invitation();
 
         $this->get(route('juri.invitation.accept', $token))
             ->assertOk()
             ->assertSee('davetli-juri@example.test')
             ->assertSee(__('juri.invitation.card_title'));
+
+        $this->assertNotNull($invitation->fresh()->opened_at);
+        $this->assertDatabaseHas('jury_invitation_events', [
+            'jury_invitation_id' => $invitation->id,
+            'action' => 'opened',
+        ]);
+    }
+
+    public function test_mevcut_dogrulanmis_hesap_sifre_istemeden_davete_baglanir(): void
+    {
+        [$invitation, $category, $token] = $this->invitation();
+        $juror = Juri::factory()->create(['email' => $invitation->email]);
+
+        $this->get(route('juri.invitation.accept', $token))
+            ->assertOk()
+            ->assertSee(__('juri.invitation.existing_card_title'))
+            ->assertDontSee('name="password"', false);
+
+        $this->post(route('juri.invitation.accept', $token))
+            ->assertRedirect(route('juri.login'));
+
+        $this->assertSame($juror->id, $category->jurorAssignments()->firstOrFail()->juror_id);
+        $this->assertDatabaseHas('jury_invitation_events', [
+            'jury_invitation_id' => $invitation->id,
+            'action' => 'accepted',
+            'actor_id' => $juror->id,
+        ]);
+    }
+
+    public function test_juri_daveti_reddedebilir(): void
+    {
+        [$invitation, $category, $token] = $this->invitation();
+
+        $this->post(route('juri.invitation.decline', $token))
+            ->assertRedirect(route('juri.login'));
+
+        $invitation->refresh();
+        $this->assertNotNull($invitation->declined_at);
+        $this->assertNull($invitation->token_hash);
+        $this->assertDatabaseHas('jury_invitation_events', [
+            'jury_invitation_id' => $invitation->id,
+            'action' => 'declined',
+        ]);
+        $this->assertNull($category->jurorAssignments()->firstOrFail()->juror_id);
+        $this->get(route('juri.invitation.accept', $token))->assertNotFound();
+    }
+
+    public function test_son_bekleyen_juri_kabul_edilince_eys_denetim_kaydi_olusur(): void
+    {
+        [$invitation, , $token] = $this->invitation();
+        $invitation->competition->forceFill(['status' => CompetitionStatus::WaitingRequirements])->save();
+
+        $this->post(route('juri.invitation.accept', $token), [
+            'first_name' => 'Ayşe',
+            'last_name' => 'Yılmaz',
+            'password' => 'guvenli-sifre-123',
+            'password_confirmation' => 'guvenli-sifre-123',
+        ])->assertRedirect(route('juri.dashboard'));
+
+        $this->assertDatabaseHas('competition_status_logs', [
+            'competition_id' => $invitation->competition_id,
+            'action' => 'jury_requirements_completed',
+            'from_status' => CompetitionStatus::WaitingRequirements->value,
+            'to_status' => CompetitionStatus::WaitingRequirements->value,
+        ]);
+        $this->assertSame(CompetitionStatus::WaitingRequirements, $invitation->competition->fresh()->status);
     }
 
     public function test_davet_kabul_edildiginde_dogrulanmis_juri_olusturulur_ve_atama_baglanir(): void

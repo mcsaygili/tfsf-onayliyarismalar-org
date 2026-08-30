@@ -16,8 +16,10 @@ class JuryInvitationController extends Controller
     {
         $invitation = $service->findPendingByToken($token);
         app()->setLocale($invitation->locale);
+        $service->markOpened($invitation);
+        $existingJuror = $service->existingJurorFor($invitation);
 
-        return view('juri.auth.invitation', compact('invitation', 'token'));
+        return view('juri.auth.invitation', compact('invitation', 'token', 'existingJuror'));
     }
 
     public function store(Request $request, string $token, JuryInvitationService $service): RedirectResponse
@@ -25,7 +27,8 @@ class JuryInvitationController extends Controller
         $invitation = $service->findPendingByToken($token);
         app()->setLocale($invitation->locale);
 
-        $validated = $request->validate([
+        $existingJuror = $service->existingJurorFor($invitation);
+        $validated = $existingJuror ? [] : $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -41,5 +44,14 @@ class JuryInvitationController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('juri.dashboard')->with('status', __('juri.invitation.accepted'));
+    }
+
+    public function decline(string $token, JuryInvitationService $service): RedirectResponse
+    {
+        $invitation = $service->findPendingByToken($token);
+        app()->setLocale($invitation->locale);
+        $service->decline($invitation);
+
+        return redirect()->route('juri.login')->with('status', __('juri.invitation.declined'));
     }
 }

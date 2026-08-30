@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Institution;
 use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
-use App\Models\CompetitionStatusLog;
-use App\Support\CompetitionWizard\CompetitionStepRegistry;
+use App\Models\CompetitionReviewStep;
+use App\Services\CompetitionWorkflowService;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
+use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -61,22 +62,34 @@ class CompetitionController extends Controller
 
         $fromStatus = $competition->status;
 
+        if ($fromStatus === CompetitionStatus::NeedsInfo) {
+            $unaddressedCorrection = $competition->latestReview()?->steps
+                ->contains(fn (CompetitionReviewStep $step) => $step->status === CompetitionReviewStep::STATUS_CORRECTION_REQUIRED
+                    && $step->addressed_at === null
+                ) ?? false;
+
+            if ($unaddressedCorrection) {
+                $firstStep = $competition->latestReview()?->steps
+                    ->first(fn (CompetitionReviewStep $step) => $step->status === CompetitionReviewStep::STATUS_CORRECTION_REQUIRED
+                        && $step->addressed_at === null
+                    )?->step_number ?? $competition->current_step;
+
+                return redirect()
+                    ->route('institution.competitions.step.show', [$competition, $firstStep])
+                    ->with('error', __('institution.competitions.corrections_not_addressed'));
+            }
+        }
+
         DB::transaction(function () use ($competition, $fromStatus) {
             app(CompetitionRegulationCompiler::class)->snapshot($competition);
 
-            $competition->forceFill([
-                'status' => CompetitionStatus::PendingReview,
-                'submitted_at' => now(),
-            ])->save();
-
-            CompetitionStatusLog::create([
-                'competition_id' => $competition->id,
-                'action' => $fromStatus === CompetitionStatus::NeedsInfo ? 'resubmitted' : 'submitted',
-                'from_status' => $fromStatus->value,
-                'to_status' => CompetitionStatus::PendingReview->value,
-                'actor_id' => Auth::guard('institution')->id(),
-                'actor_type' => Auth::guard('institution')->user()::class,
-            ]);
+            app(CompetitionWorkflowService::class)->transition(
+                $competition,
+                CompetitionStatus::Submitted,
+                $fromStatus === CompetitionStatus::NeedsInfo ? 'resubmitted' : 'submitted',
+                Auth::guard('institution')->user(),
+                extra: ['submitted_at' => now()],
+            );
         });
 
         return redirect()->route('institution.competitions.index')->with('status', __('institution.competitions.submitted'));

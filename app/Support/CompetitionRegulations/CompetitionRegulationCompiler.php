@@ -180,6 +180,7 @@ class CompetitionRegulationCompiler
             'award' => $context['awards'] ?? [],
             'capture_region' => $context['capture_regions'] ?? [],
             'juror' => $context['jurors'] ?? [],
+            'criterion' => $context['criteria'] ?? [],
             default => [null],
         };
     }

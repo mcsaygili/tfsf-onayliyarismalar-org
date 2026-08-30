@@ -584,9 +584,12 @@
         }
         .ia-btn:hover { background: rgba(201,168,76,.06); color: var(--ia-cream); border-color: var(--ia-copper); }
         .ia-btn:active { transform: translateY(1px); }
+        .ia-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
         .ia-btn svg { width: 14px; height: 14px; }
 
         .ip-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .ip-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+        @media (max-width: 760px) { .ip-grid-3 { grid-template-columns: 1fr; } }
         @media (max-width: 640px) { .ip-grid-2 { grid-template-columns: 1fr; } }
 
         /* ---- Liste araç çubuğu / tablo / rozet (ör. Yetkili Bilgileri) ---- */
@@ -659,7 +662,9 @@
         .ip-badge.is-active { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-inactive { color: #e0857a; background: rgba(224,133,122,.12); }
         .ip-badge.is-draft { color: #9aa0ac; background: rgba(154,160,172,.12); }
-        .ip-badge.is-pending { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-pending, .ip-badge.is-submitted { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-badge.is-under-review { color: #7eb8dd; background: rgba(111,179,217,.14); }
+        .ip-badge.is-waiting-requirements { color: #d7a96d; background: rgba(215,169,109,.14); }
         .ip-badge.is-needs-info { color: #6fb3d9; background: rgba(111,179,217,.14); }
         .ip-badge.is-approved { color: #8fcf93; background: rgba(88,140,92,.14); }
         .ip-badge.is-rejected { color: #e0857a; background: rgba(224,133,122,.12); }
@@ -702,6 +707,49 @@
         .ip-page-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
         .ip-table-actions { text-align: right; white-space: nowrap; }
         .ip-inline-form { display: inline; }
+
+        /* ---- Yarışma inceleme alanı ---- */
+        .ip-review-workspace { scroll-margin-top: 1rem; }
+        .ip-review-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
+        .ip-review-progress { display: flex; align-items: baseline; gap: .4rem; color: var(--ia-muted); white-space: nowrap; }
+        .ip-review-progress strong { color: var(--ia-cream); font-size: 1.15rem; }
+        .ip-review-progress span { font-size: .74rem; }
+        .ip-review-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; padding: .75rem 0 1rem; color: var(--ia-muted-dim); font-size: .76rem; border-bottom: 1px solid var(--ia-surface-border); }
+        .ip-review-empty { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1rem 0 .25rem; }
+        .ip-review-empty strong { color: var(--ia-cream); font-size: .9rem; }
+        .ip-review-empty p { max-width: 68ch; margin: .25rem 0 0; color: var(--ia-muted); font-size: .82rem; line-height: 1.55; }
+        .ip-review-list { display: flex; flex-direction: column; }
+        .ip-review-row { display: grid; grid-template-columns: minmax(220px, .9fr) minmax(160px, .45fr) minmax(260px, 1fr); gap: 1rem; align-items: start; padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border); }
+        .ip-review-list.is-readonly .ip-review-row { grid-template-columns: 1fr auto; align-items: center; }
+        .ip-review-step-copy { display: flex; align-items: flex-start; gap: .75rem; }
+        .ip-review-step-number { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--ia-bg); color: var(--ia-copper-bright); font-size: .72rem; font-weight: 800; flex: 0 0 auto; }
+        .ip-review-step-copy a, .ip-review-step-copy strong { color: var(--ia-cream); font-size: .86rem; font-weight: 700; text-decoration: none; }
+        .ip-review-step-copy a:hover { color: var(--ia-copper-bright); }
+        .ip-review-step-copy p { margin: .25rem 0 0; color: var(--ia-muted-dim); font-size: .74rem; line-height: 1.45; }
+        .ip-review-decision label, .ip-review-note label { display: block; margin-bottom: .4rem; color: var(--ia-muted); font-size: .72rem; font-weight: 600; }
+        .ip-review-note textarea.ia-input { min-height: 4.15rem; }
+        .ip-review-general-note { max-width: 68ch; margin-top: 1.25rem; }
+        .ip-review-actions, .ip-review-final-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+        .ip-review-requirement { margin: 1.25rem 0 0; }
+        .ip-review-state { display: inline-flex; padding: .3rem .6rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+        .ip-review-state.is-approved { color: #8fcf93; background: rgba(88,140,92,.14); }
+        .ip-review-state.is-correction_required { color: #e0b25a; background: rgba(224,178,90,.14); }
+        .ip-review-state.is-pending { color: #9aa0ac; background: rgba(154,160,172,.12); }
+        .ip-review-reject { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--ia-surface-border); }
+        .ip-review-reject summary { width: fit-content; color: #e0857a; font-size: .78rem; font-weight: 700; cursor: pointer; }
+        .ip-review-reject form { max-width: 42rem; margin-top: 1rem; }
+        .ip-review-reject .ia-btn { margin-top: .75rem; }
+
+        @media (max-width: 900px) {
+            .ip-review-row { grid-template-columns: 1fr 1fr; }
+            .ip-review-step-copy { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 640px) {
+            .ip-review-heading, .ip-review-empty { flex-direction: column; }
+            .ip-review-row, .ip-review-list.is-readonly .ip-review-row { grid-template-columns: 1fr; }
+            .ip-review-step-copy { grid-column: auto; }
+        }
 
         @media (prefers-reduced-motion: reduce) {
             .ip-language-tab { transition: none; }
@@ -977,10 +1025,10 @@
                 </div>
             @endcanany
 
-            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.award_references.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.award_references.manage', 'eys.evaluation_criteria.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
-                @canany(['eys.competition_types.manage', 'eys.award_references.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
-                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*', 'eys.award-references.*', 'eys.participant-approval-processes.*', 'eys.participant-genders.*', 'eys.age-eligibility-rules.*', 'eys.member-groups.*', 'eys.capture-devices.*', 'eys.processing-methods.*') ? 'true' : 'false' }} }">
+                @canany(['eys.competition_types.manage', 'eys.award_references.manage', 'eys.evaluation_criteria.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
+                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*', 'eys.award-references.*', 'eys.evaluation-criteria.*', 'eys.participant-approval-processes.*', 'eys.participant-genders.*', 'eys.age-eligibility-rules.*', 'eys.member-groups.*', 'eys.capture-devices.*', 'eys.processing-methods.*') ? 'true' : 'false' }} }">
                         <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                             <x-eys.icon name="layers" />
                             <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
@@ -991,6 +1039,12 @@
                                 <a href="{{ route('eys.competition-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.competition-types.*') ? 'is-active' : '' }}">
                                     <x-eys.icon name="competitions" />
                                     {{ __('eys.nav.competition_types') }}
+                                </a>
+                            @endcan
+                            @can('eys.evaluation_criteria.manage')
+                                <a href="{{ route('eys.evaluation-criteria.index') }}" class="ip-nav-item {{ request()->routeIs('eys.evaluation-criteria.*') ? 'is-active' : '' }}">
+                                    <x-eys.icon name="list-check" />
+                                    {{ __('eys.nav.evaluation_criteria') }}
                                 </a>
                             @endcan
                             @can('eys.award_references.manage')

@@ -10,6 +10,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
         @break
 
+    @case('assignments')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M5 4.5h14a1.5 1.5 0 011.5 1.5v12a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 18V6A1.5 1.5 0 015 4.5z"/><path d="M7.5 9h9M7.5 12.5h6M7.5 16h4"/></svg>
+        @break
+
     @case('institution')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M4.5 20.5V6.5a1 1 0 011-1h13a1 1 0 011 1v14"/><path d="M9 20.5v-5.5h6v5.5"/><path d="M8.5 9h.01M12 9h.01M15.5 9h.01M8.5 12.25h.01M12 12.25h.01M15.5 12.25h.01"/></svg>
         @break
@@ -40,6 +44,10 @@
 
     @case('warning')
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><path d="M12 3.5l9.5 16.5H2.5L12 3.5z" stroke-linejoin="round" stroke-linecap="round"/><path d="M12 9.5v5" stroke-linecap="round"/><path d="M12 17.75h.01" stroke-linecap="round"/></svg>
+        @break
+
+    @case('info')
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" {{ $attributes }}><circle cx="12" cy="12" r="9"/><path d="M12 10.5v6" stroke-linecap="round"/><path d="M12 7.5h.01" stroke-linecap="round"/></svg>
         @break
 
     @case('chevron-right')

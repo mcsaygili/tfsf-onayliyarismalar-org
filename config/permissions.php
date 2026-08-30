@@ -84,6 +84,10 @@ return [
                     'label' => 'Ödül Referansı Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'evaluation_criteria' => [
+                    'label' => 'Değerlendirme Kriteri Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'participant_genders' => ['label' => 'Katılımcı Cinsiyetleri', 'actions' => ['manage']],
                 'age_eligibility_rules' => ['label' => 'Yaş Uygunluk Kuralları', 'actions' => ['manage']],
                 'member_groups' => ['label' => 'Üye Grupları', 'actions' => ['manage']],

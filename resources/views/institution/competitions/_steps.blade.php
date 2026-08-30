@@ -3,11 +3,15 @@
     @foreach ($steps as $number => $stepDef)
         @php
             $stepState = \App\Support\CompetitionWizard\CompetitionStepRegistry::stateFor($competition, $stepDef, $step);
-            $isLocked = $stepState === 'locked';
+            $isCorrectionMode = $competition->status === \App\Enums\CompetitionStatus::NeedsInfo && ($correctionSteps ?? collect())->isNotEmpty();
+            $correctionStep = ($correctionSteps ?? collect())->get($number);
+            $isCorrectionStep = $correctionStep !== null;
+            $isCorrectionSummary = $isCorrectionMode && $number === 11;
+            $isLocked = $isCorrectionMode ? ! $isCorrectionStep && ! $isCorrectionSummary : $stepState === 'locked';
             $isUnavailable = $stepState === 'not_applicable';
-            $isDone = $stepState === 'complete';
-            $isIncomplete = $stepState === 'incomplete';
-            $isCurrent = $stepState === 'current';
+            $isDone = $isCorrectionMode ? $isCorrectionStep && $correctionStep?->addressed_at !== null : $stepState === 'complete';
+            $isIncomplete = $isCorrectionMode ? $isCorrectionStep && ! $isDone : $stepState === 'incomplete';
+            $isCurrent = $isCorrectionMode ? $number === $step : $stepState === 'current';
             $isComingSoon = ! $stepDef->isImplemented();
             $inactiveHint = data_get(
                 trans('institution.competitions.steps'),
@@ -17,7 +21,7 @@
             $tooltip = $isComingSoon
                 ? $inactiveHint
                 : ($isLocked
-                ? trans('institution.competitions.step_states.locked')
+                ? ($isCorrectionMode ? trans('institution.competitions.correction_locked_step') : trans('institution.competitions.step_states.locked'))
                 : ($isUnavailable ? $inactiveHint : null));
         @endphp
         @if ($isLocked || $isUnavailable || $isComingSoon)
@@ -43,3 +47,18 @@
         @endif
     @endforeach
 </div>
+
+@if (($currentCorrection = ($correctionSteps ?? collect())->get($step)))
+    <div class="ip-alert ip-alert-warning ip-correction-alert" role="alert">
+        <x-institution.icon name="warning" />
+        <div>
+            <div class="ip-alert-title">{{ __('institution.competitions.correction_title') }}</div>
+            <div class="ip-alert-text">{{ $currentCorrection->note }}</div>
+            <div class="ip-correction-state">
+                {{ $currentCorrection->addressed_at
+                    ? __('institution.competitions.correction_addressed')
+                    : __('institution.competitions.correction_pending') }}
+            </div>
+        </div>
+    </div>
+@endif

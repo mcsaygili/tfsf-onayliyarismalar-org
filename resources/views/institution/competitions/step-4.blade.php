@@ -1,16 +1,6 @@
 <x-institution.app-layout :title="__('institution.nav.competitions')">
     @include('institution.competitions._steps')
 
-    @if ($competition->status->value === 'needs_info' && $competition->latest_review_message)
-        <div class="ip-alert ip-alert-warning">
-            <x-institution.icon name="warning" />
-            <div>
-                <div class="ip-alert-title">{{ __('institution.competitions.needs_info_title') }}</div>
-                <div class="ip-alert-text">{{ $competition->latest_review_message }}</div>
-            </div>
-        </div>
-    @endif
-
     <form method="POST" action="{{ route('institution.competitions.step.update', [$competition, $step]) }}" novalidate autocomplete="off" data-wizard-form
           x-data="{ type: @js(old('competition_type', $competition->competition_type_id)), initialType: @js($competition->competition_type_id) }">
         @csrf
