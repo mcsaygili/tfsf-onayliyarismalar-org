@@ -17,6 +17,7 @@ use App\Models\JuryEvaluationSubmission;
 use App\Models\Temsilci;
 use App\Notifications\Juri\CompetitionResultsPublishedNotification as JuryResultsPublishedNotification;
 use App\Notifications\Uye\CompetitionResultsPublishedNotification as MemberResultsPublishedNotification;
+use App\Services\CompetitionPublicSlugService;
 use App\Services\CompetitionReadinessService;
 use App\Services\CompetitionResultService;
 use App\Services\CompetitionWorkflowService;
@@ -361,7 +362,7 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.review_saved'));
     }
 
-    public function approve(Competition $competition, CompetitionReadinessService $readiness, CompetitionWorkflowService $workflow): RedirectResponse
+    public function approve(Competition $competition, CompetitionReadinessService $readiness, CompetitionWorkflowService $workflow, CompetitionPublicSlugService $slugs): RedirectResponse
     {
         abort_unless(in_array($competition->status, [CompetitionStatus::UnderReview, CompetitionStatus::WaitingRequirements], true), 422);
 
@@ -387,7 +388,8 @@ class CompetitionReviewController extends Controller
             return back()->withErrors(['approval' => __('eys.competitions.jury_approval_blocked')]);
         }
 
-        DB::transaction(function () use ($competition, $workflow, $review): void {
+        DB::transaction(function () use ($competition, $workflow, $review, $slugs): void {
+            $slugs->ensure($competition);
             $review->update(['status' => 'approved', 'completed_at' => now()]);
             $workflow->transition(
                 $competition,

@@ -33,6 +33,7 @@ class CompetitionTypeFactory extends Factory
     {
         return [
             'code' => fake()->unique()->slug(3),
+            'icon_key' => 'competition-standard',
             'sort_order' => fake()->numberBetween(1, 100),
             'status' => true,
         ];

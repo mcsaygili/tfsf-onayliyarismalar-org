@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Eys;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionType;
 use App\Models\CompetitionTypeTranslation;
+use App\Support\CompetitionIcons\CompetitionIconRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -48,6 +49,7 @@ class CompetitionTypeController extends Controller
     {
         return view('eys.competition-types.create', [
             'locales' => array_keys(config('locales.supported')),
+            'iconOptions' => CompetitionIconRegistry::options(),
         ]);
     }
 
@@ -57,6 +59,7 @@ class CompetitionTypeController extends Controller
 
         $competitionType = CompetitionType::create([
             'code' => $data['code'],
+            'icon_key' => $data['icon_key'] ?? CompetitionIconRegistry::DEFAULT,
             'requires_location' => (bool) $data['requires_location'],
             'requires_approval_process' => (bool) $data['requires_approval_process'],
             'sort_order' => $data['sort_order'] ?: 0,
@@ -75,6 +78,7 @@ class CompetitionTypeController extends Controller
         return view('eys.competition-types.edit', [
             'competitionType' => $competitionType,
             'locales' => array_keys(config('locales.supported')),
+            'iconOptions' => CompetitionIconRegistry::options(),
         ]);
     }
 
@@ -84,6 +88,7 @@ class CompetitionTypeController extends Controller
 
         $competitionType->update([
             'code' => $competitionType->is_system ? $competitionType->code : $data['code'],
+            'icon_key' => $data['icon_key'] ?? $competitionType->icon_key ?? CompetitionIconRegistry::DEFAULT,
             'requires_location' => (bool) $data['requires_location'],
             'requires_approval_process' => (bool) $data['requires_approval_process'],
             'sort_order' => $data['sort_order'] ?: 0,
@@ -120,6 +125,7 @@ class CompetitionTypeController extends Controller
 
         $rules = [
             'code' => ['required', 'string', 'alpha_dash:ascii', 'max:100', $codeRule],
+            'icon_key' => ['nullable', 'string', Rule::in(CompetitionIconRegistry::keys())],
             'status' => ['required', 'in:0,1'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
             'requires_location' => ['required', 'boolean'],

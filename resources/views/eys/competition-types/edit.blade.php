@@ -18,6 +18,7 @@
         @include('eys.competition-types._form', [
             'competitionType' => $competitionType,
             'locales' => $locales,
+            'iconOptions' => $iconOptions,
         ])
 
         <div class="ip-form-actions">

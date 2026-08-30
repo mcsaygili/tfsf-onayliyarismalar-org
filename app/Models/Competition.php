@@ -174,4 +174,12 @@ class Competition extends Model
     {
         return $this->audience === CompetitionAudience::International;
     }
+
+    public function scopePubliclyVisible($query)
+    {
+        return $query
+            ->where('status', CompetitionStatus::Approved)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
 }

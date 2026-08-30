@@ -10,6 +10,7 @@ class CompetitionTypeSeeder extends Seeder
     private const TYPES = [
         [
             'code' => 'standard',
+            'icon_key' => 'competition-standard',
             'sort_order' => 10,
             'requires_location' => false,
             'requires_approval_process' => false,
@@ -24,6 +25,7 @@ class CompetitionTypeSeeder extends Seeder
         ],
         [
             'code' => 'photographers-marathon',
+            'icon_key' => 'competition-marathon',
             'sort_order' => 20,
             'requires_location' => true,
             'requires_approval_process' => true,
@@ -38,6 +40,7 @@ class CompetitionTypeSeeder extends Seeder
         ],
         [
             'code' => 'cup',
+            'icon_key' => 'competition-cup',
             'sort_order' => 30,
             'requires_location' => false,
             'requires_approval_process' => false,
@@ -52,6 +55,7 @@ class CompetitionTypeSeeder extends Seeder
         ],
         [
             'code' => 'biennial-team-selection',
+            'icon_key' => 'competition-biennial',
             'sort_order' => 40,
             'requires_location' => false,
             'requires_approval_process' => false,
@@ -72,6 +76,7 @@ class CompetitionTypeSeeder extends Seeder
             $competitionType = CompetitionType::withTrashed()->firstOrNew(['code' => $type['code']]);
             $competitionType->fill([
                 'sort_order' => $type['sort_order'],
+                'icon_key' => $type['icon_key'],
                 'requires_location' => $type['requires_location'],
                 'requires_approval_process' => $type['requires_approval_process'],
                 'status' => true,

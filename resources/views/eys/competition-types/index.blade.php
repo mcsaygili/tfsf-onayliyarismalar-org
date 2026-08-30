@@ -28,6 +28,7 @@
             <table class="ip-table">
                 <thead>
                     <tr>
+                        <th>{{ __('eys.competition_type.column_icon') }}</th>
                         <th>{{ __('eys.competition_type.column_name') }}</th>
                         <th>{{ __('eys.competition_type.column_code') }}</th>
                         <th>{{ __('eys.competition_type.column_order') }}</th>
@@ -38,6 +39,7 @@
                 <tbody>
                     @forelse ($competitionTypes as $competitionType)
                         <tr>
+                            <td><span class="ip-reference-icon"><x-public.icon :name="$competitionType->icon_key" /></span></td>
                             <td class="ip-cell-name">{{ $competitionType->getTranslation()?->name ?? '—' }}</td>
                             <td><code>{{ $competitionType->code }}</code></td>
                             <td>{{ $competitionType->sort_order }}</td>
@@ -61,7 +63,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="ip-table-empty">{{ __('eys.competition_type.empty') }}</td>
+                            <td colspan="6" class="ip-table-empty">{{ __('eys.competition_type.empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

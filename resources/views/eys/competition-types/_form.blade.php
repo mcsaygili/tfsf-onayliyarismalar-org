@@ -1,4 +1,4 @@
-@props(['competitionType', 'locales'])
+@props(['competitionType', 'locales', 'iconOptions'])
 
 @php
     $initialLocale = old('_locale', $locales[0] ?? 'tr');
@@ -22,6 +22,21 @@
                 <div class="ip-field-hint">{{ __('eys.competition_type.sort_order_hint') }}</div>
                 <x-eys.input-error :messages="$errors->get('sort_order')" />
             </div>
+        </div>
+
+        <div class="ia-field" style="margin-top: 1rem;">
+            <x-eys.label :value="__('eys.competition_type.icon')" />
+            <div class="ip-icon-picker" role="radiogroup" aria-label="{{ __('eys.competition_type.icon') }}">
+                @foreach ($iconOptions as $iconKey => $componentName)
+                    <label class="ip-icon-choice">
+                        <input type="radio" name="icon_key" value="{{ $iconKey }}" @checked(old('icon_key', $competitionType->icon_key ?: App\Support\CompetitionIcons\CompetitionIconRegistry::DEFAULT) === $iconKey)>
+                        <span class="ip-icon-choice-preview"><x-public.icon :name="$iconKey" /></span>
+                        <span>{{ __('eys.competition_type.icons.'.$iconKey) }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <div class="ip-field-hint">{{ __('eys.competition_type.icon_hint') }}</div>
+            <x-eys.input-error :messages="$errors->get('icon_key')" />
         </div>
 
         <div class="ip-grid-2" style="margin-top: 1rem;">

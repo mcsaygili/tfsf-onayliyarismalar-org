@@ -13,8 +13,8 @@ use App\Models\Competition;
 use App\Models\CompetitionReview;
 use App\Models\CompetitionType;
 use App\Models\Country;
-use App\Models\EysUser;
 use App\Models\EvaluationCriterion;
+use App\Models\EysUser;
 use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
 use App\Models\ParticipantGender;
@@ -130,6 +130,7 @@ class CompetitionReviewTest extends TestCase
         $response->assertRedirect(route('eys.competitions.index'));
         $this->assertSame(CompetitionStatus::Approved, $competition->status);
         $this->assertNotNull($competition->published_at);
+        $this->assertNotNull($competition->public_slug);
         $this->assertSame($reviewer->id, $competition->reviewed_by);
         $this->assertTrue($competition->statusLogs()->where('action', 'approved')->exists());
     }
