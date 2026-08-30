@@ -746,6 +746,13 @@
         }
 
         @media (max-width: 640px) {
+            .ip-header { padding: .9rem 1rem; }
+            .ip-header-title { min-width: 0; font-size: 1rem; overflow-wrap: anywhere; }
+            .ip-header-right { gap: .45rem; flex: 0 0 auto; }
+            .ip-user-btn { padding-right: .35rem; }
+            .ip-user-btn-name, .ip-user-btn > svg { display: none; }
+            .ip-content { padding: 1rem; }
+            .ip-card { padding: 1.15rem; }
             .ip-review-heading, .ip-review-empty { flex-direction: column; }
             .ip-review-row, .ip-review-list.is-readonly .ip-review-row { grid-template-columns: 1fr; }
             .ip-review-step-copy { grid-column: auto; }

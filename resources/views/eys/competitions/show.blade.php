@@ -223,7 +223,7 @@
                 @if($evaluationRound->results->isNotEmpty())
                     <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.result_total') }}</th><th>{{ __('eys.competitions.result_average') }}</th><th>{{ __('eys.competitions.result_score_count') }}</th><th>{{ __('eys.competitions.result_awards') }}</th></tr></thead><tbody>
                     @foreach($evaluationRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
-                        <tr><td>{{ $result->rank }}</td><td>{{ $result->photo->submission->category->name }}</td><td>{{ $result->total_score }}</td><td>{{ $result->average_score }}</td><td>{{ $result->score_count }}</td><td>@forelse($result->awards as $assignment)<span class="ia-badge">{{ $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text }}</span>@empty—@endforelse</td></tr>
+                        <tr><td>{{ $result->rank }}</td><td>{{ $result->photo->submission->category->name }}</td><td>{{ $result->total_score }}</td><td>{{ $result->average_score }}</td><td>{{ $result->score_count }}</td><td>@forelse($result->awards as $assignment)<span class="ip-badge is-approved">{{ $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text }}</span>@empty—@endforelse</td></tr>
                     @endforeach
                     </tbody></table></div>
 
