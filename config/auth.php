@@ -8,6 +8,10 @@ use App\Models\User;
 
 return [
 
+    'jury_invitation' => [
+        'expire_days' => 7,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

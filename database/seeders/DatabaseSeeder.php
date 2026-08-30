@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             CompetitionTypeSeeder::class,
             ParticipantApprovalProcessSeeder::class,
             CompetitionCategoryReferenceSeeder::class,
+            AwardReferenceSeeder::class,
             PhotoCategorySeeder::class,
             PhotoTechniqueSeeder::class,
             EquipmentTypeSeeder::class,

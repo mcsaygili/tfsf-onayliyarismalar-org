@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Eys;
 use App\Http\Controllers\Controller;
 use App\Models\EducationLevel;
 use App\Models\Juri;
+use App\Services\JuryInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +48,7 @@ class JuriController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, JuryInvitationService $invitationService): RedirectResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.Juri::class],
@@ -69,9 +70,11 @@ class JuriController extends Controller
             'tckimlikno' => $validated['tckimlikno'] ?? null,
             'education_level_id' => $validated['education_level_id'] ?? null,
             'status' => $validated['status'],
+            'registration_source' => 'eys',
         ]);
 
         $juri->forceFill(['email_verified_at' => now()])->save();
+        $invitationService->linkExistingJuror($juri);
 
         return redirect()->route('eys.juriler.index')->with('status', __('eys.juri.created'));
     }
@@ -103,6 +106,10 @@ class JuriController extends Controller
 
     public function destroy(Juri $juri): RedirectResponse
     {
+        if ($juri->categoryAssignments()->exists() || $juri->acceptedInvitations()->exists()) {
+            return back()->withErrors(['juri' => __('eys.juri.in_use')]);
+        }
+
         $juri->delete();
 
         return redirect()->route('eys.juriler.index')->with('status', __('eys.juri.deleted'));

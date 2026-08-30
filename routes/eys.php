@@ -3,6 +3,7 @@
 use App\Http\Controllers\Eys\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Eys\Auth\NewPasswordController;
 use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Eys\AwardReferenceController;
 use App\Http\Controllers\Eys\CityController;
 use App\Http\Controllers\Eys\CompetitionCategoryReferenceController;
 use App\Http\Controllers\Eys\CompetitionReviewController;
@@ -214,6 +215,15 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('{participantApprovalProcess}/duzenle', [ParticipantApprovalProcessController::class, 'edit'])->name('edit');
             Route::patch('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'update'])->name('update');
             Route::delete('{participantApprovalProcess}', [ParticipantApprovalProcessController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('odul-referanslari')->name('eys.award-references.')->middleware('permission:eys.award_references.manage')->group(function () {
+            Route::get('/', [AwardReferenceController::class, 'index'])->name('index');
+            Route::get('yeni', [AwardReferenceController::class, 'create'])->name('create');
+            Route::post('/', [AwardReferenceController::class, 'store'])->name('store');
+            Route::get('{awardReference}/duzenle', [AwardReferenceController::class, 'edit'])->name('edit');
+            Route::patch('{awardReference}', [AwardReferenceController::class, 'update'])->name('update');
+            Route::delete('{awardReference}', [AwardReferenceController::class, 'destroy'])->name('destroy');
         });
 
         foreach ([

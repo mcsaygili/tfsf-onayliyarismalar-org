@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['competition_id', 'sort_order', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
@@ -50,5 +51,15 @@ class CompetitionCategory extends Model
     public function processingMethods(): BelongsToMany
     {
         return $this->belongsToMany(ProcessingMethod::class, 'competition_category_processing_method');
+    }
+
+    public function awards(): HasMany
+    {
+        return $this->hasMany(CompetitionCategoryAward::class)->orderBy('sort_order');
+    }
+
+    public function jurorAssignments(): HasMany
+    {
+        return $this->hasMany(CompetitionCategoryJurorAssignment::class)->orderBy('sort_order');
     }
 }

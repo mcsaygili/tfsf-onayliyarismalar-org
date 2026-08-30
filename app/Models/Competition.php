@@ -112,6 +112,11 @@ class Competition extends Model
         return $this->hasMany(CompetitionRegulationSnapshot::class)->orderByDesc('version');
     }
 
+    public function juryInvitations(): HasMany
+    {
+        return $this->hasMany(JuryInvitation::class);
+    }
+
     public function isEditable(): bool
     {
         return $this->status->isEditableByInstitution();

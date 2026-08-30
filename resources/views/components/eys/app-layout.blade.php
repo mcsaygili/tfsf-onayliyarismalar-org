@@ -977,10 +977,10 @@
                 </div>
             @endcanany
 
-            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
+            @canany(['eys.regulation_sections.manage', 'eys.regulation_items.manage', 'eys.competition_types.manage', 'eys.award_references.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
                 <div class="ip-nav-section">{{ __('eys.nav.section_competition_system') }}</div>
-                @canany(['eys.competition_types.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
-                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*', 'eys.participant-approval-processes.*', 'eys.participant-genders.*', 'eys.age-eligibility-rules.*', 'eys.member-groups.*', 'eys.capture-devices.*', 'eys.processing-methods.*') ? 'true' : 'false' }} }">
+                @canany(['eys.competition_types.manage', 'eys.award_references.manage', 'eys.participant_approval_processes.manage', 'eys.participant_genders.manage', 'eys.age_eligibility_rules.manage', 'eys.member_groups.manage', 'eys.capture_devices.manage', 'eys.processing_methods.manage'])
+                    <div x-data="{ o: {{ request()->routeIs('eys.competition-types.*', 'eys.award-references.*', 'eys.participant-approval-processes.*', 'eys.participant-genders.*', 'eys.age-eligibility-rules.*', 'eys.member-groups.*', 'eys.capture-devices.*', 'eys.processing-methods.*') ? 'true' : 'false' }} }">
                         <button type="button" class="ip-nav-group-btn" @click="o = !o" :aria-expanded="o.toString()">
                             <x-eys.icon name="layers" />
                             <span class="ip-nav-group-label">{{ __('eys.nav.reference_data') }}</span>
@@ -991,6 +991,12 @@
                                 <a href="{{ route('eys.competition-types.index') }}" class="ip-nav-item {{ request()->routeIs('eys.competition-types.*') ? 'is-active' : '' }}">
                                     <x-eys.icon name="competitions" />
                                     {{ __('eys.nav.competition_types') }}
+                                </a>
+                            @endcan
+                            @can('eys.award_references.manage')
+                                <a href="{{ route('eys.award-references.index') }}" class="ip-nav-item {{ request()->routeIs('eys.award-references.*') ? 'is-active' : '' }}">
+                                    <x-eys.icon name="award" />
+                                    {{ __('eys.nav.award_references') }}
                                 </a>
                             @endcan
                             @can('eys.age_eligibility_rules.manage')

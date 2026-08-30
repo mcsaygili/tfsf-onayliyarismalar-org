@@ -27,11 +27,10 @@ class CompetitionStepRegistry
             5 => new Step5,
             6 => new Step6,
             7 => new Step7,
+            8 => new Step8,
+            9 => new PlaceholderStep(9),
+            10 => new Step10,
         ];
-
-        for ($i = 8; $i <= self::TOTAL_STEPS; $i++) {
-            $steps[$i] = new PlaceholderStep($i);
-        }
 
         return $steps;
     }
@@ -59,7 +58,9 @@ class CompetitionStepRegistry
     public static function nextApplicableStepNumber(int $step, Competition $competition): int
     {
         for ($number = $step + 1; $number <= self::TOTAL_STEPS; $number++) {
-            if (self::get($number)->isApplicable($competition)) {
+            $candidate = self::get($number);
+
+            if ($candidate->isImplemented() && $candidate->isApplicable($competition)) {
                 return $number;
             }
         }

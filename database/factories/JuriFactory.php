@@ -24,6 +24,7 @@ class JuriFactory extends Factory
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'status' => true,
+            'registration_source' => 'eys',
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),
         ];

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
 use App\Models\EysUser;
+use App\Services\CompetitionReadinessService;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,10 @@ class CompetitionReviewController extends Controller
             'categories.memberGroups.translations',
             'categories.captureDevices.translations',
             'categories.processingMethods.translations',
+            'categories.awards.translations',
+            'categories.awards.awardReference.translations',
+            'categories.jurorAssignments.juror',
+            'categories.jurorAssignments.invitation',
             'captureRegions.country.translations',
             'captureRegions.city.translations',
             'regulationInputs',
@@ -64,12 +69,19 @@ class CompetitionReviewController extends Controller
         return view('eys.competitions.show', [
             'competition' => $competition,
             'steps' => CompetitionStepRegistry::all(),
+            'pendingJuryAssignments' => app(CompetitionReadinessService::class)->pendingJuryAssignments($competition),
         ]);
     }
 
-    public function approve(Competition $competition): RedirectResponse
+    public function approve(Competition $competition, CompetitionReadinessService $readiness): RedirectResponse
     {
         abort_unless($competition->status === CompetitionStatus::PendingReview, 422);
+
+        if (! $readiness->allJurorsRegistered($competition)) {
+            return back()->withErrors([
+                'approval' => __('eys.competitions.jury_approval_blocked'),
+            ]);
+        }
 
         DB::transaction(function () use ($competition) {
             $this->recordDecision($competition, CompetitionStatus::Approved, 'approved', extra: [

@@ -6,16 +6,19 @@ use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Models\AgeEligibilityRule;
+use App\Models\AwardReference;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
 use App\Models\CompetitionType;
 use App\Models\Country;
 use App\Models\Institution;
 use App\Models\InstitutionStaff;
+use App\Models\Juri;
 use App\Models\MemberGroup;
 use App\Models\ParticipantApprovalProcess;
 use App\Models\ParticipantGender;
 use App\Models\ProcessingMethod;
+use Database\Seeders\AwardReferenceSeeder;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Database\Seeders\CompetitionTypeSeeder;
 use Database\Seeders\ParticipantApprovalProcessSeeder;
@@ -46,6 +49,30 @@ class CompetitionTest extends TestCase
         $category->memberGroups()->sync([MemberGroup::firstOrFail()->id]);
         $category->captureDevices()->sync([CaptureDevice::firstOrFail()->id]);
         $category->processingMethods()->sync([ProcessingMethod::firstOrFail()->id]);
+    }
+
+    private function completeAwardStep(Competition $competition): void
+    {
+        $this->seed(AwardReferenceSeeder::class);
+        foreach ($competition->categories as $category) {
+            $category->awards()->create([
+                'award_reference_id' => AwardReference::firstOrFail()->id,
+                'quantity' => 1,
+                'sort_order' => 10,
+            ]);
+        }
+    }
+
+    private function completeJurorStep(Competition $competition): void
+    {
+        $juror = Juri::factory()->create();
+        foreach ($competition->categories as $category) {
+            $category->jurorAssignments()->create([
+                'juror_id' => $juror->id,
+                'assigned_by' => $competition->institution_staff_id,
+                'sort_order' => 10,
+            ]);
+        }
     }
 
     public function test_yeni_taslak_basvuru_olusturulabilir(): void
@@ -857,6 +884,7 @@ class CompetitionTest extends TestCase
             'competition_type_id' => null,
         ]);
         $this->completeCategoryStep($competition);
+        $this->completeAwardStep($competition);
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
@@ -886,15 +914,39 @@ class CompetitionTest extends TestCase
         $staff = $this->staff();
         $competition = Competition::factory()->for($staff->institution)->for($staff)->create();
         $this->completeCategoryStep($competition);
+        $this->completeAwardStep($competition);
+        $this->completeJurorStep($competition);
 
         $response = $this->actingAs($staff, 'institution')->post(route('institution.competitions.submit', $competition));
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 8]));
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 9]));
         $this->assertSame(CompetitionStatus::Draft, $competition->status);
         $this->assertNull($competition->submitted_at);
         $this->assertSame(0, $competition->statusLogs()->count());
+    }
+
+    public function test_adim_10_tum_basvuru_bilgilerini_salt_okunur_ozetler_ve_fiyatlandirma_bekler(): void
+    {
+        $staff = $this->staff();
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 10]);
+        $this->completeCategoryStep($competition);
+        $this->completeAwardStep($competition);
+        $this->completeJurorStep($competition);
+
+        $response = $this->actingAs($staff, 'institution')
+            ->get(route('institution.competitions.step.show', [$competition, 10]));
+
+        $response->assertOk();
+        $response->assertSee(__('institution.competitions.summary.title'));
+        $response->assertSee($competition->getTranslation('tr', false)?->name);
+        $response->assertSee(__('institution.competitions.summary.section_categories'));
+        $response->assertSee(__('institution.competitions.summary.section_awards'));
+        $response->assertSee(__('institution.competitions.summary.section_jury'));
+        $response->assertSee(__('institution.competitions.summary.pricing_blocker_title'));
+        $response->assertSee('disabled', false);
+        $response->assertDontSee('data-wizard-form', false);
     }
 
     public function test_onaylanan_basvuru_duzenlenemez(): void

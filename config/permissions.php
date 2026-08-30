@@ -80,6 +80,10 @@ return [
                     'label' => 'Katılımcı Onay Süreci Yönetimi',
                     'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
                 ],
+                'award_references' => [
+                    'label' => 'Ödül Referansı Yönetimi',
+                    'actions' => ['view', 'create', 'edit', 'delete', 'manage'],
+                ],
                 'participant_genders' => ['label' => 'Katılımcı Cinsiyetleri', 'actions' => ['manage']],
                 'age_eligibility_rules' => ['label' => 'Yaş Uygunluk Kuralları', 'actions' => ['manage']],
                 'member_groups' => ['label' => 'Üye Grupları', 'actions' => ['manage']],

@@ -5,7 +5,7 @@ use App\Http\Controllers\Juri\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Juri\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Juri\Auth\NewPasswordController;
 use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Juri\Auth\RegisteredController;
+use App\Http\Controllers\Juri\Auth\JuryInvitationController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
 use App\Http\Controllers\Juri\PasswordController;
@@ -17,8 +17,8 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
     Route::get('language/{locale}', SetLanguageController::class)->name('juri.language');
 
     Route::middleware('guest:juri')->group(function () {
-        Route::get('register', [RegisteredController::class, 'create'])->name('juri.register');
-        Route::post('register', [RegisteredController::class, 'store']);
+        Route::get('davet/{token}', [JuryInvitationController::class, 'create'])->name('juri.invitation.accept');
+        Route::post('davet/{token}', [JuryInvitationController::class, 'store'])->middleware('throttle:6,1');
 
         Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('juri.login');
         Route::post('login', [AuthenticatedSessionController::class, 'store']);

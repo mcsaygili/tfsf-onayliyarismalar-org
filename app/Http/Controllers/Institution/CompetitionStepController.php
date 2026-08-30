@@ -7,12 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
 use App\Models\Country;
+use App\Models\Juri;
+use App\Models\JuryInvitation;
+use App\Services\CompetitionReadinessService;
+use App\Services\JuryInvitationService;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
+use App\Support\CompetitionWizard\Step10;
 use App\Support\CompetitionWizard\Step4;
 use App\Support\CompetitionWizard\Step5;
 use App\Support\CompetitionWizard\Step6;
 use App\Support\CompetitionWizard\Step7;
-use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
+use App\Support\CompetitionWizard\Step8;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -89,8 +94,44 @@ class CompetitionStepController extends Controller
         }
 
         if ($stepDef instanceof Step7) {
-            $viewData['editableRegulationItems'] = $stepDef->editableItems();
-            $viewData['regulationPreview'] = app(CompetitionRegulationCompiler::class)->compile($competition);
+            $viewData['categoryAwardFormData'] = $stepDef->formData($competition);
+            $viewData['awardReferences'] = $stepDef->options($competition);
+            $viewData['categories'] = $competition->categories()->with('translations')->orderBy('sort_order')->get();
+        }
+
+        if ($stepDef instanceof Step8) {
+            $viewData['categoryJurorFormData'] = $stepDef->formData($competition);
+            $viewData['categories'] = $competition->categories()->with('translations')->orderBy('sort_order')->get();
+        }
+
+        if ($stepDef instanceof Step10) {
+            $competition->loadMissing([
+                'institution',
+                'institutionStaff',
+                'competitionType.translations',
+                'captureRegions.country.translations',
+                'captureRegions.city.translations',
+                'participantApprovalProcess.translations',
+                'categories.translations',
+                'categories.ageEligibilityRule.translations',
+                'categories.genders.translations',
+                'categories.memberGroups.translations',
+                'categories.captureDevices.translations',
+                'categories.processingMethods.translations',
+                'categories.awards.translations',
+                'categories.awards.awardReference.translations',
+                'categories.jurorAssignments.juror',
+                'categories.jurorAssignments.invitation',
+            ]);
+
+            $readiness = app(CompetitionReadinessService::class);
+            $viewData['submissionChecks'] = $readiness->submissionChecks($competition);
+            $viewData['submissionBlockers'] = array_values(array_filter(
+                $viewData['submissionChecks'],
+                fn (array $check): bool => $check['blocking'],
+            ));
+            $viewData['pendingJuryAssignments'] = $readiness->pendingJuryAssignments($competition);
+            $viewData['submissionReady'] = $viewData['submissionBlockers'] === [];
         }
 
         return view($view, $viewData);
@@ -136,6 +177,10 @@ class CompetitionStepController extends Controller
             }
         });
 
+        if (! $isDraftSave && $stepDef instanceof Step8) {
+            $stepDef->sendPendingInvitations($competition, app(JuryInvitationService::class));
+        }
+
         if ($isDraftSave) {
             return redirect()
                 ->route('institution.competitions.step.show', [$competition, $step])
@@ -154,6 +199,49 @@ class CompetitionStepController extends Controller
         ])->save();
 
         return redirect()->route('institution.competitions.step.show', [$competition, $nextStep]);
+    }
+
+    public function jurors(Request $request, Competition $competition): JsonResponse
+    {
+        $this->authorizeSameInstitution($competition);
+        abort_unless($competition->isEditable(), 403);
+
+        $search = trim((string) $request->input('q'));
+        if (mb_strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        return response()->json(Juri::query()
+            ->where('status', true)
+            ->whereNotNull('email_verified_at')
+            ->whereNotNull('first_name')
+            ->whereNotNull('last_name')
+            ->where(function ($query) use ($search) {
+                $query->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->limit(10)
+            ->get()
+            ->map(fn (Juri $juror) => [
+                'id' => $juror->id,
+                'name' => trim($juror->first_name.' '.$juror->last_name),
+                'email' => $juror->email,
+            ]));
+    }
+
+    public function resendJuryInvitation(Competition $competition, JuryInvitation $invitation, JuryInvitationService $service): RedirectResponse
+    {
+        $this->authorizeSameInstitution($competition);
+        abort_unless($competition->isEditable(), 403);
+        abort_unless($invitation->competition_id === $competition->id && $invitation->isPending(), 404);
+        abort_unless($invitation->assignments()->exists(), 422);
+
+        $service->send($invitation);
+
+        return back()->with('status', __('institution.competitions.jury_invitation_resent'));
     }
 
     /**

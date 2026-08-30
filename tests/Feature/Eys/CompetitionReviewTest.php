@@ -7,6 +7,7 @@ use App\Enums\CompetitionInfrastructureProvider;
 use App\Enums\CompetitionStatus;
 use App\Enums\Module;
 use App\Models\AgeEligibilityRule;
+use App\Models\AwardReference;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
 use App\Models\CompetitionType;
@@ -18,6 +19,7 @@ use App\Models\ParticipantGender;
 use App\Models\Permission;
 use App\Models\ProcessingMethod;
 use App\Models\RegulationItem;
+use Database\Seeders\AwardReferenceSeeder;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -107,6 +109,44 @@ class CompetitionReviewTest extends TestCase
         $this->assertSame('approved', $competition->statusLogs()->first()->action);
     }
 
+    public function test_bekleyen_juri_daveti_eys_onayini_engeller_ama_basvuruyu_beklemede_tutar(): void
+    {
+        $reviewer = $this->reviewer();
+        $competition = Competition::factory()->pendingReview()->create();
+        $category = $competition->categories()->create(['sort_order' => 10]);
+        $category->upsertTranslations(['tr' => ['name' => 'Genel']]);
+        $invitation = $competition->juryInvitations()->create([
+            'institution_id' => $competition->institution_id,
+            'invited_by' => $competition->institution_staff_id,
+            'email' => 'bekleyen.juri@example.test',
+            'first_name' => 'Bekleyen',
+            'last_name' => 'Jüri',
+            'locale' => 'tr',
+            'sent_at' => now(),
+        ]);
+        $category->jurorAssignments()->create([
+            'jury_invitation_id' => $invitation->id,
+            'assigned_by' => $competition->institution_staff_id,
+            'sort_order' => 10,
+        ]);
+
+        $showResponse = $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.show', $competition));
+        $showResponse->assertOk();
+        $showResponse->assertSee(__('eys.competitions.jury_approval_blocked'));
+        $showResponse->assertSee('disabled', false);
+
+        $approveResponse = $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.approve', $competition));
+
+        $approveResponse->assertRedirect();
+        $approveResponse->assertSessionHasErrors('approval');
+        $this->assertSame(CompetitionStatus::PendingReview, $competition->fresh()->status);
+        $this->assertNull($competition->fresh()->published_at);
+        $this->assertDatabaseMissing('competition_status_logs', [
+            'competition_id' => $competition->id,
+            'action' => 'approved',
+        ]);
+    }
+
     public function test_maraton_lokasyonu_ve_katilimci_onay_sureci_okunabilir_gosterilir(): void
     {
         app()->setLocale('tr');
@@ -133,6 +173,38 @@ class CompetitionReviewTest extends TestCase
         $response->assertSee('Temsilci');
         $response->assertDontSee($country->id);
         $response->assertDontSee($city->id);
+    }
+
+    public function test_kategori_odulleri_inceleme_ekraninda_kategori_bazli_gosterilir(): void
+    {
+        app()->setLocale('tr');
+        $competition = Competition::factory()->create();
+        $this->completeCategoryStep($competition);
+        $this->seed(AwardReferenceSeeder::class);
+
+        $category = $competition->categories()->firstOrFail();
+        $reference = AwardReference::query()->whereHas('translations', fn ($query) => $query
+            ->where('locale', 'tr')
+            ->where('name', 'Altın Madalya'))->firstOrFail();
+        $award = $category->awards()->create([
+            'award_reference_id' => $reference->id,
+            'quantity' => 2,
+            'sort_order' => 10,
+        ]);
+        $award->upsertTranslations(['tr' => [
+            'special_award_text' => 'Jüri Özel Ödülü',
+            'material_award' => '10.000 TL + Plaket',
+        ]]);
+
+        $response = $this->withSession(['locale' => 'tr'])
+            ->actingAs($this->reviewer(), 'eys')
+            ->get(route('eys.competitions.show', $competition));
+
+        $response->assertOk();
+        $response->assertSee('Kategori Ödülleri');
+        $response->assertSee('Altın Madalya');
+        $response->assertSee('Jüri Özel Ödülü');
+        $response->assertSee('10.000 TL + Plaket');
     }
 
     public function test_reddetme_mesaj_zorunludur_ve_durumu_gunceller(): void
@@ -211,7 +283,7 @@ class CompetitionReviewTest extends TestCase
 
         $competition->refresh();
 
-        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 8]));
+        $response->assertRedirect(route('institution.competitions.step.show', [$competition, 7]));
         $this->assertSame(CompetitionStatus::NeedsInfo, $competition->status);
         $this->assertNotSame('resubmitted', $competition->statusLogs()->first()?->action);
     }

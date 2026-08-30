@@ -8,18 +8,21 @@
             $isDone = $stepState === 'complete';
             $isIncomplete = $stepState === 'incomplete';
             $isCurrent = $stepState === 'current';
+            $isComingSoon = ! $stepDef->isImplemented();
             $inactiveHint = data_get(
                 trans('institution.competitions.steps'),
                 $number.'.inactive_hint',
                 trans('institution.competitions.step_states.not_applicable')
             );
-            $tooltip = $isLocked
+            $tooltip = $isComingSoon
+                ? $inactiveHint
+                : ($isLocked
                 ? trans('institution.competitions.step_states.locked')
-                : ($isUnavailable ? $inactiveHint : null);
+                : ($isUnavailable ? $inactiveHint : null));
         @endphp
-        @if ($isLocked || $isUnavailable)
+        @if ($isLocked || $isUnavailable || $isComingSoon)
             <span
-                class="ip-step has-tooltip {{ $isLocked ? 'is-locked' : 'is-unavailable' }}"
+                class="ip-step has-tooltip {{ $isComingSoon || $isUnavailable ? 'is-unavailable' : 'is-locked' }}"
                 tabindex="0"
                 aria-disabled="true"
                 aria-label="{{ $stepDef->label() }} — {{ $tooltip }}"

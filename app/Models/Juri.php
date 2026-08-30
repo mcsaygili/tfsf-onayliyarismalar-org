@@ -11,15 +11,15 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * Jüri üyesi — guard: juri. Kayıt Institution'daki gibi sadece
- * e-posta+şifre ile başlıyor (bkz. Auth\RegisteredController), ad/soyad
- * ve T.C. kimlik no girişten sonra Juri Bilgileri sayfasında tamamlanıyor.
+ * Jüri üyesi — guard: juri. Yeni hesaplar yalnızca kurum davetiyle veya
+ * EYS yöneticisi tarafından oluşturulur; herkese açık kayıt yoktur.
  */
-#[Fillable(['email', 'password', 'first_name', 'last_name', 'phone', 'tckimlikno', 'status', 'education_level_id'])]
+#[Fillable(['email', 'password', 'first_name', 'last_name', 'phone', 'tckimlikno', 'status', 'registration_source', 'education_level_id'])]
 #[Hidden(['password', 'remember_token'])]
 class Juri extends Authenticatable implements MustVerifyEmail
 {
@@ -40,6 +40,16 @@ class Juri extends Authenticatable implements MustVerifyEmail
     public function educationLevel(): BelongsTo
     {
         return $this->belongsTo(EducationLevel::class);
+    }
+
+    public function categoryAssignments(): HasMany
+    {
+        return $this->hasMany(CompetitionCategoryJurorAssignment::class, 'juror_id');
+    }
+
+    public function acceptedInvitations(): HasMany
+    {
+        return $this->hasMany(JuryInvitation::class, 'accepted_juror_id');
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void

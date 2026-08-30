@@ -29,11 +29,11 @@
         </div>
 
         @foreach ($steps as $number => $stepDef)
-            @if ($stepDef->isApplicable($competition) && $stepDef->isImplemented())
+            @if ($number !== 10 && $stepDef->isApplicable($competition) && $stepDef->isImplemented())
                 <div class="ip-card">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
                     @foreach ($stepDef->data($competition) as $field => $fieldValue)
-                        @if ($field === 'categories')
+                        @if ($field === 'categories' && $number === 6)
                             @foreach ($competition->categories as $category)
                                 <div class="ia-field" style="padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border);">
                                     <strong style="color: var(--ia-cream);">{{ $category->getTranslation('tr', false)?->name ?: '—' }}</strong>
@@ -45,6 +45,65 @@
                                         <div><b>{{ __('eys.competitions.fields.capture_devices') }}:</b> {{ $category->captureDevices->pluck('name')->join(', ') }}</div>
                                         <div><b>{{ __('eys.competitions.fields.processing_methods') }}:</b> {{ $category->processingMethods->pluck('name')->join(', ') }}</div>
                                     </div>
+                                </div>
+                            @endforeach
+                        @elseif ($field === 'categories' && $number === 7)
+                            @foreach ($competition->categories as $category)
+                                <div class="ia-field" style="padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border);">
+                                    <strong style="color: var(--ia-cream);">{{ $category->getTranslation('tr', false)?->name ?: '—' }}</strong>
+                                    @if ($category->getTranslation('en', false)?->name)<span style="color: var(--ia-muted);"> / {{ $category->getTranslation('en', false)?->name }}</span>@endif
+
+                                    @forelse ($category->awards as $award)
+                                        <div style="margin-top: .75rem; padding: .75rem; border: 1px solid var(--ia-surface-border); border-radius: .65rem; color: var(--ia-muted); font-size: .82rem; line-height: 1.7;">
+                                            <div style="color: var(--ia-cream); font-weight: 700;">
+                                                {{ $award->awardReference?->name ?: '—' }}
+                                                <span style="color: var(--ia-muted); font-weight: 400;">&middot; {{ __('eys.competitions.fields.award_quantity') }}: {{ $award->quantity }}</span>
+                                            </div>
+                                            @foreach (['tr', 'en'] as $locale)
+                                                @php
+                                                    $translation = $award->getTranslation($locale, false);
+                                                @endphp
+                                                @if ($translation?->special_award_text || $translation?->material_award)
+                                                    <div style="margin-top: .35rem;">
+                                                        <b>{{ strtoupper($locale) }}</b>
+                                                        @if ($translation?->special_award_text)
+                                                            &middot; {{ __('eys.competitions.fields.special_award_text') }}: {{ $translation->special_award_text }}
+                                                        @endif
+                                                        @if ($translation?->material_award)
+                                                            &middot; {{ __('eys.competitions.fields.material_award') }}: {{ $translation->material_award }}
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @empty
+                                        <div style="margin-top: .65rem; color: var(--ia-muted);">{{ __('eys.competitions.no_category_awards') }}</div>
+                                    @endforelse
+                                </div>
+                            @endforeach
+                        @elseif ($field === 'categories' && $number === 8)
+                            @foreach ($competition->categories as $category)
+                                <div class="ia-field" style="padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border);">
+                                    <strong style="color: var(--ia-cream);">{{ $category->getTranslation('tr', false)?->name ?: '—' }}</strong>
+                                    @if ($category->getTranslation('en', false)?->name)<span style="color: var(--ia-muted);"> / {{ $category->getTranslation('en', false)?->name }}</span>@endif
+
+                                    @forelse ($category->jurorAssignments as $assignment)
+                                        @php
+                                            $reviewJuror = $assignment->juror;
+                                            $reviewInvitation = $assignment->invitation;
+                                        @endphp
+                                        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; margin-top: .75rem; padding: .75rem; border: 1px solid var(--ia-surface-border); border-radius: .65rem; color: var(--ia-muted); font-size: .82rem;">
+                                            <strong style="color: var(--ia-cream);">
+                                                {{ $reviewJuror ? trim($reviewJuror->first_name.' '.$reviewJuror->last_name) : trim(($reviewInvitation?->first_name ?? '').' '.($reviewInvitation?->last_name ?? '')) }}
+                                            </strong>
+                                            <span>&middot; {{ $reviewJuror?->email ?: $reviewInvitation?->email }}</span>
+                                            <span class="ip-badge {{ $reviewJuror ? 'is-active' : 'is-pending' }}">
+                                                {{ $reviewJuror ? __('eys.competitions.jury_registered') : __('eys.competitions.jury_invited') }}
+                                            </span>
+                                        </div>
+                                    @empty
+                                        <div style="margin-top: .65rem; color: var(--ia-muted);">{{ __('eys.competitions.no_category_jurors') }}</div>
+                                    @endforelse
                                 </div>
                             @endforeach
                         @elseif ($field === 'regions')
@@ -106,10 +165,28 @@
             <div class="ip-card">
                 <div class="ip-section-title">{{ __('eys.competitions.review_title') }}</div>
 
+                @if ($pendingJuryAssignments->isNotEmpty())
+                    <div class="ip-alert ip-alert-warning" role="alert">
+                        <x-eys.icon name="warning" />
+                        <div>
+                            <div class="ip-alert-title">{{ __('eys.competitions.jury_approval_blocked_title', ['count' => $pendingJuryAssignments->count()]) }}</div>
+                            <div class="ip-alert-text">{{ __('eys.competitions.jury_approval_blocked') }}</div>
+                        </div>
+                    </div>
+                @endif
+
+                <x-eys.input-error :messages="$errors->get('approval')" />
+
                 <div style="display: flex; gap: .75rem; margin-bottom: 1.5rem;">
                     <form method="POST" action="{{ route('eys.competitions.approve', $competition) }}">
                         @csrf
-                        <button type="button" class="ia-btn" onclick="eysConfirm(@js(__('eys.competitions.confirm_approve')), this.closest('form'))">{{ __('eys.competitions.action_approve') }}</button>
+                        <button
+                            type="button"
+                            class="ia-btn"
+                            @if ($pendingJuryAssignments->isEmpty()) onclick="eysConfirm(@js(__('eys.competitions.confirm_approve')), this.closest('form'))" @endif
+                            @disabled($pendingJuryAssignments->isNotEmpty())
+                            title="{{ $pendingJuryAssignments->isNotEmpty() ? __('eys.competitions.jury_approval_blocked') : __('eys.competitions.action_approve') }}"
+                        >{{ __('eys.competitions.action_approve') }}</button>
                     </form>
                 </div>
 
