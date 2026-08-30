@@ -151,6 +151,56 @@ class RegulationItemTest extends TestCase
         $this->assertFalse($items->first()->status);
     }
 
+    public function test_dinamik_sablon_kapsami_ve_yapilandirilmis_kosullari_kaydedilir(): void
+    {
+        $user = $this->admin();
+        $section = $this->section();
+        $conditions = ['all' => [[
+            'field' => 'competition.audience',
+            'operator' => 'equals',
+            'value' => 'international',
+        ]]];
+
+        $response = $this->actingAs($user, 'eys')->post(route('eys.regulation-items.store'), [
+            'regulation_section_id' => $section->id,
+            'sort_order' => '10',
+            'code' => 'international-audience',
+            'status' => '1',
+            'content_type' => 'template',
+            'render_scope' => 'once',
+            'is_required' => '1',
+            'conditions' => json_encode($conditions),
+            'tr' => ['content' => '{{ competition.name }} uluslararası katılıma açıktır.'],
+            'en' => ['content' => '{{ competition.name }} is open to international participation.'],
+        ]);
+
+        $response->assertRedirect(route('eys.regulation-items.index'));
+        $item = RegulationItem::where('code', 'international-audience')->firstOrFail();
+        $this->assertSame('template', $item->content_type);
+        $this->assertSame('once', $item->render_scope);
+        $this->assertSame($conditions, $item->conditions);
+        $this->assertTrue($item->is_required);
+    }
+
+    public function test_bilinmeyen_sablon_alani_kaydedilemez(): void
+    {
+        $user = $this->admin();
+        $section = $this->section();
+
+        $response = $this->actingAs($user, 'eys')->post(route('eys.regulation-items.store'), [
+            'regulation_section_id' => $section->id,
+            'status' => '1',
+            'content_type' => 'template',
+            'render_scope' => 'once',
+            'is_required' => '1',
+            'tr' => ['content' => '{{ competition.unknown }}'],
+            'en' => ['content' => '{{ competition.unknown }}'],
+        ]);
+
+        $response->assertSessionHasErrors(['tr.content', 'en.content']);
+        $this->assertDatabaseCount('regulation_items', 0);
+    }
+
     public function test_izinsiz_kullanici_maddeler_sayfasina_erisemez(): void
     {
         $user = EysUser::factory()->create();

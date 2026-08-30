@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['regulation_section_id', 'sort_order', 'code', 'content_type', 'source_key', 'conditions', 'status', 'is_system', 'version'])]
+#[Fillable(['regulation_section_id', 'sort_order', 'code', 'content_type', 'render_scope', 'source_key', 'conditions', 'is_required', 'status', 'is_system', 'version'])]
 class RegulationItem extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -24,6 +24,7 @@ class RegulationItem extends Model
             'status' => 'boolean',
             'sort_order' => 'integer',
             'conditions' => 'array',
+            'is_required' => 'boolean',
             'is_system' => 'boolean',
             'version' => 'integer',
         ];

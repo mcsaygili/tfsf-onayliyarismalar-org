@@ -3,13 +3,21 @@
 namespace App\Support\CompetitionRegulations;
 
 use App\Models\Competition;
+use App\Models\CompetitionRegulationSnapshot;
 use App\Models\RegulationItem;
 use App\Models\RegulationSection;
 use Illuminate\Support\Collection;
-use App\Models\CompetitionRegulationSnapshot;
+use InvalidArgumentException;
+use RuntimeException;
 
 class CompetitionRegulationCompiler
 {
+    public function __construct(
+        private readonly CompetitionRegulationContextBuilder $contextBuilder,
+        private readonly RegulationConditionMatcher $conditionMatcher,
+        private readonly RegulationTemplateRenderer $templateRenderer,
+    ) {}
+
     public function snapshot(Competition $competition): CompetitionRegulationSnapshot
     {
         return $competition->regulationSnapshots()->create([
@@ -22,48 +30,86 @@ class CompetitionRegulationCompiler
     /** @return array<string, array<int, array<string, mixed>>> */
     public function compile(Competition $competition): array
     {
-        $competition->loadMissing([
-            'translations', 'institution', 'competitionType.translations',
-            'captureRegions.country.translations', 'captureRegions.city',
-            'participantApprovalProcess.translations',
-            'categories.translations', 'categories.genders.translations',
-            'categories.ageEligibilityRule.translations', 'categories.memberGroups.translations',
-            'categories.captureDevices.translations', 'categories.processingMethods.translations',
-            'regulationInputs',
-        ]);
+        $preview = $this->preview($competition);
+        if ($preview['errors'] !== []) {
+            throw new RuntimeException(collect($preview['errors'])->pluck('message')->join(' '));
+        }
 
+        return $preview['content'];
+    }
+
+    /** @return array{content: array<string, array<int, array<string, mixed>>>, errors: array<int, array{locale: string, item_code: string, message: string}>} */
+    public function preview(Competition $competition): array
+    {
+        $competition->loadMissing('regulationInputs');
         $locales = $competition->requiresEnglishContent() ? ['tr', 'en'] : ['tr'];
         $sections = RegulationSection::active()->ordered()
             ->with(['translations', 'items' => fn ($query) => $query->active()->ordered()->with('translations')])
             ->get();
+        $errors = [];
+        $content = [];
 
-        return collect($locales)->mapWithKeys(fn (string $locale) => [
-            $locale => $this->compileLocale($competition, $sections, $locale),
-        ])->all();
+        foreach ($locales as $locale) {
+            $context = $this->contextBuilder->build($competition, $locale);
+            $content[$locale] = $this->compileLocale($competition, $sections, $locale, $context, $errors);
+        }
+
+        return ['content' => $content, 'errors' => $errors];
     }
 
     /**
-     * @param Collection<int, RegulationSection> $sections
+     * @param  Collection<int, RegulationSection>  $sections
+     * @param  array<string, mixed>  $context
+     * @param  array<int, array{locale: string, item_code: string, message: string}>  $errors
      * @return array<int, array<string, mixed>>
      */
-    private function compileLocale(Competition $competition, Collection $sections, string $locale): array
+    private function compileLocale(Competition $competition, Collection $sections, string $locale, array $context, array &$errors): array
     {
-        return $sections->map(function (RegulationSection $section) use ($competition, $locale) {
-            $items = $section->items
-                ->filter(fn (RegulationItem $item) => $this->matches($item, $competition))
-                ->map(fn (RegulationItem $item) => [
-                    'id' => $item->id,
-                    'code' => $item->code,
-                    'content_type' => $item->content_type,
-                    'content' => $this->itemContent($item, $competition, $locale),
-                ])
-                ->filter(fn (array $item) => filled($item['content']))
-                ->values()
-                ->all();
+        return $sections->map(function (RegulationSection $section) use ($competition, $locale, $context, &$errors) {
+            $items = $section->items->flatMap(function (RegulationItem $item) use ($competition, $locale, $context, &$errors) {
+                $scope = $item->render_scope ?: 'once';
+
+                return collect($this->scopeEntries($scope, $context))->map(function (?array $entry, int $index) use ($item, $competition, $locale, $context, $scope, &$errors) {
+                    $itemContext = $entry === null ? $context : array_replace_recursive($context, [$scope => $entry]);
+                    if (! $this->conditionMatcher->matches($item->conditions, $itemContext)) {
+                        return null;
+                    }
+
+                    try {
+                        $content = $this->itemContent($item, $competition, $locale, $itemContext);
+                        if (blank($content)) {
+                            if ($item->is_required) {
+                                throw new InvalidArgumentException('Zorunlu madde içeriği üretilemedi.');
+                            }
+
+                            return null;
+                        }
+
+                        return [
+                            'id' => $item->id,
+                            'code' => $item->code,
+                            'content_type' => $item->content_type,
+                            'render_scope' => $scope,
+                            'item_version' => $item->version,
+                            'occurrence' => $index + 1,
+                            'content' => $content,
+                        ];
+                    } catch (InvalidArgumentException $exception) {
+                        $errors[] = [
+                            'locale' => $locale,
+                            'item_code' => $item->code ?: (string) $item->id,
+                            'message' => $exception->getMessage(),
+                        ];
+
+                        return null;
+                    }
+                });
+            })->filter()->values()->all();
 
             return [
                 'id' => $section->id,
                 'code' => $section->code,
+                'version' => $section->version,
                 'title' => $section->getTranslation($locale, false)?->name
                     ?? $section->getTranslation(config('locales.default'), false)?->name,
                 'items' => $items,
@@ -71,16 +117,8 @@ class CompetitionRegulationCompiler
         })->filter(fn (array $section) => $section['items'] !== [])->values()->all();
     }
 
-    private function matches(RegulationItem $item, Competition $competition): bool
-    {
-        $conditions = $item->conditions ?? [];
-
-        return (! isset($conditions['audience']) || in_array($competition->audience?->value, (array) $conditions['audience'], true))
-            && (! isset($conditions['infrastructure_provider']) || in_array($competition->infrastructure_provider?->value, (array) $conditions['infrastructure_provider'], true))
-            && (! isset($conditions['competition_type']) || in_array($competition->competitionType?->code, (array) $conditions['competition_type'], true));
-    }
-
-    private function itemContent(RegulationItem $item, Competition $competition, string $locale): ?string
+    /** @param array<string, mixed> $context */
+    private function itemContent(RegulationItem $item, Competition $competition, string $locale, array $context): ?string
     {
         if ($item->content_type === 'institution_input') {
             return $competition->regulationInputs
@@ -89,44 +127,60 @@ class CompetitionRegulationCompiler
         }
 
         if ($item->content_type === 'source') {
-            return $this->sourceContent($item->source_key, $competition, $locale);
+            return $this->sourceContent($item->source_key, $context);
         }
 
-        return $item->getTranslation($locale, false)?->content
-            ?? $item->getTranslation(config('locales.default'), false)?->content;
+        $translation = $item->getTranslation($locale, false);
+        if (! $translation && $locale === config('locales.default')) {
+            $translation = $item->getTranslation(config('locales.default'), false);
+        }
+        $content = $translation?->content;
+
+        return $item->content_type === 'template' && filled($content)
+            ? $this->templateRenderer->render($content, $context, $item->render_scope ?: 'once')
+            : $content;
     }
 
-    private function sourceContent(?string $key, Competition $competition, string $locale): ?string
+    /** @param array<string, mixed> $context */
+    private function sourceContent(?string $key, array $context): ?string
     {
-        $translation = $competition->getTranslation($locale, false)
-            ?? $competition->getTranslation(config('locales.default'), false);
+        $value = data_get($context, (string) $key);
+        if ($value === null && $key === 'competition.categories') {
+            $value = collect($context['categories'] ?? [])->map(fn (array $category) => collect([
+                $category['name'] ?? null,
+                ...($category['genders'] ?? []),
+                $category['age_rule'] ?? null,
+                ...($category['member_groups'] ?? []),
+                ...($category['capture_devices'] ?? []),
+                ...($category['processing_methods'] ?? []),
+            ])->filter()->join(' · '))->all();
+        }
+        if ($value === null && $key === 'competition.capture_regions') {
+            $value = collect($context['capture_regions'] ?? [])->pluck('name')->all();
+        }
+        if ($value === null && $key === 'competition.schedule') {
+            $value = collect([
+                data_get($context, 'competition.application_starts_at'),
+                data_get($context, 'competition.application_ends_at'),
+                data_get($context, 'competition.competition_ends_at'),
+            ])->filter()->all();
+        }
+        if ($value === null && $key === 'competition.organizer') {
+            $value = data_get($context, 'institution.name');
+        }
 
-        return match ($key) {
-            'competition.name' => $translation?->name,
-            'competition.subject' => $translation?->subject,
-            'competition.purpose' => $translation?->purpose,
-            'competition.organizer' => $competition->institution?->name,
-            'competition.partners' => $competition->partners,
-            'competition.schedule' => collect([
-                $competition->application_starts_at?->format('d.m.Y H:i'),
-                $competition->application_ends_at?->format('d.m.Y H:i'),
-                $competition->competition_ends_at?->format('d.m.Y H:i'),
-            ])->filter()->join(' — '),
-            'competition.categories' => $competition->categories->map(function ($category) use ($locale) {
-                $name = $category->getTranslation($locale, false)?->name
-                    ?? $category->getTranslation(config('locales.default'), false)?->name;
-                $rules = collect([
-                    $category->genders->first()?->getTranslation($locale, false)?->name,
-                    $category->ageEligibilityRule?->getTranslation($locale, false)?->name,
-                    $category->memberGroups->map(fn ($item) => $item->getTranslation($locale, false)?->name)->filter()->join(', '),
-                    $category->captureDevices->map(fn ($item) => $item->getTranslation($locale, false)?->name)->filter()->join(', '),
-                    $category->processingMethods->map(fn ($item) => $item->getTranslation($locale, false)?->name)->filter()->join(', '),
-                ])->filter()->join(' · ');
+        return is_array($value) ? collect($value)->filter()->join("\n") : $value;
+    }
 
-                return trim($name.($rules ? ': '.$rules : ''));
-            })->filter()->join("\n"),
-            'competition.capture_regions' => $competition->captureRegions->map(fn ($region) => trim(($region->city?->official_name ?? '').', '.($region->country?->getTranslation($locale, false)?->official_name ?? '')))->filter()->join(', '),
-            default => null,
+    /** @param array<string, mixed> $context @return array<int, array<string, mixed>|null> */
+    private function scopeEntries(string $scope, array $context): array
+    {
+        return match ($scope) {
+            'category' => $context['categories'] ?? [],
+            'award' => $context['awards'] ?? [],
+            'capture_region' => $context['capture_regions'] ?? [],
+            'juror' => $context['jurors'] ?? [],
+            default => [null],
         };
     }
 }

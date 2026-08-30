@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Institution;
 
+use App\Enums\CompetitionAudience;
 use App\Models\AgeEligibilityRule;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
@@ -77,7 +78,7 @@ class CompetitionRuleAndRegulationTest extends TestCase
         $compiled = $compiler->compile($competition);
         $content = collect($compiled['tr'])->flatMap(fn (array $section) => $section['items'])->pluck('content');
 
-        $this->assertContains('Doğa Yarışması', $content);
+        $this->assertTrue($content->contains(fn (string $text) => str_contains($text, 'Doğa Yarışması')));
         $this->assertContains('Her katılımcı en fazla dört eserle başvurabilir.', $content);
         $this->assertTrue($content->contains(fn (string $text) => str_contains($text, 'kullanım haklarını')));
 
@@ -86,5 +87,49 @@ class CompetitionRuleAndRegulationTest extends TestCase
         $this->assertSame(1, $first->version);
         $this->assertSame(2, $second->version);
         $this->assertSame($compiled, $first->content);
+    }
+
+    public function test_uluslararasi_sartname_tr_en_uretilir_ve_kategori_maddeleri_tekrarlanir(): void
+    {
+        $this->seed([CompetitionCategoryReferenceSeeder::class, RegulationSectionSeeder::class, RegulationItemSeeder::class]);
+        $competition = Competition::factory()->create(['audience' => CompetitionAudience::International]);
+        $competition->upsertTranslations([
+            'tr' => ['name' => 'Dünya Fotoğraf Yarışması', 'subject' => 'Kent', 'purpose' => 'Görsel kültürü geliştirmek.'],
+            'en' => ['name' => 'World Photography Competition', 'subject' => 'Urban Life', 'purpose' => 'To promote visual culture.'],
+        ]);
+        $category = $competition->categories()->create([
+            'sort_order' => 10,
+            'age_eligibility_rule_id' => AgeEligibilityRule::where('code', 'no-age-check')->firstOrFail()->id,
+            'member_group_match_mode' => 'any',
+        ]);
+        $category->upsertTranslations(['tr' => ['name' => 'Renkli'], 'en' => ['name' => 'Colour']]);
+        $category->genders()->sync([ParticipantGender::where('code', 'no-check')->firstOrFail()->id]);
+
+        $compiled = app(CompetitionRegulationCompiler::class)->compile($competition);
+        $trItems = collect($compiled['tr'])->flatMap(fn (array $section) => $section['items']);
+        $enItems = collect($compiled['en'])->flatMap(fn (array $section) => $section['items']);
+
+        $this->assertArrayHasKey('en', $compiled);
+        $this->assertTrue($trItems->contains(fn (array $item) => $item['code'] === 'audience-international' && str_contains($item['content'], 'kimlik doğrulaması yapılmayacaktır')));
+        $this->assertTrue($enItems->contains(fn (array $item) => $item['code'] === 'audience-international' && str_contains($item['content'], 'No Turkish identity number')));
+        $this->assertTrue($enItems->contains(fn (array $item) => $item['code'] === 'category-definition' && str_contains($item['content'], 'Colour')));
+    }
+
+    public function test_adim_9_dinamik_sartnameyi_salt_okunur_gosterir(): void
+    {
+        $this->seed([CompetitionCategoryReferenceSeeder::class, RegulationSectionSeeder::class, RegulationItemSeeder::class]);
+        $competition = Competition::factory()->create(['current_step' => 9]);
+        $competition->upsertTranslations(['tr' => [
+            'name' => 'Anadolu Fotoğraf Yarışması', 'subject' => 'Anadolu', 'purpose' => 'Fotoğraf sanatını desteklemek.',
+        ]]);
+
+        $response = $this->actingAs($competition->institutionStaff, 'institution')
+            ->get(route('institution.competitions.step.show', [$competition, 9]));
+
+        $response->assertOk()
+            ->assertSee(__('institution.competitions.regulation.title'))
+            ->assertSee('Anadolu Fotoğraf Yarışması')
+            ->assertSee(__('institution.competitions.regulation.ready'))
+            ->assertSee('name="regulation_ready" value="1"', false);
     }
 }

@@ -821,6 +821,40 @@
         .ip-jury-send-note { margin-top: 1.5rem; }
         .ip-form-actions-sticky { position: sticky; bottom: 0; z-index: 9; align-items: center; padding: .8rem; border: 1px solid var(--ia-surface-border); border-radius: 10px; background: #14161f; box-shadow: 0 -12px 28px rgba(0,0,0,.28); }
         .ip-save-meta { margin-right: auto; color: var(--ia-muted-dim); font-size: .75rem; }
+        /* ---- Dinamik şartname önizlemesi ---- */
+        .ip-regulation-stage { display: grid; gap: 1.25rem; }
+        .ip-regulation-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 2rem; padding: 1.6rem; border: 1px solid var(--ia-surface-border); border-radius: 12px; background: linear-gradient(135deg, rgba(201,168,76,.07), transparent 52%), var(--ia-surface); }
+        .ip-regulation-eyebrow { display: block; margin-bottom: .5rem; color: var(--ia-copper-bright); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .ip-regulation-hero h1 { margin: 0; color: var(--ia-cream); font-size: clamp(1.3rem, 2vw, 1.75rem); line-height: 1.2; }
+        .ip-regulation-hero p { max-width: 66ch; margin: .55rem 0 0; color: var(--ia-muted); font-size: .84rem; line-height: 1.6; }
+        .ip-regulation-status { display: flex; align-items: center; flex: 0 0 min(23rem, 38%); gap: .75rem; padding: .9rem 1rem; border: 1px solid; border-radius: 10px; }
+        .ip-regulation-status.is-ready { border-color: rgba(88,140,92,.35); background: rgba(88,140,92,.09); color: #8fcf93; }
+        .ip-regulation-status.is-blocked { border-color: rgba(224,178,90,.35); background: rgba(224,178,90,.08); color: #e0b25a; }
+        .ip-regulation-status-mark { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-weight: 800; }
+        .ip-regulation-status > span:last-child { display: grid; gap: .2rem; }
+        .ip-regulation-status strong { color: var(--ia-cream); font-size: .8rem; }
+        .ip-regulation-status small { color: var(--ia-muted); font-size: .7rem; line-height: 1.4; }
+        .ip-regulation-alert { margin: 0; }
+        .ip-regulation-error-list { display: grid; gap: .3rem; margin: .45rem 0 0; padding-left: 1.1rem; color: var(--ia-muted); font-size: .76rem; }
+        .ip-regulation-workspace { overflow: hidden; border: 1px solid var(--ia-surface-border); border-radius: 12px; background: #14161f; }
+        .ip-regulation-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--ia-surface-border); background: rgba(255,255,255,.02); }
+        .ip-regulation-toolbar .ip-language-tabs { margin: 0; }
+        .ip-regulation-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem .9rem; color: var(--ia-muted-dim); font-size: .68rem; }
+        .ip-regulation-meta span + span::before { margin-right: .9rem; color: rgba(255,255,255,.18); content: '•'; }
+        .ip-regulation-document { width: min(100%, 860px); margin: 0 auto; padding: clamp(1.5rem, 4vw, 3.2rem); color: #d4d4d8; }
+        .ip-regulation-section + .ip-regulation-section { margin-top: 2.4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,.08); }
+        .ip-regulation-section h2 { display: flex; align-items: baseline; gap: .75rem; margin: 0 0 1.15rem; color: var(--ia-cream); font-size: 1.02rem; line-height: 1.35; }
+        .ip-regulation-section h2 > span { color: var(--ia-copper-bright); font-size: .7rem; letter-spacing: .08em; }
+        .ip-regulation-section ol { display: grid; gap: .85rem; margin: 0; padding: 0; list-style: none; }
+        .ip-regulation-section li { display: grid; grid-template-columns: 2.7rem minmax(0, 1fr); gap: .7rem; align-items: start; }
+        .ip-regulation-clause-number { padding-top: .14rem; color: var(--ia-muted-dim); font-size: .7rem; font-variant-numeric: tabular-nums; }
+        .ip-regulation-section p { margin: 0; color: #c9cad0; font-size: .86rem; line-height: 1.75; }
+        .ip-regulation-empty { margin: 0; padding: 2rem; color: var(--ia-muted); text-align: center; }
+        .ip-regulation-note { display: flex; gap: .8rem; padding: 1rem 1.1rem; border-left: 3px solid var(--ia-copper); background: rgba(201,168,76,.055); }
+        .ip-regulation-note svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ia-copper-bright); }
+        .ip-regulation-note strong { color: var(--ia-cream); font-size: .8rem; }
+        .ip-regulation-note p { margin: .25rem 0 0; color: var(--ia-muted); font-size: .76rem; line-height: 1.55; }
+        .ip-regulation-actions { margin: 0; }
         .ip-summary-stage { display: grid; gap: 1.25rem; }
         .ip-summary-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 2rem; padding: 1.6rem; border: 1px solid var(--ia-surface-border); border-radius: 12px; background: linear-gradient(135deg, rgba(201,168,76,.07), transparent 52%), var(--ia-surface); }
         .ip-summary-eyebrow { display: block; margin-bottom: .5rem; color: var(--ia-copper-bright); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -938,6 +972,10 @@
             .ip-header-right { gap: .5rem; }
             .ip-summary-hero, .ip-summary-submit, .ip-summary-submit-control { align-items: stretch; flex-direction: column; }
             .ip-summary-readiness { flex-basis: auto; }
+            .ip-regulation-hero, .ip-regulation-toolbar { align-items: stretch; flex-direction: column; }
+            .ip-regulation-status { flex-basis: auto; }
+            .ip-regulation-meta { justify-content: flex-start; }
+            .ip-regulation-document { padding-inline: 1.15rem; }
             .ip-summary-definition-grid, .ip-summary-definition-grid.is-three { grid-template-columns: 1fr; }
             .ip-summary-definition-grid > div + div { padding-top: .8rem; padding-left: 0; border-top: 1px solid var(--ia-surface-border); border-left: 0; }
             .ip-summary-submit .ia-btn { width: 100%; }

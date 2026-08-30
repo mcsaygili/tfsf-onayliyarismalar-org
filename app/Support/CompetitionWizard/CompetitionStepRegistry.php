@@ -6,13 +6,13 @@ use App\Models\Competition;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Sihirbazın 10 adımının tek merkezi listesi. Yeni bir adım eklemek =
+ * Sihirbazın adımlarının tek merkezi listesi. Yeni bir adım eklemek =
  * burada ilgili PlaceholderStep'i gerçek bir CompetitionStep sınıfıyla
  * değiştirmek + bir view yazmak (bkz. proje planı).
  */
 class CompetitionStepRegistry
 {
-    public const TOTAL_STEPS = 10;
+    public const TOTAL_STEPS = 11;
 
     /**
      * @return array<int, CompetitionStep>
@@ -28,8 +28,9 @@ class CompetitionStepRegistry
             6 => new Step6,
             7 => new Step7,
             8 => new Step8,
-            9 => new PlaceholderStep(9),
-            10 => new Step10,
+            9 => new Step9,
+            10 => new PlaceholderStep(10),
+            11 => new Step11,
         ];
 
         return $steps;

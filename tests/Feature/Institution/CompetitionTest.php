@@ -635,7 +635,7 @@ class CompetitionTest extends TestCase
             ->assertSee(__('institution.competitions.steps.5.inactive_hint'))
             ->assertSee('class="ip-step has-tooltip is-unavailable"', false)
             ->assertDontSee('href="'.route('institution.competitions.step.show', [$competition, 5]).'"', false);
-        $this->assertSame(10, substr_count($response->getContent(), '<span class="ip-step-dot">'));
+        $this->assertSame(11, substr_count($response->getContent(), '<span class="ip-step-dot">'));
     }
 
     public function test_maraton_yarismasinda_adim_5_aktif_baglanti_olarak_gosterilir(): void
@@ -654,7 +654,7 @@ class CompetitionTest extends TestCase
         $response->assertOk()
             ->assertSee('href="'.route('institution.competitions.step.show', [$competition, 5]).'"', false)
             ->assertDontSee(__('institution.competitions.steps.5.inactive_hint'));
-        $this->assertSame(10, substr_count($response->getContent(), '<span class="ip-step-dot">'));
+        $this->assertSame(11, substr_count($response->getContent(), '<span class="ip-step-dot">'));
     }
 
     public function test_adim_4_fotografcilar_maratonu_secilince_adim_5e_gecilir(): void
@@ -927,16 +927,16 @@ class CompetitionTest extends TestCase
         $this->assertSame(0, $competition->statusLogs()->count());
     }
 
-    public function test_adim_10_tum_basvuru_bilgilerini_salt_okunur_ozetler_ve_fiyatlandirma_bekler(): void
+    public function test_adim_11_tum_basvuru_bilgilerini_salt_okunur_ozetler_ve_fiyatlandirma_bekler(): void
     {
         $staff = $this->staff();
-        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 10]);
+        $competition = Competition::factory()->for($staff->institution)->for($staff)->create(['current_step' => 11]);
         $this->completeCategoryStep($competition);
         $this->completeAwardStep($competition);
         $this->completeJurorStep($competition);
 
         $response = $this->actingAs($staff, 'institution')
-            ->get(route('institution.competitions.step.show', [$competition, 10]));
+            ->get(route('institution.competitions.step.show', [$competition, 11]));
 
         $response->assertOk();
         $response->assertSee(__('institution.competitions.summary.title'));

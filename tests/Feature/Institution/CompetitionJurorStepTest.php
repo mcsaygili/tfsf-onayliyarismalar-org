@@ -67,7 +67,7 @@ class CompetitionJurorStepTest extends TestCase
                 ]]]],
                 'action' => 'next',
             ])
-            ->assertRedirect(route('institution.competitions.step.show', [$competition, 10]));
+            ->assertRedirect(route('institution.competitions.step.show', [$competition, 9]));
 
         $this->assertDatabaseHas('competition_category_juror_assignments', [
             'competition_category_id' => $category->id,

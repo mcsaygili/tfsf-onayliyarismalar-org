@@ -11,13 +11,15 @@ use App\Models\Juri;
 use App\Models\JuryInvitation;
 use App\Services\CompetitionReadinessService;
 use App\Services\JuryInvitationService;
+use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
-use App\Support\CompetitionWizard\Step10;
+use App\Support\CompetitionWizard\Step11;
 use App\Support\CompetitionWizard\Step4;
 use App\Support\CompetitionWizard\Step5;
 use App\Support\CompetitionWizard\Step6;
 use App\Support\CompetitionWizard\Step7;
 use App\Support\CompetitionWizard\Step8;
+use App\Support\CompetitionWizard\Step9;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -104,7 +106,12 @@ class CompetitionStepController extends Controller
             $viewData['categories'] = $competition->categories()->with('translations')->orderBy('sort_order')->get();
         }
 
-        if ($stepDef instanceof Step10) {
+        if ($stepDef instanceof Step9) {
+            $viewData['regulationPreview'] = app(CompetitionRegulationCompiler::class)->preview($competition);
+            $viewData['regulationReady'] = $stepDef->data($competition)['regulation_ready'] === '1';
+        }
+
+        if ($stepDef instanceof Step11) {
             $competition->loadMissing([
                 'institution',
                 'institutionStaff',
@@ -132,6 +139,7 @@ class CompetitionStepController extends Controller
             ));
             $viewData['pendingJuryAssignments'] = $readiness->pendingJuryAssignments($competition);
             $viewData['submissionReady'] = $viewData['submissionBlockers'] === [];
+            $viewData['regulationPreview'] = app(CompetitionRegulationCompiler::class)->preview($competition);
         }
 
         return view($view, $viewData);

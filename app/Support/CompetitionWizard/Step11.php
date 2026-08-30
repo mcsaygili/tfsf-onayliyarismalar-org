@@ -4,17 +4,17 @@ namespace App\Support\CompetitionWizard;
 
 use App\Models\Competition;
 
-/** Adım 10 — Salt-okunur başvuru özeti ve gönderim hazırlık denetimi. */
-class Step10 implements CompetitionStep
+/** Adım 11 — Salt-okunur başvuru özeti ve gönderim hazırlık denetimi. */
+class Step11 implements CompetitionStep
 {
     public function number(): int
     {
-        return 10;
+        return 11;
     }
 
     public function label(): string
     {
-        return __('institution.competitions.steps.10.label');
+        return __('institution.competitions.steps.11.label');
     }
 
     public function isImplemented(): bool

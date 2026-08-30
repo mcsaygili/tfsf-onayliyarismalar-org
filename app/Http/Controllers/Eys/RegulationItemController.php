@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Eys;
 use App\Http\Controllers\Controller;
 use App\Models\RegulationItem;
 use App\Models\RegulationSection;
+use App\Support\CompetitionRegulations\CompetitionRegulationDefinitionRegistry;
+use App\Support\CompetitionRegulations\RegulationTemplateRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 /**
  * EYS yönetici paneli — Şartname Maddesi (referans veri) yönetimi. Her
@@ -17,6 +20,11 @@ use Illuminate\Validation\Rule;
  */
 class RegulationItemController extends Controller
 {
+    public function __construct(
+        private readonly CompetitionRegulationDefinitionRegistry $definitions,
+        private readonly RegulationTemplateRenderer $templateRenderer,
+    ) {}
+
     public function index(Request $request): View
     {
         $items = RegulationItem::with(['translations', 'section.translations'])
@@ -48,6 +56,7 @@ class RegulationItemController extends Controller
         return view('eys.regulation-items.create', [
             'sections' => RegulationSection::active()->ordered()->with('translations')->get(),
             'locales' => array_keys(config('locales.supported')),
+            ...$this->definitionViewData(),
         ]);
     }
 
@@ -61,8 +70,10 @@ class RegulationItemController extends Controller
             'code' => $data['code'] ?? null,
             'status' => (bool) $data['status'],
             'content_type' => $data['content_type'],
+            'render_scope' => $data['render_scope'],
             'source_key' => $data['source_key'] ?? null,
             'conditions' => filled($data['conditions'] ?? null) ? json_decode($data['conditions'], true, 512, JSON_THROW_ON_ERROR) : null,
+            'is_required' => (bool) $data['is_required'],
         ]);
 
         $item->upsertTranslations($this->translationPayload($data));
@@ -78,6 +89,7 @@ class RegulationItemController extends Controller
             'item' => $regulationItem,
             'sections' => RegulationSection::active()->ordered()->with('translations')->get(),
             'locales' => array_keys(config('locales.supported')),
+            ...$this->definitionViewData(),
         ]);
     }
 
@@ -91,8 +103,10 @@ class RegulationItemController extends Controller
             'code' => $regulationItem->is_system ? $regulationItem->code : ($data['code'] ?? null),
             'status' => (bool) $data['status'],
             'content_type' => $data['content_type'],
+            'render_scope' => $data['render_scope'],
             'source_key' => $data['source_key'] ?? null,
             'conditions' => filled($data['conditions'] ?? null) ? json_decode($data['conditions'], true, 512, JSON_THROW_ON_ERROR) : null,
+            'is_required' => (bool) $data['is_required'],
             'version' => $regulationItem->version + 1,
         ]);
 
@@ -115,17 +129,22 @@ class RegulationItemController extends Controller
     /** @return array<string, mixed> */
     private function validateData(Request $request): array
     {
+        $request->merge([
+            'render_scope' => $request->input('render_scope', 'once'),
+            'is_required' => $request->input('is_required', '1'),
+        ]);
         $locales = array_keys(config('locales.supported'));
-        $defaultLocale = config('locales.default');
 
         $rules = [
             'regulation_section_id' => ['required', 'uuid', 'exists:regulation_sections,id'],
             'status' => ['required', 'in:0,1'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
             'code' => ['nullable', 'string', 'max:50', Rule::unique('regulation_items', 'code')->ignore($request->route('regulationItem')?->id)],
-            'content_type' => ['required', 'in:fixed,source,institution_input'],
+            'content_type' => ['required', 'in:fixed,template,source,institution_input'],
+            'render_scope' => ['required', Rule::in(array_keys($this->definitions->renderScopes()))],
             'source_key' => ['nullable', 'required_if:content_type,source', 'string', 'max:100'],
             'conditions' => ['nullable', 'json'],
+            'is_required' => ['required', 'boolean'],
         ];
 
         foreach ($locales as $locale) {
@@ -135,7 +154,56 @@ class RegulationItemController extends Controller
             ];
         }
 
-        return $request->validate($rules);
+        $data = $request->validate($rules);
+        $this->validateConditions($data['conditions'] ?? null);
+
+        if ($data['content_type'] === 'template') {
+            $templateErrors = [];
+            foreach ($locales as $locale) {
+                $errors = $this->templateRenderer->validate($data[$locale]['content'], $data['render_scope']);
+                if ($errors !== []) {
+                    $templateErrors["$locale.content"] = $errors;
+                }
+            }
+            if ($templateErrors !== []) {
+                throw ValidationException::withMessages($templateErrors);
+            }
+        }
+
+        return $data;
+    }
+
+    private function validateConditions(?string $json): void
+    {
+        if (blank($json)) {
+            return;
+        }
+
+        $conditions = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $rules = $conditions['all'] ?? null;
+        $valid = is_array($rules) && collect($rules)->every(function ($rule): bool {
+            return is_array($rule)
+                && in_array($rule['field'] ?? null, $this->definitions->allowedConditionFields(), true)
+                && in_array($rule['operator'] ?? null, array_keys($this->definitions->operators()), true)
+                && (in_array($rule['operator'], ['exists', 'not_empty'], true) || filled($rule['value'] ?? null));
+        });
+
+        if (! $valid) {
+            throw ValidationException::withMessages(['conditions' => __('eys.regulation_item.conditions_invalid')]);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function definitionViewData(): array
+    {
+        return [
+            'renderScopes' => $this->definitions->renderScopes(),
+            'conditionFields' => $this->definitions->conditionFields(),
+            'conditionOperators' => $this->definitions->operators(),
+            'templateTokens' => collect($this->definitions->renderScopes())
+                ->mapWithKeys(fn ($_label, string $scope) => [$scope => $this->definitions->tokensForScope($scope)])
+                ->all(),
+        ];
     }
 
     /**

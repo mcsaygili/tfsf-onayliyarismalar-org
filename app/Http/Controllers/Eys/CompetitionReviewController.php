@@ -8,6 +8,7 @@ use App\Models\Competition;
 use App\Models\CompetitionStatusLog;
 use App\Models\EysUser;
 use App\Services\CompetitionReadinessService;
+use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,14 +63,21 @@ class CompetitionReviewController extends Controller
             'captureRegions.country.translations',
             'captureRegions.city.translations',
             'regulationInputs',
+            'regulationSnapshots',
             'translations',
             'statusLogs.actor',
         ]);
+
+        $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
+        $regulation = $latestSnapshot?->content
+            ?? app(CompetitionRegulationCompiler::class)->preview($competition)['content'];
 
         return view('eys.competitions.show', [
             'competition' => $competition,
             'steps' => CompetitionStepRegistry::all(),
             'pendingJuryAssignments' => app(CompetitionReadinessService::class)->pendingJuryAssignments($competition),
+            'compiledRegulation' => $regulation,
+            'regulationSnapshot' => $latestSnapshot,
         ]);
     }
 

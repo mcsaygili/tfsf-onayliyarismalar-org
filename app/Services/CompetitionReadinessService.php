@@ -11,14 +11,14 @@ use Illuminate\Database\Eloquent\Collection;
 class CompetitionReadinessService
 {
     /**
-     * Adım 10 sunum adımı olduğu için gönderim kontrolünde 1–9 değerlendirilir.
+     * Adım 11 sunum adımı olduğu için gönderim kontrolünde 1–10 değerlendirilir.
      *
      * @return array<int, array{number: int, label: string, status: string, blocking: bool}>
      */
     public function submissionChecks(Competition $competition): array
     {
         return collect(CompetitionStepRegistry::all())
-            ->reject(fn ($step) => $step->number() === 10)
+            ->reject(fn ($step) => $step->number() === 11)
             ->map(function ($step) use ($competition): array {
                 if (! $step->isApplicable($competition)) {
                     return [

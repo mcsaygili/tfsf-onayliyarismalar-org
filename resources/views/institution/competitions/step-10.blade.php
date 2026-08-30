@@ -14,7 +14,7 @@
     <main class="ip-summary-stage" x-data="{ locale: 'tr', confirmed: false }">
         <section class="ip-summary-hero" aria-labelledby="application-summary-title">
             <div>
-                <span class="ip-summary-eyebrow">{{ __('institution.competitions.steps.10.label') }}</span>
+                <span class="ip-summary-eyebrow">{{ __('institution.competitions.steps.11.label') }}</span>
                 <h1 id="application-summary-title">{{ $summary['title'] }}</h1>
                 <p>{{ $summary['hint'] }}</p>
             </div>
@@ -40,7 +40,7 @@
             @endforeach
         </ol>
 
-        @if (collect($submissionBlockers)->contains('number', 9))
+        @if (collect($submissionBlockers)->contains('number', 10))
             <div class="ip-alert ip-alert-warning ip-summary-alert" role="status">
                 <x-institution.icon name="warning" />
                 <div>
@@ -219,9 +219,24 @@
                 </div>
             </section>
 
+            <section class="ip-summary-section" aria-labelledby="summary-regulation-title">
+                <header>
+                    <div><span>09</span><h2 id="summary-regulation-title">{{ $summary['section_regulation'] }}</h2></div>
+                    <a href="{{ $stepUrl(9) }}">{{ $summary['view'] }} <span aria-hidden="true">→</span></a>
+                </header>
+                <dl class="ip-summary-definition-grid">
+                    @foreach ($regulationPreview['content'] as $locale => $sections)
+                        <div>
+                            <dt>{{ strtoupper($locale) }}</dt>
+                            <dd>{{ $summary['regulation_stats'] }}: {{ count($sections) }} / {{ collect($sections)->sum(fn (array $section) => count($section['items'])) }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </section>
+
             <section class="ip-summary-section is-pending" aria-labelledby="summary-payment-title">
                 <header>
-                    <div><span>09</span><h2 id="summary-payment-title">{{ $summary['section_payment'] }}</h2></div>
+                    <div><span>10</span><h2 id="summary-payment-title">{{ $summary['section_payment'] }}</h2></div>
                     <span class="ip-badge is-pending">{{ $summary['payment_pending'] }}</span>
                 </header>
                 <p class="ip-summary-empty">{{ $summary['payment_pending_text'] }}</p>
@@ -229,7 +244,7 @@
         </div>
 
         <footer class="ip-summary-submit">
-            <a href="{{ $stepUrl(8) }}" class="ia-btn ia-btn-secondary">← {{ $summary['back'] }}</a>
+            <a href="{{ $stepUrl(9) }}" class="ia-btn ia-btn-secondary">← {{ $summary['back'] }}</a>
             <div class="ip-summary-submit-control">
                 <label class="ip-summary-confirmation {{ $submissionReady ? '' : 'is-disabled' }}">
                     <input type="checkbox" x-model="confirmed" {{ $submissionReady ? '' : 'disabled' }}>

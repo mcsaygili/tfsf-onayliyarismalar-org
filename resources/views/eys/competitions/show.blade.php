@@ -29,7 +29,7 @@
         </div>
 
         @foreach ($steps as $number => $stepDef)
-            @if ($number !== 10 && $stepDef->isApplicable($competition) && $stepDef->isImplemented())
+            @if (! in_array($number, [9, 11], true) && $stepDef->isApplicable($competition) && $stepDef->isImplemented())
                 <div class="ip-card">
                     <div class="ip-section-title">{{ $stepDef->label() }}</div>
                     @foreach ($stepDef->data($competition) as $field => $fieldValue)
@@ -160,6 +160,26 @@
                 </div>
             @endif
         @endforeach
+
+        <div class="ip-card">
+            <div class="ip-section-title">{{ __('eys.competitions.regulation_title') }}</div>
+            <div class="ip-section-hint">
+                {{ $regulationSnapshot
+                    ? __('eys.competitions.regulation_snapshot', ['version' => $regulationSnapshot->version, 'date' => $regulationSnapshot->compiled_at->format('d.m.Y H:i')])
+                    : __('eys.competitions.regulation_live') }}
+            </div>
+            @foreach ($compiledRegulation as $locale => $sections)
+                <section style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--ia-surface-border);">
+                    <strong style="color: var(--ia-copper-bright);">{{ strtoupper($locale) }}</strong>
+                    @foreach ($sections as $sectionIndex => $section)
+                        <h3 style="margin: 1.1rem 0 .6rem; color: var(--ia-cream); font-size: .9rem;">{{ $sectionIndex + 1 }}. {{ $section['title'] }}</h3>
+                        @foreach ($section['items'] as $itemIndex => $item)
+                            <p style="display: grid; grid-template-columns: 2.7rem 1fr; gap: .6rem; margin: .5rem 0; color: var(--ia-muted); font-size: .8rem; line-height: 1.65;"><span style="color: var(--ia-muted-dim);">{{ $sectionIndex + 1 }}.{{ $itemIndex + 1 }}</span><span>{{ $item['content'] }}</span></p>
+                        @endforeach
+                    @endforeach
+                </section>
+            @endforeach
+        </div>
 
         @if ($competition->status->value === 'pending_review')
             <div class="ip-card">
