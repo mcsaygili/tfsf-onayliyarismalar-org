@@ -10,6 +10,7 @@ use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
 use App\Models\ProcessingMethod;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /** Adım 6 — Kategori bazlı katılımcı ve fotoğraf uygunluk kuralları. */
@@ -41,6 +42,7 @@ class Step6 implements CompetitionStep
 
         return ['categories' => $competition->categories->map(fn (CompetitionCategory $category) => [
             'id' => $category->id,
+            'max_photos_per_participant' => $category->max_photos_per_participant,
             'tr' => ['name' => $category->getTranslation('tr', false)?->name],
             'en' => ['name' => $category->getTranslation('en', false)?->name],
             'age_eligibility_rule' => $category->age_eligibility_rule_id,
@@ -66,6 +68,7 @@ class Step6 implements CompetitionStep
 
             $category->fill([
                 'sort_order' => ($index + 1) * 10,
+                'max_photos_per_participant' => $payload['max_photos_per_participant'] ?? 4,
                 'age_eligibility_rule_id' => $payload['age_eligibility_rule'] ?? null,
                 'member_group_match_mode' => $payload['member_group_match_mode'] ?? 'any',
                 'birth_date_restricted' => false,
@@ -101,7 +104,7 @@ class Step6 implements CompetitionStep
         $activeReference = fn (string $table) => Rule::exists($table, 'id')->where('status', true)->whereNull('deleted_at');
         $exclusiveNoCheck = function (string $table, string $code) {
             return function (string $attribute, mixed $value, \Closure $fail) use ($table, $code) {
-                $noCheckId = \Illuminate\Support\Facades\DB::table($table)->where('code', $code)->value('id');
+                $noCheckId = DB::table($table)->where('code', $code)->value('id');
                 if (is_array($value) && count($value) > 1 && in_array($noCheckId, $value, true)) {
                     $fail(__('institution.competitions.validation.no_check_exclusive'));
                 }
@@ -111,6 +114,7 @@ class Step6 implements CompetitionStep
         return [
             'categories' => [$required, 'array', $isDraftSave ? 'max:20' : 'min:1', 'max:20'],
             'categories.*.id' => ['nullable', 'uuid', $categoryId],
+            'categories.*.max_photos_per_participant' => ['sometimes', 'integer', 'min:1', 'max:20'],
             'categories.*.tr.name' => [$required, 'string', 'max:255', 'distinct:ignore_case'],
             'categories.*.en.name' => [$isDraftSave || ! $competition->requiresEnglishContent() ? 'nullable' : 'required', 'string', 'max:255', 'distinct:ignore_case'],
             'categories.*.age_eligibility_rule' => [$required, 'uuid', $activeReference('age_eligibility_rules')],
@@ -131,6 +135,7 @@ class Step6 implements CompetitionStep
 
         return $categories ?: [[
             'id' => null, 'tr' => ['name' => ''], 'en' => ['name' => ''],
+            'max_photos_per_participant' => 4,
             'age_eligibility_rule' => null, 'gender_id' => null,
             'member_group_match_mode' => 'any', 'member_group_ids' => [], 'capture_device_ids' => [], 'processing_method_ids' => [],
         ]];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Temsilci\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Temsilci\Auth\EmailVerificationNotificationController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Temsilci\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Temsilci\Auth\RegisteredController;
 use App\Http\Controllers\Temsilci\Auth\VerifyEmailController;
 use App\Http\Controllers\Temsilci\DashboardController;
+use App\Http\Controllers\Temsilci\ParticipantSubmissionController;
 use App\Http\Controllers\Temsilci\PasswordController;
 use App\Http\Controllers\Temsilci\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +48,13 @@ Route::domain(config('domains.temsilci'))->middleware('maintenance:temsilci')->g
 
     Route::middleware(['auth:temsilci', 'verified.guard:temsilci'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('temsilci.dashboard');
+
+        Route::prefix('katilimci-onaylari')->name('temsilci.participant-submissions.')->group(function () {
+            Route::get('/', [ParticipantSubmissionController::class, 'index'])->name('index');
+            Route::get('fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('photos.show');
+            Route::get('{approval}', [ParticipantSubmissionController::class, 'show'])->name('show');
+            Route::post('{approval}/karar', [ParticipantSubmissionController::class, 'decide'])->name('decide');
+        });
 
         Route::get('temsilci-bilgilerim', [ProfileController::class, 'edit'])->name('temsilci.profile.edit');
         Route::patch('temsilci-bilgilerim', [ProfileController::class, 'update'])->name('temsilci.profile.update');

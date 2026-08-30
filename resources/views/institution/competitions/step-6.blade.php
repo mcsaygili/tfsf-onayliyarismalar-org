@@ -26,6 +26,7 @@
             init() {
                 this.categories = this.categories.map(category => ({
                     id: category.id || '', tr: category.tr || { name: '' }, en: category.en || { name: '' },
+                    max_photos_per_participant: category.max_photos_per_participant || 4,
                     locale: category.locale || 'tr', expanded: category.expanded ?? true,
                     age_eligibility_rule: category.age_eligibility_rule || '', gender_id: category.gender_id || '',
                     member_group_match_mode: category.member_group_match_mode || 'any',
@@ -38,7 +39,7 @@
             },
             addCategory() {
                 if (this.categories.length >= 20) return;
-                this.categories.push({ id: '', tr: { name: '' }, en: { name: '' }, locale: 'tr', expanded: true, age_eligibility_rule: '', gender_id: '', member_group_match_mode: 'any', member_group_ids: [], capture_device_ids: [], processing_method_ids: [] });
+                this.categories.push({ id: '', tr: { name: '' }, en: { name: '' }, max_photos_per_participant: 4, locale: 'tr', expanded: true, age_eligibility_rule: '', gender_id: '', member_group_match_mode: 'any', member_group_ids: [], capture_device_ids: [], processing_method_ids: [] });
             },
             duplicateCategory(index) {
                 if (this.categories.length >= 20) return;
@@ -87,6 +88,11 @@
                         </div>
                     </div>
                     <input type="hidden" :name="`categories[${index}][id]`" :value="category.id">
+
+                    <div class="ia-field" style="max-width: 22rem; margin: 1rem 0;">
+                        <div class="ip-field-label-row"><label class="ia-label" :for="`category-${index}-photo-limit`">{{ __('institution.competitions.fields.max_photos_per_participant') }}</label><button type="button" class="ip-field-help-button" @click="openHelp(@js(__('institution.competitions.fields.max_photos_per_participant')), @js(__('institution.competitions.field_help.max_photos_per_participant.description')), @js(__('institution.competitions.field_help.max_photos_per_participant.example')), $el)" aria-haspopup="dialog">?</button></div>
+                        <input class="ia-input" type="number" min="1" max="20" step="1" :id="`category-${index}-photo-limit`" :name="`categories[${index}][max_photos_per_participant]`" x-model.number="category.max_photos_per_participant">
+                    </div>
 
                     <div x-show="category.expanded">
 

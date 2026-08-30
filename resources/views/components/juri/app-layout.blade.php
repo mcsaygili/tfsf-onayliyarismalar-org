@@ -646,6 +646,35 @@
             .jp-regulation-document { padding-inline: 1rem; }
             .jp-regulation-document li { grid-template-columns: 2rem minmax(0, 1fr); gap: .35rem; }
         }
+        /* ---- Anonim jüri puanlama ---- */
+        .je-heading { display:flex;justify-content:space-between;gap:1.5rem;align-items:end;padding:1rem 0 1.25rem;border-bottom:1px solid var(--ia-surface-border); }
+        .je-heading p { margin:0 0 .25rem;color:var(--ia-muted); }
+        .je-heading h1 { margin:0;color:var(--ia-cream);font-size:1.5rem; }
+        .je-heading > div:last-child { display:flex;flex-direction:column;align-items:flex-end;font-size:.75rem; }
+        .je-heading strong { color:var(--ia-copper);font-size:.9rem; }
+        .je-notice { display:flex;flex-direction:column;gap:.2rem;border:1px solid var(--ia-surface-border);border-radius:12px;padding:1rem;margin:1rem 0; }
+        .je-notice.is-success { border-color:rgba(83,181,121,.35); }
+        .je-notice strong { color:var(--ia-cream); }
+        .je-photo-list { margin-top:1rem;border-top:1px solid var(--ia-surface-border); }
+        .je-photo-row { display:grid;grid-template-columns:minmax(260px,420px) minmax(0,1fr);gap:1.5rem;padding:1.5rem 0;border-bottom:1px solid var(--ia-surface-border); }
+        .je-photo-row figure { margin:0; }
+        .je-photo-row img { width:100%;aspect-ratio:4/3;object-fit:contain;background:#090b11;border-radius:10px;display:block; }
+        .je-photo-row figcaption { margin-top:.45rem;color:var(--ia-muted-dim);font-size:.75rem;font-weight:700; }
+        .je-score-area { display:flex;align-items:center; }
+        .je-score-area fieldset { width:100%;border:0;padding:0;margin:0; }
+        .je-score-area legend { display:flex;justify-content:space-between;width:100%;color:var(--ia-cream);margin-bottom:.8rem; }
+        .je-score-area legend span { color:var(--ia-muted-dim);font-size:.75rem; }
+        .je-score-options { display:flex;flex-wrap:wrap;gap:.45rem; }
+        .je-score-options label { cursor:pointer; }
+        .je-score-options input { position:absolute;opacity:0;pointer-events:none; }
+        .je-score-options span { width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--ia-surface-border);border-radius:8px;color:var(--ia-muted);font-weight:800;transition:border-color .15s ease,background-color .15s ease,color .15s ease; }
+        .je-score-options input:checked + span { border-color:var(--ia-copper);background:rgba(201,168,76,.16);color:var(--ia-copper-bright); }
+        .je-score-options input:focus-visible + span { outline:2px solid var(--ia-copper);outline-offset:2px; }
+        .je-score-options input:disabled + span { opacity:.6;cursor:not-allowed; }
+        .je-actions { position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:.75rem;padding:1rem 0;background:var(--ia-bg);border-top:1px solid var(--ia-surface-border); }
+        .je-empty { text-align:center;padding:3rem 1rem; }
+        .je-empty strong { color:var(--ia-cream); }
+        @media(max-width:760px){.je-heading{align-items:flex-start;flex-direction:column}.je-heading>div:last-child{align-items:flex-start}.je-photo-row{grid-template-columns:1fr}.je-score-options span{width:38px;height:38px}}
     </style>
 </head>
 <body class="ip-shell">

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['competition_category_id', 'award_reference_id', 'quantity', 'sort_order'])]
 class CompetitionCategoryAward extends Model
@@ -28,5 +29,10 @@ class CompetitionCategoryAward extends Model
     public function awardReference(): BelongsTo
     {
         return $this->belongsTo(AwardReference::class)->withTrashed();
+    }
+
+    public function resultAssignments(): HasMany
+    {
+        return $this->hasMany(CompetitionResultAward::class, 'competition_category_award_id');
     }
 }

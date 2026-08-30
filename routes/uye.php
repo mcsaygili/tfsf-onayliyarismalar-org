@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Uye\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Uye\Auth\ConfirmablePasswordController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Uye\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Uye\Auth\RegisteredUserController;
 use App\Http\Controllers\Uye\Auth\SmsPasswordResetController;
 use App\Http\Controllers\Uye\Auth\VerifyEmailController;
+use App\Http\Controllers\Uye\CompetitionController;
 use App\Http\Controllers\Uye\DashboardController;
 use App\Http\Controllers\Uye\EquipmentController;
 use App\Http\Controllers\Uye\PortfolioController;
@@ -63,6 +65,20 @@ Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(funct
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::prefix('yarismalar')->name('competitions.')->group(function () {
+            Route::get('/', [CompetitionController::class, 'index'])->name('index');
+            Route::get('katilimlarim', [CompetitionController::class, 'entries'])->name('entries');
+            Route::get('{competition}', [CompetitionController::class, 'show'])->name('show');
+            Route::post('{competition}/katil', [CompetitionController::class, 'start'])->name('start');
+            Route::get('katilim/{entry}', [CompetitionController::class, 'entry'])->name('entry.show');
+            Route::post('katilim/{entry}/kategori', [CompetitionController::class, 'addCategory'])->name('entry.categories.store');
+            Route::post('basvuru/{submission}/portfolyo', [CompetitionController::class, 'addPortfolioPhoto'])->name('submission.portfolio.store');
+            Route::post('basvuru/{submission}/yukle', [CompetitionController::class, 'uploadPhoto'])->name('submission.upload');
+            Route::get('fotograf/{submissionPhoto}/goruntule', CompetitionSubmissionPhotoController::class)->name('photos.show');
+            Route::delete('fotograf/{submissionPhoto}', [CompetitionController::class, 'removePhoto'])->name('submission.photos.destroy');
+            Route::post('katilim/{entry}/gonder', [CompetitionController::class, 'submit'])->name('entry.submit');
+        });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [ProfileController::class, 'edit'])->name('edit');

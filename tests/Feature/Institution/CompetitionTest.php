@@ -333,7 +333,7 @@ class CompetitionTest extends TestCase
         $response->assertSee('max="23"', false);
         $response->assertSee('max="59"', false);
         $response->assertSee(__('institution.competitions.calendar_numeric_hint'));
-        $this->assertSame(15, substr_count($response->getContent(), 'type="number"'));
+        $this->assertSame(25, substr_count($response->getContent(), 'type="number"'));
     }
 
     public function test_adim_2_parcali_takvim_degerlerini_datetime_olarak_kaydeder(): void

@@ -66,6 +66,8 @@ class CompetitionFactory extends Factory
             'application_starts_at' => now()->addMonth()->startOfHour(),
             'application_ends_at' => now()->addMonths(2)->startOfHour(),
             'competition_ends_at' => now()->addMonths(3)->startOfHour(),
+            'evaluation_starts_at' => now()->addMonths(3)->addDay()->startOfHour(),
+            'evaluation_ends_at' => now()->addMonths(3)->addDays(8)->startOfHour(),
             'current_step' => 1,
             'status' => CompetitionStatus::Draft,
         ];

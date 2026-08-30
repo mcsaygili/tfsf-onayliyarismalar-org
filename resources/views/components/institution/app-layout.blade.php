@@ -1063,6 +1063,10 @@
                 <x-institution.icon name="competitions" />
                 {{ __('institution.nav.competitions') }}
             </a>
+            <a href="{{ route('institution.participant-submissions.index') }}" class="ip-nav-item {{ request()->routeIs('institution.participant-submissions.*') ? 'is-active' : '' }}">
+                <x-institution.icon name="staff" />
+                {{ __('institution.nav.participant_approvals') }}
+            </a>
         </nav>
 
         <div class="ip-sidebar-foot">TFSF · v{{ config('app.version', '0.1') }}</div>

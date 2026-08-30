@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\Institution\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Institution\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Institution\Auth\EmailVerificationPromptController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Institution\Auth\VerifyEmailController;
 use App\Http\Controllers\Institution\CompetitionController;
 use App\Http\Controllers\Institution\CompetitionStepController;
 use App\Http\Controllers\Institution\DashboardController;
+use App\Http\Controllers\Institution\ParticipantSubmissionController;
 use App\Http\Controllers\Institution\PasswordController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StaffController;
@@ -62,6 +64,13 @@ Route::domain(config('domains.institution'))->middleware('maintenance:institutio
             Route::post('/', [StaffController::class, 'store'])->name('store');
             Route::get('{staff}/duzenle', [StaffController::class, 'edit'])->name('edit');
             Route::patch('{staff}', [StaffController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('katilimci-onaylari')->name('institution.participant-submissions.')->group(function () {
+            Route::get('/', [ParticipantSubmissionController::class, 'index'])->name('index');
+            Route::get('fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('photos.show');
+            Route::get('{approval}', [ParticipantSubmissionController::class, 'show'])->name('show');
+            Route::post('{approval}/karar', [ParticipantSubmissionController::class, 'decide'])->name('decide');
         });
 
         Route::prefix('yarismalarim')->name('institution.competitions.')->group(function () {

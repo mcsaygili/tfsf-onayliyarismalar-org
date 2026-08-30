@@ -255,6 +255,10 @@
             font-weight: 800;
             font-size: 1.25rem;
             color: var(--ia-cream);
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .ip-header-right { display: flex; align-items: center; gap: 1.25rem; }
 
@@ -307,6 +311,16 @@
         .ip-user-btn-name { font-size: .84rem; font-weight: 600; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ip-user-btn svg { width: 13px; height: 13px; opacity: .6; transition: transform .15s ease; }
         .ip-user-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+        @media (max-width: 640px) {
+            .ip-header { padding: .8rem .75rem; gap: .5rem; }
+            .ip-header-title { font-size: 1rem; }
+            .ip-header-right { gap: .3rem; flex-shrink: 0; }
+            .ip-lang { gap: .1rem; }
+            .ip-lang a { padding: .25rem .4rem; }
+            .ip-user-btn { padding: .25rem; }
+            .ip-user-btn-name, .ip-user-btn svg { display: none; }
+        }
 
         .ip-dropdown {
             position: absolute;
@@ -668,6 +682,89 @@
         /* ---- Fotoğraf detayında kullanılan ekipman listesi ---- */
         .ip-tag-list { display: flex; flex-wrap: wrap; gap: .5rem; }
         .ip-tag { display: inline-flex; align-items: center; padding: .3rem .7rem; border-radius: 999px; background: rgba(201,168,76,.1); color: var(--ia-cream); font-size: .78rem; }
+
+        /* ---- Yarışma kataloğu ve katılım akışı ---- */
+        .mp-page-heading, .mp-detail-heading, .mp-action-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
+        .mp-page-heading { margin-bottom: 1.5rem; }
+        .mp-page-heading h1, .mp-detail-heading h1 { margin: 0 0 .35rem; color: var(--ia-cream); font-size: 1.55rem; text-wrap: balance; }
+        .mp-page-heading p, .mp-detail-heading p { margin: 0; color: var(--ia-muted); max-width: 68ch; }
+        .mp-back { display: inline-flex; color: var(--ia-copper); text-decoration: none; font-weight: 700; margin-bottom: 1rem; }
+        .mp-competition-list, .mp-entry-list { border-top: 1px solid var(--ia-surface-border); }
+        .mp-competition-row, .mp-entry-row { display: grid; grid-template-columns: 92px minmax(0,1fr) auto; gap: 1.25rem; padding: 1.3rem 0; border-bottom: 1px solid var(--ia-surface-border); align-items: center; }
+        .mp-entry-row { grid-template-columns: minmax(0,1fr) auto; color: inherit; text-decoration: none; }
+        .mp-entry-row > div:last-child { display: flex; align-items: flex-end; flex-direction: column; gap: .55rem; }
+        .mp-entry-row h2, .mp-competition-copy h2 { margin: .2rem 0; color: var(--ia-cream); font-size: 1.08rem; }
+        .mp-entry-row h2 { color: var(--ia-cream); }
+        .mp-entry-row p, .mp-competition-copy p { margin: 0; color: var(--ia-muted); }
+        .mp-competition-copy h2 a { color: inherit; text-decoration: none; }
+        .mp-competition-date { min-height: 70px; border-right: 1px solid var(--ia-surface-border); display: flex; flex-direction: column; justify-content: center; }
+        .mp-competition-date strong { color: var(--ia-copper); font-size: 1.55rem; line-height: 1; }
+        .mp-competition-date span, .mp-row-meta, .mp-entry-row span, .mp-entry-row small { color: var(--ia-muted-dim); font-size: .76rem; }
+        .mp-row-meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .mp-row-action { display: flex; align-items: flex-end; flex-direction: column; gap: .65rem; }
+        .mp-row-action a { color: var(--ia-copper); text-decoration: none; font-size: .82rem; font-weight: 700; }
+        .mp-state, .mp-eligibility { display: inline-flex; align-items: center; width: fit-content; border-radius: 999px; padding: .25rem .6rem; font-size: .7rem; font-weight: 800; background: rgba(255,255,255,.07); color: var(--ia-muted); white-space: nowrap; }
+        .mp-state.is-applications_open, .mp-state.is-approved, .mp-eligibility.is-eligible { background: rgba(83,181,121,.12); color: #8ed7a8; }
+        .mp-state.is-pending_approval, .mp-state.is-participant_approval, .mp-eligibility.is-action_required { background: rgba(201,168,76,.13); color: var(--ia-copper-bright); }
+        .mp-state.is-rejected, .mp-state.is-disqualified, .mp-eligibility.is-ineligible { background: rgba(224,91,91,.12); color: #f0a0a0; }
+        .mp-detail-heading { padding: 1.5rem 0; border-top: 1px solid var(--ia-surface-border); border-bottom: 1px solid var(--ia-surface-border); }
+        .mp-detail-heading > div { display: flex; flex-direction: column; gap: .5rem; }
+        .mp-timeline { display: grid; grid-template-columns: repeat(3, auto); gap: 1.5rem; margin: 0; }
+        .mp-timeline dt { color: var(--ia-muted-dim); font-size: .68rem; margin-bottom: .2rem; }
+        .mp-timeline dd { margin: 0; color: var(--ia-cream); font-size: .84rem; }
+        .mp-prose { max-width: 75ch; padding: 1.5rem 0; }
+        .mp-prose h2 { color: var(--ia-cream); font-size: .9rem; margin: 0 0 .35rem; }
+        .mp-prose p { margin: 0 0 1.1rem; color: var(--ia-muted); line-height: 1.65; }
+        .mp-callout { border: 1px solid var(--ia-surface-border); border-radius: 12px; padding: 1rem 1.1rem; margin: 1rem 0; background: rgba(255,255,255,.025); }
+        .mp-callout strong { color: var(--ia-cream); }
+        .mp-callout ul { margin: .6rem 0; padding-left: 1.2rem; }
+        .mp-callout a { color: var(--ia-copper); }
+        .mp-callout.is-warning { border-color: rgba(201,168,76,.35); }
+        .mp-callout.is-error { border-color: rgba(224,91,91,.35); }
+        .mp-callout.is-success { border-color: rgba(83,181,121,.35); }
+        .mp-category-section { margin: 1.5rem 0; }
+        .mp-category-section > header h2, .mp-entry-step h2 { color: var(--ia-cream); margin: 0; font-size: 1.08rem; }
+        .mp-category-section > header p, .mp-entry-step header p { margin: .25rem 0 0; }
+        .mp-category-list { margin-top: 1rem; border-top: 1px solid var(--ia-surface-border); }
+        .mp-category-list article { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .8rem 1rem; padding: 1rem 0; border-bottom: 1px solid var(--ia-surface-border); }
+        .mp-category-list h3 { margin: 0; color: var(--ia-cream); font-size: .95rem; }
+        .mp-category-list p { margin: .25rem 0 0; font-size: .8rem; }
+        .mp-category-list ul { grid-column: 1/-1; margin: 0; padding-left: 1.2rem; color: #f0a0a0; font-size: .8rem; }
+        .mp-action-bar { align-items: center; border: 1px solid var(--ia-surface-border); border-radius: 12px; padding: 1rem; margin-top: 1.5rem; }
+        .mp-action-bar > div { display: flex; flex-direction: column; gap: .2rem; }
+        .mp-action-bar strong { color: var(--ia-cream); }
+        .mp-action-bar span { font-size: .8rem; }
+        .mp-empty { padding: 3rem 1rem; text-align: center; }
+        .mp-empty strong { color: var(--ia-cream); }
+        .mp-entry-step { margin: 1.25rem 0; padding: 1.1rem; border: 1px solid var(--ia-surface-border); border-radius: 12px; }
+        .mp-entry-step > header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+        .mp-entry-step > header > span:first-child { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(201,168,76,.12); color: var(--ia-copper); font-weight: 800; }
+        .mp-entry-step > header > div { flex: 1; }
+        .mp-inline-form { display: flex; gap: .75rem; }
+        .mp-inline-form .ia-input { flex: 1; }
+        .mp-selected-photos { display: flex; flex-direction: column; border-top: 1px solid var(--ia-surface-border); }
+        .mp-selected-photos article { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--ia-surface-border); }
+        .mp-selected-photos img { width: 64px; height: 52px; object-fit: cover; border-radius: 6px; }
+        .mp-selected-photos div { display: flex; flex-direction: column; }
+        .mp-selected-photos strong { color: var(--ia-cream); }
+        .mp-selected-photos button { border: 0; background: none; color: #f0a0a0; cursor: pointer; }
+        .mp-photo-sources { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .mp-photo-sources > form { padding: 1rem; background: rgba(255,255,255,.025); border-radius: 10px; }
+        .mp-photo-sources h3 { color: var(--ia-cream); margin: 0 0 .75rem; font-size: .9rem; }
+        .mp-photo-sources .ia-input { margin-bottom: .75rem; }
+        .mp-rule-fields { display: grid; gap: .7rem; margin-bottom: .8rem; }
+        .mp-rule-fields label, .mp-rule-fields legend { color: var(--ia-muted); font-size: .78rem; }
+        .mp-rule-fields fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .35rem; }
+        .mp-approval-line { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .8rem; font-size: .8rem; }
+        .mp-submit-panel { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--ia-surface-border); padding-top: 1.25rem; }
+        .mp-submit-panel label { display: flex; gap: .55rem; max-width: 70ch; }
+        @media (max-width: 760px) {
+            .mp-page-heading, .mp-detail-heading, .mp-action-bar, .mp-submit-panel { flex-direction: column; }
+            .mp-competition-row { grid-template-columns: 64px minmax(0,1fr); }
+            .mp-row-action { grid-column: 1/-1; flex-direction: row; justify-content: space-between; align-items: center; }
+            .mp-timeline, .mp-photo-sources { grid-template-columns: 1fr; width: 100%; }
+            .mp-inline-form { flex-direction: column; }
+        }
     </style>
 </head>
 <body class="ip-shell">
@@ -684,6 +781,14 @@
             <a href="{{ route('dashboard') }}" class="ip-nav-item {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">
                 <x-uye.icon name="dashboard" />
                 {{ __('uye.nav.dashboard') }}
+            </a>
+            <a href="{{ route('competitions.index') }}" class="ip-nav-item {{ request()->routeIs('competitions.index', 'competitions.show') ? 'is-active' : '' }}">
+                <x-uye.icon name="calendar" />
+                {{ __('uye.nav.competitions') }}
+            </a>
+            <a href="{{ route('competitions.entries') }}" class="ip-nav-item {{ request()->routeIs('competitions.entries', 'competitions.entry.*', 'competitions.submission.*') ? 'is-active' : '' }}">
+                <x-uye.icon name="list" />
+                {{ __('uye.nav.entries') }}
             </a>
             <a href="{{ route('portfolio.index') }}" class="ip-nav-item {{ request()->routeIs('portfolio.*') ? 'is-active' : '' }}">
                 <x-uye.icon name="camera" />

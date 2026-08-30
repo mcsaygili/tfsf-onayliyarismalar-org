@@ -23,12 +23,33 @@ class CompetitionEligibilityEvaluator
             'captureDevices', 'processingMethods',
         ]);
 
+        $participantResult = $this->evaluateParticipant($category, $participant);
+        $photoResult = $this->evaluatePhoto($category, $participant);
+
+        $violations = array_values(array_unique([...$participantResult['violations'], ...$photoResult['violations']]));
+
+        return ['eligible' => $violations === [], 'violations' => $violations];
+    }
+
+    /** @return array{eligible: bool, violations: array<int, string>} */
+    public function evaluateParticipant(CompetitionCategory $category, array $participant): array
+    {
+        $category->loadMissing(['competition', 'genders', 'ageEligibilityRule', 'memberGroups']);
         $violations = [];
         $this->evaluateGender($category, $participant, $violations);
         $this->evaluateAge($category, $participant, $violations);
         $this->evaluateMembership($category, $participant, $violations);
-        $this->evaluateDevice($category, $participant, $violations);
-        $this->evaluateProcessing($category, $participant, $violations);
+
+        return ['eligible' => $violations === [], 'violations' => $violations];
+    }
+
+    /** @return array{eligible: bool, violations: array<int, string>} */
+    public function evaluatePhoto(CompetitionCategory $category, array $photo): array
+    {
+        $category->loadMissing(['captureDevices', 'processingMethods']);
+        $violations = [];
+        $this->evaluateDevice($category, $photo, $violations);
+        $this->evaluateProcessing($category, $photo, $violations);
 
         return ['eligible' => $violations === [], 'violations' => $violations];
     }

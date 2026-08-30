@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\Juri\AssignmentController;
 use App\Http\Controllers\Juri\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Juri\Auth\EmailVerificationNotificationController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Juri\Auth\NewPasswordController;
 use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
+use App\Http\Controllers\Juri\EvaluationController;
 use App\Http\Controllers\Juri\PasswordController;
 use App\Http\Controllers\Juri\ProfileController;
 use App\Http\Controllers\SetLanguageController;
@@ -51,6 +53,10 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
         Route::get('/', [DashboardController::class, 'index'])->name('juri.dashboard');
         Route::get('gorevlerim', [AssignmentController::class, 'index'])->name('juri.assignments.index');
         Route::get('gorevlerim/{competition}', [AssignmentController::class, 'show'])->name('juri.assignments.show');
+        Route::get('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'show'])->name('juri.evaluations.show');
+        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'save'])->name('juri.evaluations.save');
+        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme/tamamla', [EvaluationController::class, 'finalize'])->name('juri.evaluations.finalize');
+        Route::get('degerlendirme/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('juri.evaluations.photos.show');
 
         Route::get('juri-bilgilerim', [ProfileController::class, 'edit'])->name('juri.profile.edit');
         Route::patch('juri-bilgilerim', [ProfileController::class, 'update'])->name('juri.profile.update');

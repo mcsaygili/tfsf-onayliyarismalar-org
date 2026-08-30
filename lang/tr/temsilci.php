@@ -77,6 +77,7 @@ return [
 
     'nav' => [
         'dashboard' => 'Gösterge Paneli',
+        'participant_approvals' => 'Katılımcı Onayları',
         'profile' => 'Temsilci Bilgileri',
         'password' => 'Şifre İşlemleri',
         'logout' => 'Güvenli Çıkış',
@@ -109,4 +110,7 @@ return [
         'incomplete_link' => 'Bilgilerinizi güncelleyiniz',
     ],
 
+    'participant_submissions' => [
+        'title' => 'Katılımcı Onayları', 'hint' => 'Size atanmış yarışmalarda temsilci onayı bekleyen başvuruları inceleyin.', 'member' => 'Katılımcı', 'competition' => 'Yarışma', 'category' => 'Kategori', 'status' => 'Durum', 'review' => 'İncele', 'empty' => 'Temsilci onayı bekleyen başvuru bulunmuyor.', 'back' => 'Onay listesine dön', 'note' => 'Karar notu', 'approve' => 'Başvuruyu Onayla', 'reject' => 'Başvuruyu Reddet', 'already_decided' => 'Bu başvuru için karar verilmiş.', 'rejection_note_required' => 'Ret kararı için açıklama yazmalısınız.', 'decision_saved' => 'Katılımcı başvurusu kararı kaydedildi.', 'statuses' => ['pending' => 'Bekliyor', 'approved' => 'Onaylandı', 'rejected' => 'Reddedildi'],
+    ],
 ];

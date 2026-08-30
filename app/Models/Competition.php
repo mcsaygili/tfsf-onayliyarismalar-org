@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'external_provider_name', 'external_entry_url', 'external_responsibility_accepted_at',
     'competition_type_id', 'country_id', 'city_id', 'participant_approval_process_id', 'partners',
     'application_starts_at', 'application_ends_at', 'competition_ends_at',
+    'evaluation_starts_at', 'evaluation_ends_at',
 ])]
 class Competition extends Model
 {
@@ -43,6 +44,9 @@ class Competition extends Model
             'application_starts_at' => 'datetime',
             'application_ends_at' => 'datetime',
             'competition_ends_at' => 'datetime',
+            'evaluation_starts_at' => 'datetime',
+            'evaluation_ends_at' => 'datetime',
+            'results_published_at' => 'datetime',
             'external_responsibility_accepted_at' => 'datetime',
             'status' => CompetitionStatus::class,
             'current_step' => 'integer',
@@ -60,6 +64,11 @@ class Competition extends Model
     public function institutionStaff(): BelongsTo
     {
         return $this->belongsTo(InstitutionStaff::class);
+    }
+
+    public function representative(): BelongsTo
+    {
+        return $this->belongsTo(Temsilci::class, 'representative_id');
     }
 
     public function competitionType(): BelongsTo
@@ -139,6 +148,16 @@ class Competition extends Model
     public function juryInvitations(): HasMany
     {
         return $this->hasMany(JuryInvitation::class);
+    }
+
+    public function entries(): HasMany
+    {
+        return $this->hasMany(CompetitionEntry::class);
+    }
+
+    public function evaluationRounds(): HasMany
+    {
+        return $this->hasMany(CompetitionEvaluationRound::class)->orderBy('round_number');
     }
 
     public function isEditable(): bool

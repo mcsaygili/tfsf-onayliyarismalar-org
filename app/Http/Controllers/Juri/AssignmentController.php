@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Juri;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Services\CompetitionPhaseService;
 use App\Services\JuryTaskService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -21,7 +22,7 @@ class AssignmentController extends Controller
         ]);
     }
 
-    public function show(Competition $competition, JuryTaskService $tasks): View
+    public function show(Competition $competition, JuryTaskService $tasks, CompetitionPhaseService $phases): View
     {
         $juror = Auth::guard('juri')->user();
         $competition = $tasks->detailFor($juror, $competition);
@@ -29,6 +30,7 @@ class AssignmentController extends Controller
         return view('juri.assignments.show', [
             'competition' => $competition,
             'regulationSnapshot' => $competition->regulationSnapshots->first(),
+            'operationalPhase' => $phases->phase($competition),
         ]);
     }
 }

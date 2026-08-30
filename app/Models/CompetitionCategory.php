@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['competition_id', 'sort_order', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
+#[Fillable(['competition_id', 'sort_order', 'max_photos_per_participant', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
 class CompetitionCategory extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -20,7 +20,7 @@ class CompetitionCategory extends Model
 
     protected function casts(): array
     {
-        return ['sort_order' => 'integer', 'birth_date_restricted' => 'boolean', 'birth_date_from' => 'date:Y-m-d', 'birth_date_to' => 'date:Y-m-d'];
+        return ['sort_order' => 'integer', 'max_photos_per_participant' => 'integer', 'birth_date_restricted' => 'boolean', 'birth_date_from' => 'date:Y-m-d', 'birth_date_to' => 'date:Y-m-d'];
     }
 
     public function competition(): BelongsTo
@@ -66,5 +66,10 @@ class CompetitionCategory extends Model
     public function evaluationCriteria(): HasMany
     {
         return $this->hasMany(CompetitionCategoryEvaluationCriterion::class)->orderBy('sort_order');
+    }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(CompetitionSubmission::class);
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['competition_category_id', 'juror_id', 'jury_invitation_id', 'assigned_by', 'sort_order'])]
 class CompetitionCategoryJurorAssignment extends Model
@@ -30,5 +31,15 @@ class CompetitionCategoryJurorAssignment extends Model
     public function assignedBy(): BelongsTo
     {
         return $this->belongsTo(InstitutionStaff::class, 'assigned_by');
+    }
+
+    public function scores(): HasMany
+    {
+        return $this->hasMany(JuryScore::class, 'juror_assignment_id');
+    }
+
+    public function evaluationSubmissions(): HasMany
+    {
+        return $this->hasMany(JuryEvaluationSubmission::class, 'juror_assignment_id');
     }
 }

@@ -77,6 +77,7 @@ return [
 
     'nav' => [
         'dashboard' => 'Dashboard',
+        'participant_approvals' => 'Participant Approvals',
         'profile' => 'Representative Details',
         'password' => 'Password',
         'logout' => 'Secure Logout',
@@ -109,4 +110,7 @@ return [
         'incomplete_link' => 'Update your details',
     ],
 
+    'participant_submissions' => [
+        'title' => 'Participant Approvals', 'hint' => 'Review entries awaiting representative approval in competitions assigned to you.', 'member' => 'Participant', 'competition' => 'Competition', 'category' => 'Category', 'status' => 'Status', 'review' => 'Review', 'empty' => 'No entries are awaiting representative approval.', 'back' => 'Back to approvals', 'note' => 'Decision note', 'approve' => 'Approve Entry', 'reject' => 'Reject Entry', 'already_decided' => 'A decision has already been recorded.', 'rejection_note_required' => 'A note is required when rejecting an entry.', 'decision_saved' => 'Participant entry decision saved.', 'statuses' => ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'],
+    ],
 ];

@@ -95,6 +95,13 @@
             </div>
         </div>
 
+        <div class="ia-field" style="margin-top: 1rem;">
+            <x-uye.label for="tckimlikno" :value="__('uye.profile.identity_number')" />
+            <input id="tckimlikno" name="tckimlikno" class="ia-input" inputmode="numeric" maxlength="11" autocomplete="off" value="{{ old('tckimlikno', $user->tckimlikno) }}">
+            <small class="ia-hint">{{ __('uye.profile.identity_hint') }}</small>
+            <x-uye.input-error :messages="$errors->get('tckimlikno')" />
+        </div>
+
         <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">
             <x-uye.button>{{ __('uye.profile.save') }}</x-uye.button>
 

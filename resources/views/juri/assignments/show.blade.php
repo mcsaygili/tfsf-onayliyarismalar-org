@@ -81,6 +81,9 @@
                 @foreach ($competition->categories as $category)
                     <article class="jp-category-detail">
                         <h3>{{ $category->name ?: __('juri.assignments.unnamed_category') }}</h3>
+                        @if(in_array($operationalPhase->value, ['evaluation_open', 'evaluation_closed', 'results_published'], true))
+                            <a class="ia-btn" style="margin:.75rem 0;" href="{{ route('juri.evaluations.show', [$competition, $category]) }}">{{ __('juri.evaluation.open') }}</a>
+                        @endif
                         <div class="jp-award-list">
                             <h4>{{ __('juri.assignments.awards') }}</h4>
                             @forelse ($category->awards as $award)

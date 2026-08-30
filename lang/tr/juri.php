@@ -224,4 +224,13 @@ return [
         ],
     ],
 
+    'evaluation' => [
+        'title' => 'Jüri Değerlendirmesi', 'open' => 'Eserleri Değerlendir', 'back' => 'Görev detayına dön', 'round' => 'Değerlendirme turu', 'work' => 'Eser :number',
+        'save_draft' => 'Puanları Kaydet', 'finalize' => 'Değerlendirmeyi Tamamla', 'finalize_confirm' => 'Tüm puanları kesinleştirmek istiyor musunuz? Bu işlemden sonra puanlar değiştirilemez.',
+        'saved' => 'Puanlarınız taslak olarak kaydedildi.', 'finalized' => 'Kategori değerlendirmeniz kesinleştirildi.', 'finalized_title' => 'Değerlendirme tamamlandı', 'finalized_hint' => 'Bu kategori için puanlarınız kilitlendi.',
+        'closed_title' => 'Puanlama dönemi kapalı', 'closed_hint' => 'Kaydedilmiş puanlar salt okunur olarak gösteriliyor.', 'empty_title' => 'Değerlendirilecek eser yok', 'empty_hint' => 'Bu kategoride onaylanmış katılım bulunmuyor.',
+        'errors' => ['round_closed' => 'Değerlendirme turu puan girişine açık değil.', 'finalized' => 'Kesinleştirilmiş puanlar değiştirilemez.', 'invalid_score' => 'Puanlar belirlenen aralık içinde olmalıdır.', 'incomplete' => 'Değerlendirmeyi tamamlamadan önce tüm eserlere puan vermelisiniz.'],
+    ],
+
+    'results' => ['mail_subject' => 'Yarışma sonuçları yayımlandı', 'mail_greeting' => 'Merhaba :name,', 'mail_line' => 'Jüri görevi aldığınız :competition yarışmasının sonuçları yayımlandı.', 'mail_action' => 'Yarışmayı Görüntüle'],
 ];

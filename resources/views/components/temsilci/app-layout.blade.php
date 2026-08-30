@@ -507,6 +507,10 @@
                 <x-temsilci.icon name="dashboard" />
                 {{ __('temsilci.nav.dashboard') }}
             </a>
+            <a href="{{ route('temsilci.participant-submissions.index') }}" class="ip-nav-item {{ request()->routeIs('temsilci.participant-submissions.*') ? 'is-active' : '' }}">
+                <x-temsilci.icon name="staff" />
+                {{ __('temsilci.nav.participant_approvals') }}
+            </a>
             <div x-data="{ o: {{ request()->routeIs('temsilci.profile.*') || request()->routeIs('temsilci.password.edit') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('temsilci.profile.*') || request()->routeIs('temsilci.password.edit') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
                     <x-temsilci.icon name="account" />

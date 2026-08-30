@@ -83,6 +83,7 @@ return [
         'password' => 'Password',
         'staff' => 'Staff',
         'competitions' => 'My Competitions',
+        'participant_approvals' => 'Participant Approvals',
         'logout' => 'Secure Logout',
     ],
 
@@ -307,6 +308,9 @@ return [
             'application_starts_at' => 'Application Start Date',
             'application_ends_at' => 'Application End Date',
             'competition_ends_at' => 'Competition End Date',
+            'evaluation_starts_at' => 'Jury Evaluation Starts',
+            'evaluation_ends_at' => 'Jury Evaluation Ends',
+            'max_photos_per_participant' => 'Photo Limit per Category',
             'external_provider_name' => 'Infrastructure Provider',
             'external_entry_url' => 'Entry URL',
             'name' => 'Competition Name',
@@ -405,6 +409,9 @@ return [
             'application_starts_at' => ['description' => 'Specify when participant applications open.', 'example' => '1 Oct 2026, 09:00'],
             'application_ends_at' => ['description' => 'Specify when new applications and uploads close.', 'example' => '30 Nov 2026, 23:59'],
             'competition_ends_at' => ['description' => 'Specify the date used for all rules, including age eligibility.', 'example' => '15 Dec 2026, 18:00'],
+            'evaluation_starts_at' => ['description' => 'Specify when jurors may begin scoring after entries and approvals are complete.', 'example' => '16 Dec 2026, 09:00'],
+            'evaluation_ends_at' => ['description' => 'Specify the deadline for jurors to finalize their scores.', 'example' => '23 Dec 2026, 18:00'],
+            'max_photos_per_participant' => ['description' => 'Set the maximum number of works a participant may submit to this category.', 'example' => '4'],
             'regulation_input' => ['description' => 'Enter conditions unique to this competition in addition to standard clauses.', 'example' => 'Each participant may enter up to four works.'],
             'name' => [
                 'description' => 'Enter the clear, official competition name that will appear in announcements, regulations, and results.',
@@ -556,4 +563,8 @@ return [
         'unimplemented_steps_block_submission' => 'The application cannot be submitted until all required steps are available and complete.',
     ],
 
+    'participant_submissions' => [
+        'title' => 'Participant Approvals', 'hint' => 'Review category entries and works awaiting institution approval.', 'member' => 'Participant', 'competition' => 'Competition', 'category' => 'Category', 'status' => 'Status', 'review' => 'Review', 'empty' => 'No entries are awaiting institution approval.', 'back' => 'Back to approvals', 'note' => 'Decision note', 'approve' => 'Approve Entry', 'reject' => 'Reject Entry', 'already_decided' => 'A decision has already been recorded.', 'rejection_note_required' => 'A note is required when rejecting an entry.', 'decision_saved' => 'Participant entry decision saved.',
+        'statuses' => ['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'],
+    ],
 ];

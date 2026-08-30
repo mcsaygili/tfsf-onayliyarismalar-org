@@ -6,7 +6,7 @@
         $englishHasErrors = $errors->hasAny(['en.name', 'en.subject', 'en.purpose']);
         $initialLocale = old('_locale', $englishHasErrors ? 'en' : config('locales.default'));
         $requiresEnglish = $competition->requiresEnglishContent();
-        $dateFields = ['application_starts_at', 'application_ends_at', 'competition_ends_at'];
+        $dateFields = ['application_starts_at', 'application_ends_at', 'competition_ends_at', 'evaluation_starts_at', 'evaluation_ends_at'];
         $calendarParts = [];
         $calendarValues = [];
 

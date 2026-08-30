@@ -291,6 +291,10 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
             Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
             Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
+            Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
+            Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
+            Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
+            Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
             Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
             Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
             Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');

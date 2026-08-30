@@ -199,6 +199,77 @@
             @endforeach
         </div>
 
+        <div class="ip-card">
+            <div class="ip-section-title">{{ __('eys.competitions.representative_title') }}</div>
+            <div class="ip-section-hint">{{ __('eys.competitions.representative_hint') }}</div>
+            <form method="POST" action="{{ route('eys.competitions.assign-representative', $competition) }}" style="display:flex;gap:.75rem;align-items:end;margin-top:1rem;">@csrf @method('PATCH')
+                <div class="ia-field" style="flex:1;margin:0;"><x-eys.label for="representative_id" :value="__('eys.competitions.representative')" /><select id="representative_id" name="representative_id" class="ia-input"><option value="">{{ __('eys.competitions.representative_unassigned') }}</option>@foreach($representatives as $representative)<option value="{{ $representative->id }}" @selected($competition->representative_id === $representative->id)>{{ trim($representative->first_name.' '.$representative->last_name) ?: $representative->email }}</option>@endforeach</select></div>
+                <button class="ia-btn">{{ __('eys.common.save') }}</button>
+            </form>
+        </div>
+
+        @php
+            $evaluationRound = $competition->evaluationRounds->first();
+            $resultAwardAssignments = $evaluationRound?->results
+                ->flatMap->awards
+                ->keyBy(fn ($assignment) => $assignment->competition_category_award_id.'.'.$assignment->slot_number)
+                ?? collect();
+        @endphp
+        <div class="ip-card">
+            <div class="ip-section-title">{{ __('eys.competitions.results_title') }}</div>
+            <div class="ip-section-hint">{{ __('eys.competitions.results_hint') }}</div>
+            @if($evaluationRound)
+                <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0;"><span>{{ __('eys.competitions.completed_jury_evaluations') }}: <strong>{{ $evaluationRound->evaluationSubmissions->count() }}</strong></span><span>{{ __('eys.competitions.calculated_results') }}: <strong>{{ $evaluationRound->results->count() }}</strong></span></div>
+                @if($evaluationRound->results->isNotEmpty())
+                    <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.result_total') }}</th><th>{{ __('eys.competitions.result_average') }}</th><th>{{ __('eys.competitions.result_score_count') }}</th><th>{{ __('eys.competitions.result_awards') }}</th></tr></thead><tbody>
+                    @foreach($evaluationRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
+                        <tr><td>{{ $result->rank }}</td><td>{{ $result->photo->submission->category->name }}</td><td>{{ $result->total_score }}</td><td>{{ $result->average_score }}</td><td>{{ $result->score_count }}</td><td>@forelse($result->awards as $assignment)<span class="ia-badge">{{ $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text }}</span>@empty—@endforelse</td></tr>
+                    @endforeach
+                    </tbody></table></div>
+
+                    @if($competition->categories->flatMap->awards->isNotEmpty())
+                        <form method="POST" action="{{ route('eys.competitions.save-result-awards', $competition) }}" style="margin-top:1.5rem;">@csrf @method('PUT')
+                            <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.result_award_assignment_title') }}</div>
+                            <div class="ip-section-hint">{{ __('eys.competitions.result_award_assignment_hint') }}</div>
+                            <div style="display:grid;gap:1rem;margin-top:1rem;">
+                                @foreach($competition->categories as $category)
+                                    @if($category->awards->isNotEmpty())
+                                        @php $categoryResults = $evaluationRound->results->filter(fn ($result) => $result->photo->submission->competition_category_id === $category->id)->sortBy('rank'); @endphp
+                                        <section style="padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">
+                                            <strong style="color:var(--ia-cream);">{{ $category->name }}</strong>
+                                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.85rem;margin-top:.85rem;">
+                                                @foreach($category->awards as $categoryAward)
+                                                    @for($slot = 1; $slot <= $categoryAward->quantity; $slot++)
+                                                        @php
+                                                            $assignmentKey = $categoryAward->id.'.'.$slot;
+                                                            $selectedResultId = old('award_assignments.'.$categoryAward->id.'.'.$slot, $resultAwardAssignments->get($assignmentKey)?->competition_photo_result_id);
+                                                            $awardName = $categoryAward->awardReference?->name ?: $categoryAward->special_award_text;
+                                                        @endphp
+                                                        <label class="ia-field" style="margin:0;">
+                                                            <span>{{ $awardName }} @if($categoryAward->quantity > 1)<small>({{ $slot }}/{{ $categoryAward->quantity }})</small>@endif</span>
+                                                            <select class="ia-input" name="award_assignments[{{ $categoryAward->id }}][{{ $slot }}]" @disabled($competition->results_published_at)>
+                                                                <option value="">{{ __('eys.competitions.result_award_unassigned') }}</option>
+                                                                @foreach($categoryResults as $result)
+                                                                    <option value="{{ $result->id }}" @selected($selectedResultId === $result->id)>#{{ $result->rank }} · {{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            @error('award_assignments.'.$categoryAward->id.'.'.$slot)<small style="color:#e0857a;">{{ $message }}</small>@enderror
+                                                        </label>
+                                                    @endfor
+                                                @endforeach
+                                            </div>
+                                        </section>
+                                    @endif
+                                @endforeach
+                            </div>
+                            @unless($competition->results_published_at)<div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="ia-btn ia-btn-secondary">{{ __('eys.competitions.save_result_awards') }}</button></div>@endunless
+                        </form>
+                    @endif
+                @endif
+                <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1rem;"><form method="POST" action="{{ route('eys.competitions.aggregate-results', $competition) }}">@csrf<button class="ia-btn ia-btn-secondary" @disabled($competition->results_published_at)>{{ __('eys.competitions.calculate_results') }}</button></form><form method="POST" action="{{ route('eys.competitions.publish-results', $competition) }}">@csrf<button class="ia-btn" @disabled($competition->results_published_at)>{{ $competition->results_published_at ? __('eys.competitions.results_are_published') : __('eys.competitions.publish_results') }}</button></form></div>
+            @else<p style="margin-top:1rem;">{{ __('eys.competitions.no_evaluation_round') }}</p>@endif
+        </div>
+
         @include('eys.competitions._review-panel')
 
         <div class="ip-card">

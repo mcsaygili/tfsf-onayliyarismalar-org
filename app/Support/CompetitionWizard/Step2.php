@@ -42,6 +42,8 @@ class Step2 implements CompetitionStep
             'application_starts_at' => $competition->application_starts_at?->format('Y-m-d\TH:i'),
             'application_ends_at' => $competition->application_ends_at?->format('Y-m-d\TH:i'),
             'competition_ends_at' => $competition->competition_ends_at?->format('Y-m-d\TH:i'),
+            'evaluation_starts_at' => $competition->evaluation_starts_at?->format('Y-m-d\TH:i'),
+            'evaluation_ends_at' => $competition->evaluation_ends_at?->format('Y-m-d\TH:i'),
         ];
 
         foreach (array_keys(config('locales.supported')) as $locale) {
@@ -63,7 +65,7 @@ class Step2 implements CompetitionStep
         }
 
         $competition->update(array_intersect_key($validated, array_flip([
-            'application_starts_at', 'application_ends_at', 'competition_ends_at',
+            'application_starts_at', 'application_ends_at', 'competition_ends_at', 'evaluation_starts_at', 'evaluation_ends_at',
         ])));
 
         $translations = [];
@@ -91,6 +93,8 @@ class Step2 implements CompetitionStep
             'application_starts_at' => [$isDraftSave || $competition->application_starts_at ? 'nullable' : 'required', new ValidLocalDateTime],
             'application_ends_at' => [$isDraftSave || $competition->application_ends_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after:application_starts_at'],
             'competition_ends_at' => [$isDraftSave || $competition->competition_ends_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after_or_equal:application_ends_at'],
+            'evaluation_starts_at' => [$isDraftSave || $competition->evaluation_starts_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after_or_equal:competition_ends_at'],
+            'evaluation_ends_at' => [$isDraftSave || $competition->evaluation_ends_at ? 'nullable' : 'required', new ValidLocalDateTime, 'after:evaluation_starts_at'],
         ];
 
         foreach (array_keys(config('locales.supported')) as $locale) {

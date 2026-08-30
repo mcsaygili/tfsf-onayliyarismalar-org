@@ -224,4 +224,13 @@ return [
         ],
     ],
 
+    'evaluation' => [
+        'title' => 'Jury Evaluation', 'open' => 'Evaluate Works', 'back' => 'Back to assignment', 'round' => 'Evaluation round', 'work' => 'Work :number',
+        'save_draft' => 'Save Scores', 'finalize' => 'Finalize Evaluation', 'finalize_confirm' => 'Finalize all scores? Scores cannot be changed afterwards.',
+        'saved' => 'Your scores were saved as a draft.', 'finalized' => 'Your category evaluation was finalized.', 'finalized_title' => 'Evaluation complete', 'finalized_hint' => 'Your scores for this category are locked.',
+        'closed_title' => 'Scoring is closed', 'closed_hint' => 'Saved scores are shown read-only.', 'empty_title' => 'No works to evaluate', 'empty_hint' => 'There are no approved entries in this category.',
+        'errors' => ['round_closed' => 'The evaluation round is not open for scoring.', 'finalized' => 'Finalized scores cannot be changed.', 'invalid_score' => 'Scores must be within the configured range.', 'incomplete' => 'Score every work before finalizing the evaluation.'],
+    ],
+
+    'results' => ['mail_subject' => 'Competition results published', 'mail_greeting' => 'Hello :name,', 'mail_line' => 'Results have been published for :competition, where you served as a juror.', 'mail_action' => 'View Competition'],
 ];

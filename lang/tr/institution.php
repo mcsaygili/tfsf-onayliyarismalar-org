@@ -83,6 +83,7 @@ return [
         'password' => 'Şifre İşlemleri',
         'staff' => 'Yetkili Bilgileri',
         'competitions' => 'Yarışmalarım',
+        'participant_approvals' => 'Katılımcı Onayları',
         'logout' => 'Güvenli Çıkış',
     ],
 
@@ -307,6 +308,9 @@ return [
             'application_starts_at' => 'Başvuru Başlangıç Tarihi',
             'application_ends_at' => 'Başvuru Bitiş Tarihi',
             'competition_ends_at' => 'Yarışma Sonlanma Tarihi',
+            'evaluation_starts_at' => 'Jüri Değerlendirme Başlangıcı',
+            'evaluation_ends_at' => 'Jüri Değerlendirme Bitişi',
+            'max_photos_per_participant' => 'Kategori Başına Fotoğraf Sınırı',
             'external_provider_name' => 'Alt Yapı Sağlayıcısı',
             'external_entry_url' => 'Katılım Adresi',
             'name' => 'Yarışma Adı',
@@ -405,6 +409,9 @@ return [
             'application_starts_at' => ['description' => 'Katılımcı başvurularının açılacağı tarih ve saati belirtin.', 'example' => '01.10.2026 09:00'],
             'application_ends_at' => ['description' => 'Yeni başvuru ve eser yüklemenin kapanacağı tarih ve saati belirtin.', 'example' => '30.11.2026 23:59'],
             'competition_ends_at' => ['description' => 'Yaş uygunluğu dahil tüm kurallar için esas alınacak yarışma sonlanma tarihini belirtin.', 'example' => '15.12.2026 18:00'],
+            'evaluation_starts_at' => ['description' => 'Katılım ve onaylar tamamlandıktan sonra jürinin puan vermeye başlayacağı tarihi belirtin.', 'example' => '16.12.2026 09:00'],
+            'evaluation_ends_at' => ['description' => 'Jürilerin puanlarını kesinleştirmesi gereken son tarihi belirtin.', 'example' => '23.12.2026 18:00'],
+            'max_photos_per_participant' => ['description' => 'Bir katılımcının bu kategoriye gönderebileceği en fazla eser sayısını belirleyin.', 'example' => '4'],
             'regulation_input' => ['description' => 'Standart maddelere ek olarak yalnızca bu yarışmaya özgü koşulları yazın.', 'example' => 'Her katılımcı en fazla dört eserle başvurabilir.'],
             'name' => [
                 'description' => 'Yarışmanın duyuru, şartname ve sonuç ekranlarında kullanılacak açık ve resmî adını yazın.',
@@ -556,4 +563,8 @@ return [
         'unimplemented_steps_block_submission' => 'Henüz kullanıma açılmayan zorunlu adımlar tamamlanmadan başvuru onaya gönderilemez.',
     ],
 
+    'participant_submissions' => [
+        'title' => 'Katılımcı Onayları', 'hint' => 'Kurum onayı bekleyen kategori başvurularını ve eserleri inceleyin.', 'member' => 'Katılımcı', 'competition' => 'Yarışma', 'category' => 'Kategori', 'status' => 'Durum', 'review' => 'İncele', 'empty' => 'Kurum onayı bekleyen başvuru bulunmuyor.', 'back' => 'Onay listesine dön', 'note' => 'Karar notu', 'approve' => 'Başvuruyu Onayla', 'reject' => 'Başvuruyu Reddet', 'already_decided' => 'Bu başvuru için karar verilmiş.', 'rejection_note_required' => 'Ret kararı için açıklama yazmalısınız.', 'decision_saved' => 'Katılımcı başvurusu kararı kaydedildi.',
+        'statuses' => ['pending' => 'Bekliyor', 'approved' => 'Onaylandı', 'rejected' => 'Reddedildi'],
+    ],
 ];
