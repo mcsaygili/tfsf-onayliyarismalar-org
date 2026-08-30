@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionInfrastructureProvider;
+use App\Enums\CompetitionPublicationState;
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\CompetitionType;
@@ -70,6 +71,9 @@ class CompetitionFactory extends Factory
             'evaluation_ends_at' => now()->addMonths(3)->addDays(8)->startOfHour(),
             'current_step' => 1,
             'status' => CompetitionStatus::Draft,
+            'publication_state' => fn (array $attributes) => ($attributes['status'] ?? null) === CompetitionStatus::Approved && filled($attributes['published_at'] ?? null)
+                ? CompetitionPublicationState::Published
+                : CompetitionPublicationState::Unpublished,
         ];
     }
 

@@ -127,6 +127,15 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ->delete(route('competitions.submission.photos.destroy', $submissionPhoto))
             ->assertSessionHasErrors('photo');
         $this->assertModelExists($submissionPhoto);
+
+        $anotherCategory = $this->category($competition);
+        $this->actingAs($user)
+            ->post(route('competitions.entry.categories.store', $entry), ['category_id' => $anotherCategory->id])
+            ->assertSessionHasErrors('category');
+        $this->assertDatabaseMissing('competition_submissions', [
+            'competition_entry_id' => $entry->id,
+            'competition_category_id' => $anotherCategory->id,
+        ]);
     }
 
     public function test_institution_approval_is_scoped_and_updates_submission_and_entry(): void
@@ -158,6 +167,20 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $this->assertSame(CompetitionEntryStatus::Approved, $entry->refresh()->status);
         $this->assertNotNull($approval->refresh()->reviewed_at);
         $this->assertDatabaseHas('competition_entry_events', ['competition_entry_id' => $entry->id, 'event' => 'submission_approved']);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $user->id, 'notifiable_type' => User::class]);
+
+        $notification = $user->notifications()->firstOrFail();
+        $this->actingAs($this->member())
+            ->get(route('notifications.show', $notification->id))
+            ->assertNotFound();
+        $this->actingAs($user)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee(__('uye.notifications.submission_decision_title'));
+        $this->actingAs($user)
+            ->get(route('notifications.show', $notification->id))
+            ->assertRedirect(route('competitions.entry.show', $entry));
+        $this->assertNotNull($notification->fresh()->read_at);
     }
 
     public function test_juror_can_only_score_between_three_and_nine_and_finalization_locks_scores(): void
@@ -315,6 +338,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ->assertRedirect();
         $this->assertDatabaseCount('jury_evaluation_submissions', 0);
         $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $replacement->id, 'submitted_at' => null]);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $juror->id, 'notifiable_type' => Juri::class]);
     }
 
     public function test_eys_can_create_committee_final_round_and_publish_it_on_result_subdomain(): void
@@ -354,6 +378,13 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-result-awards', $competition), [
             'award_assignments' => [$award->id => [1 => $finalResult->id]],
         ])->assertRedirect();
+        $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.preview-results', $competition))
+            ->assertOk()
+            ->assertSee(__('result.preview_title'))
+            ->assertSee(trim($user->first_name.' '.$user->last_name));
+        $this->actingAs($reviewer, 'eys')
+            ->get(route('eys.competitions.results.photos.show', [$competition, $photo]))
+            ->assertOk();
         Notification::fake();
         $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.publish-results', $competition))->assertRedirect();
 

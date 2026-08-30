@@ -92,12 +92,17 @@ return [
         'equipment' => 'Ekipmanlarım',
         'competitions' => 'Yarışmalar',
         'entries' => 'Katılımlarım',
+        'notifications' => 'Bildirimler',
         'profile' => 'Üye Bilgilerim',
         'privacy' => 'Gizlilik Ayarları',
         'password' => 'Şifre İşlemleri',
         'account' => 'Hesap İşlemlerim',
         'soon' => 'Yakında',
         'logout' => 'Güvenli Çıkış',
+    ],
+
+    'notifications' => [
+        'title' => 'Bildirimler', 'hint' => 'Katılım ve sonuç süreçlerinizle ilgili güncellemeler.', 'mark_all_read' => 'Tümünü Okundu İşaretle', 'all_read' => 'Tüm bildirimler okundu olarak işaretlendi.', 'empty' => 'Henüz bildiriminiz yok.', 'results_title' => 'Yarışma sonuçları yayımlandı', 'submission_decision_title' => 'Katılım incelemesi tamamlandı', 'submission_approved' => ':competition / :category katılımınız onaylandı.', 'submission_rejected' => ':competition / :category katılımınız reddedildi. :note',
     ],
 
     'dashboard' => [

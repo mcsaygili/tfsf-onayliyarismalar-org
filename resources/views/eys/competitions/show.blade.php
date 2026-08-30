@@ -28,6 +28,41 @@
             @endif
         </div>
 
+        @if($competition->status === \App\Enums\CompetitionStatus::Approved)
+            <section class="ip-card">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                    <div>
+                        <div class="ip-section-title">{{ __('eys.competitions.publication_management') }}</div>
+                        <div class="ip-section-hint">{{ __('eys.competitions.publication_management_hint') }}</div>
+                    </div>
+                    <span class="ip-badge {{ $competition->publication_state === \App\Enums\CompetitionPublicationState::Published ? 'is-approved' : 'is-waiting-requirements' }}">{{ __('eys.competitions.publication_states.'.$competition->publication_state->value) }}</span>
+                </div>
+                @if($errors->has('publication'))<div class="ip-alert ip-alert-warning"><x-eys.icon name="warning" /><div class="ip-alert-text">{{ $errors->first('publication') }}</div></div>@endif
+                @unless($competition->publication_state === \App\Enums\CompetitionPublicationState::Cancelled)
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.85rem;margin-top:1rem;">
+                        @if(in_array($competition->publication_state, [\App\Enums\CompetitionPublicationState::Suspended, \App\Enums\CompetitionPublicationState::Unpublished], true))
+                            <form method="POST" action="{{ route('eys.competitions.publication.update', [$competition, 'resume']) }}" style="padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">@csrf
+                                <strong style="color:var(--ia-cream);">{{ __('eys.competitions.publication_resume') }}</strong><p class="ip-section-hint">{{ __('eys.competitions.publication_resume_hint') }}</p><button class="ia-btn" type="submit">{{ __('eys.competitions.publication_resume') }}</button>
+                            </form>
+                        @endif
+                        @if($competition->publication_state === \App\Enums\CompetitionPublicationState::Published)
+                            <form method="POST" action="{{ route('eys.competitions.publication.update', [$competition, 'suspend']) }}" style="padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">@csrf
+                                <strong style="color:var(--ia-cream);">{{ __('eys.competitions.publication_suspend') }}</strong><p class="ip-section-hint">{{ __('eys.competitions.publication_suspend_hint') }}</p><textarea class="ia-input" name="reason" rows="2" required minlength="10" maxlength="2000" placeholder="{{ __('eys.competitions.publication_reason') }}"></textarea><button class="ia-btn ia-btn-secondary" type="submit" style="margin-top:.65rem;">{{ __('eys.competitions.publication_suspend') }}</button>
+                            </form>
+                        @endif
+                        @if(in_array($competition->publication_state, [\App\Enums\CompetitionPublicationState::Published, \App\Enums\CompetitionPublicationState::Suspended], true))
+                            <form method="POST" action="{{ route('eys.competitions.publication.update', [$competition, 'unpublish']) }}" style="padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">@csrf
+                                <strong style="color:var(--ia-cream);">{{ __('eys.competitions.publication_unpublish') }}</strong><p class="ip-section-hint">{{ __('eys.competitions.publication_unpublish_hint') }}</p><textarea class="ia-input" name="reason" rows="2" required minlength="10" maxlength="2000" placeholder="{{ __('eys.competitions.publication_reason') }}"></textarea><button class="ia-btn ia-btn-secondary" type="submit" style="margin-top:.65rem;">{{ __('eys.competitions.publication_unpublish') }}</button>
+                            </form>
+                        @endif
+                        <form method="POST" action="{{ route('eys.competitions.publication.update', [$competition, 'cancel']) }}" style="padding:1rem;border:1px solid rgba(224,133,122,.3);border-radius:.75rem;">@csrf
+                            <strong style="color:#e0857a;">{{ __('eys.competitions.publication_cancel') }}</strong><p class="ip-section-hint">{{ __('eys.competitions.publication_cancel_hint') }}</p><textarea class="ia-input" name="reason" rows="2" required minlength="10" maxlength="2000" placeholder="{{ __('eys.competitions.publication_reason') }}"></textarea><button class="ia-btn ia-btn-secondary" type="submit" style="margin-top:.65rem;">{{ __('eys.competitions.publication_cancel') }}</button>
+                        </form>
+                    </div>
+                @endunless
+            </section>
+        @endif
+
         @foreach ($steps as $number => $stepDef)
             @if (! in_array($number, [9, 11], true) && $stepDef->isApplicable($competition) && $stepDef->isImplemented())
                 <section class="ip-card" id="competition-step-{{ $number }}">
@@ -295,7 +330,15 @@
                         </form>
                     @endif
                 @endif
-                <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1rem;"><form method="POST" action="{{ route('eys.competitions.aggregate-results', $competition) }}">@csrf<button class="ia-btn ia-btn-secondary" @disabled($competition->results_published_at)>{{ __('eys.competitions.calculate_results') }}</button></form><form method="POST" action="{{ route('eys.competitions.publish-results', $competition) }}">@csrf<button class="ia-btn" @disabled($competition->results_published_at)>{{ $competition->results_published_at ? __('eys.competitions.results_are_published') : __('eys.competitions.publish_results') }}</button></form></div>
+                <div style="display:flex;gap:.75rem;justify-content:flex-end;align-items:flex-start;flex-wrap:wrap;margin-top:1rem;">
+                    @if($evaluationRound->results->isNotEmpty())<a class="ia-btn ia-btn-secondary" href="{{ route('eys.competitions.preview-results', $competition) }}">{{ __('eys.competitions.preview_results') }}</a>@endif
+                    <form method="POST" action="{{ route('eys.competitions.aggregate-results', $competition) }}">@csrf<button class="ia-btn ia-btn-secondary" @disabled($competition->results_published_at)>{{ __('eys.competitions.calculate_results') }}</button></form>
+                    @if($competition->results_published_at)
+                        <form method="POST" action="{{ route('eys.competitions.unpublish-results', $competition) }}" style="display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;">@csrf<input class="ia-input" name="reason" required minlength="10" maxlength="2000" placeholder="{{ __('eys.competitions.result_correction_reason') }}" style="min-width:270px;"><button class="ia-btn ia-btn-secondary">{{ __('eys.competitions.unpublish_results') }}</button></form>
+                    @else
+                        <form method="POST" action="{{ route('eys.competitions.publish-results', $competition) }}">@csrf<button class="ia-btn">{{ __('eys.competitions.publish_results') }}</button></form>
+                    @endif
+                </div>
             @else<p style="margin-top:1rem;">{{ __('eys.competitions.no_evaluation_round') }}</p>@endif
         </div>
 
@@ -322,11 +365,14 @@
                                         ? config('locales.supported.'.$fieldParts[0], strtoupper($fieldParts[0])).' / '.__('eys.competitions.fields.'.$fieldParts[1])
                                         : __('eys.competitions.fields.'.$field);
                                 @endphp
-                                <li>
-                                    <strong>{{ $fieldLabel }}:</strong>
-                                    <span style="color: #e0857a;">{{ $diff[0] ?: '—' }}</span>
-                                    →
-                                    <span style="color: #8fcf93;">{{ $diff[1] ?: '—' }}</span>
+                                <li><strong>{{ $fieldLabel }}:</strong>
+                                    @if(is_array($diff) && array_is_list($diff) && count($diff) >= 2)
+                                        <span style="color:#e0857a;">{{ $diff[0] ?: '—' }}</span> → <span style="color:#8fcf93;">{{ $diff[1] ?: '—' }}</span>
+                                    @elseif(is_array($diff) && isset($diff['from'], $diff['to']))
+                                        <span style="color:#e0857a;">{{ $diff['from'] ?: '—' }}</span> → <span style="color:#8fcf93;">{{ $diff['to'] ?: '—' }}</span>
+                                    @else
+                                        <span>{{ is_scalar($diff) ? $diff : json_encode($diff, JSON_UNESCAPED_UNICODE) }}</span>
+                                    @endif
                                 </li>
                             @endforeach
                         </ul>

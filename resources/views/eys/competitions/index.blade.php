@@ -25,6 +25,7 @@
                         <th>{{ __('eys.competitions.column_name') }}</th>
                         <th>{{ __('eys.competitions.column_institution') }}</th>
                         <th>{{ __('eys.competitions.column_status') }}</th>
+                        <th>{{ __('eys.competitions.column_publication') }}</th>
                         <th>{{ __('eys.competitions.column_submitted_at') }}</th>
                         <th></th>
                     </tr>
@@ -39,6 +40,7 @@
                                     {{ __('eys.competitions.status.'.$competition->status->value) }}
                                 </span>
                             </td>
+                            <td>{{ $competition->status === \App\Enums\CompetitionStatus::Approved ? __('eys.competitions.publication_states.'.$competition->publication_state->value) : '—' }}</td>
                             <td>{{ $competition->submitted_at?->format('d.m.Y H:i') ?? '—' }}</td>
                             <td style="text-align: right;">
                                 <a href="{{ route('eys.competitions.show', $competition) }}" class="ip-row-icon-btn" title="{{ __('eys.competitions.review_action') }}" aria-label="{{ __('eys.competitions.review_action') }}">
@@ -48,7 +50,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="ip-table-empty">{{ __('eys.competitions.empty') }}</td>
+                            <td colspan="6" class="ip-table-empty">{{ __('eys.competitions.empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

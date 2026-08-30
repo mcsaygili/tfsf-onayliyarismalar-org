@@ -14,6 +14,7 @@ class ResultPhotoController extends Controller
         $submissionPhoto->loadMissing('submission.entry.competition');
         $competition = $submissionPhoto->submission->entry->competition;
         $allowed = ! $submissionPhoto->withdrawn_at
+            && $competition->newQuery()->whereKey($competition->getKey())->publiclyVisible()->exists()
             && $competition->results_published_at?->lte(now())
             && $submissionPhoto->results()->whereHas('awards')->whereHas('round', fn ($query) => $query->where('is_final', true)->orWhere('status', 'finalized'))->exists();
         abort_unless($allowed, 404);

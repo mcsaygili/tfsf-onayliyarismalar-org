@@ -34,6 +34,7 @@
                     <tr>
                         <th>{{ __('institution.competitions.column_name') }}</th>
                         <th>{{ __('institution.competitions.column_status') }}</th>
+                        <th>{{ __('institution.competitions.column_publication') }}</th>
                         <th>{{ __('institution.competitions.column_updated') }}</th>
                         <th></th>
                     </tr>
@@ -47,6 +48,7 @@
                                     {{ __('institution.competitions.status.'.$competition->status->value) }}
                                 </span>
                             </td>
+                            <td>{{ $competition->status === \App\Enums\CompetitionStatus::Approved ? __('institution.competitions.publication_states.'.$competition->publication_state->value) : '—' }}</td>
                             <td>{{ $competition->updated_at->format('d.m.Y H:i') }}</td>
                             <td style="text-align: right;">
                                 <a href="{{ route('institution.competitions.step.show', [$competition, $competition->current_step]) }}" class="ip-row-icon-btn" title="{{ __('institution.competitions.open_action') }}" aria-label="{{ __('institution.competitions.open_action') }}">
@@ -56,7 +58,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="ip-table-empty">{{ __('institution.competitions.empty') }}</td>
+                            <td colspan="5" class="ip-table-empty">{{ __('institution.competitions.empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

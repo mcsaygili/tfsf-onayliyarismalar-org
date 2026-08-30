@@ -7,6 +7,7 @@ use App\Models\CompetitionSubmissionPhoto;
 use App\Models\JuryEvaluationSubmission;
 use App\Models\JuryScore;
 use App\Models\Photo;
+use App\Notifications\Juri\EvaluationReopenedNotification;
 use App\Support\CompetitionRules\CompetitionEligibilityEvaluator;
 use App\Support\Photo\ExifReader;
 use Illuminate\Http\UploadedFile;
@@ -178,5 +179,9 @@ class CompetitionSubmissionPhotoService
             ->where('competition_evaluation_round_id', $round->id)
             ->whereIn('juror_assignment_id', $assignmentIds)
             ->update(['submitted_at' => null]);
+
+        $submission->loadMissing('category.jurorAssignments.juror', 'category.translations', 'entry.competition.translations');
+        $submission->category->jurorAssignments->pluck('juror')->filter()->unique('id')
+            ->each(fn ($juror) => $juror->notify(new EvaluationReopenedNotification($submission)));
     }
 }

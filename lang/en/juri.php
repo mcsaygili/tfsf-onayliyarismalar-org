@@ -107,10 +107,15 @@ return [
     'nav' => [
         'dashboard' => 'Dashboard',
         'assignments' => 'My Assignments',
+        'notifications' => 'Notifications',
         'profile' => 'Jury Details',
         'password' => 'Password',
         'logout' => 'Secure Logout',
         'mobile' => 'Jury portal sections',
+    ],
+
+    'notifications' => [
+        'title' => 'Notifications', 'hint' => 'Updates about jury assignments and result publication.', 'mark_all_read' => 'Mark All as Read', 'all_read' => 'All notifications were marked as read.', 'empty' => 'You have no notifications yet.', 'results_title' => 'Competition results published', 'evaluation_reopened_title' => 'Evaluation reopened', 'evaluation_reopened' => 'Your scoring for :competition / :category was reopened because a participant changed a submitted work.',
     ],
 
     'profile' => [

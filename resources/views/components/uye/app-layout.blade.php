@@ -805,6 +805,10 @@
                 <x-uye.icon name="equipment" />
                 {{ __('uye.nav.equipment') }}
             </a>
+            <a href="{{ route('notifications.index') }}" class="ip-nav-item {{ request()->routeIs('notifications.*') ? 'is-active' : '' }}">
+                <x-uye.icon name="list" />
+                {{ __('uye.nav.notifications') }} @if($member->unreadNotifications()->exists())<span class="ip-nav-soon">{{ $member->unreadNotifications()->count() }}</span>@endif
+            </a>
             <div x-data="{ o: {{ request()->routeIs('profile.*') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('profile.*') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
                     <x-uye.icon name="account" />
@@ -857,6 +861,7 @@
                             <x-uye.icon name="account" />
                             {{ __('uye.nav.profile') }}
                         </a>
+                        <a href="{{ route('notifications.index') }}" class="ip-dropdown-item"><x-uye.icon name="list" />{{ __('uye.nav.notifications') }}@if($member->unreadNotifications()->exists()) ({{ $member->unreadNotifications()->count() }})@endif</a>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Eys;
 
 use App\Enums\CommitteeDecisionStatus;
+use App\Enums\CompetitionPublicationState;
 use App\Enums\CompetitionStatus;
 use App\Enums\EvaluationRoundMethod;
 use App\Enums\EvaluationRoundStatus;
@@ -17,8 +18,11 @@ use App\Models\JuryEvaluationSubmission;
 use App\Models\Temsilci;
 use App\Notifications\Juri\CompetitionResultsPublishedNotification as JuryResultsPublishedNotification;
 use App\Notifications\Uye\CompetitionResultsPublishedNotification as MemberResultsPublishedNotification;
+use App\Services\CompetitionAuditService;
+use App\Services\CompetitionPublicationService;
 use App\Services\CompetitionPublicSlugService;
 use App\Services\CompetitionReadinessService;
+use App\Services\CompetitionResultPresentationService;
 use App\Services\CompetitionResultService;
 use App\Services\CompetitionWorkflowService;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
@@ -94,7 +98,12 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.representative_assigned'));
     }
 
-    public function aggregateResults(Competition $competition, CompetitionResultService $results): RedirectResponse
+    public function previewResults(Competition $competition, CompetitionResultPresentationService $presentation): View
+    {
+        return view('result.competitions.show', $presentation->forCompetition($competition) + ['preview' => true]);
+    }
+
+    public function aggregateResults(Competition $competition, CompetitionResultService $results, CompetitionAuditService $audit): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
 
@@ -102,11 +111,16 @@ class CompetitionReviewController extends Controller
         $round->method === EvaluationRoundMethod::Committee
             ? $results->aggregateCommittee($round)
             : $results->aggregate($round);
+        $audit->record($competition, 'results_aggregated', Auth::guard('eys')->user(), changes: [
+            'round_id' => $round->id,
+            'round_number' => $round->round_number,
+            'result_count' => $round->results()->count(),
+        ]);
 
         return back()->with('status', __('eys.competitions.results_aggregated'));
     }
 
-    public function createFinalRound(Request $request, Competition $competition): RedirectResponse
+    public function createFinalRound(Request $request, Competition $competition, CompetitionAuditService $audit): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
         $validated = $request->validate([
@@ -142,11 +156,17 @@ class CompetitionReviewController extends Controller
                 ->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
                 ->delete();
         });
+        $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
+        $audit->record($competition, 'final_round_created', Auth::guard('eys')->user(), changes: [
+            'source_round_id' => $sourceRound->id,
+            'final_round_id' => $finalRound->id,
+            'photo_count' => $photoIds->count(),
+        ]);
 
         return back()->with('status', __('eys.competitions.final_round_created'));
     }
 
-    public function saveFinalRound(Request $request, Competition $competition, CompetitionResultService $results): RedirectResponse
+    public function saveFinalRound(Request $request, Competition $competition, CompetitionResultService $results, CompetitionAuditService $audit): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
         $round = $competition->evaluationRounds()->where('is_final', true)->where('method', EvaluationRoundMethod::Committee->value)->firstOrFail();
@@ -195,11 +215,15 @@ class CompetitionReviewController extends Controller
             }
             $results->aggregateCommittee($round);
         });
+        $audit->record($competition, 'final_round_updated', Auth::guard('eys')->user(), changes: [
+            'round_id' => $round->id,
+            'decisions' => $round->committeeDecisions()->get(['id', 'decision', 'score', 'rank', 'note'])->toArray(),
+        ]);
 
         return back()->with('status', __('eys.competitions.final_round_saved'));
     }
 
-    public function saveResultAwards(Request $request, Competition $competition): RedirectResponse
+    public function saveResultAwards(Request $request, Competition $competition, CompetitionAuditService $audit): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
 
@@ -262,14 +286,21 @@ class CompetitionReviewController extends Controller
                 ]);
             }
         });
+        $audit->record($competition, 'result_awards_updated', Auth::guard('eys')->user(), changes: [
+            'assignment_count' => count($rows),
+            'result_ids' => collect($rows)->pluck(2)->values()->all(),
+        ]);
 
         return back()->with('status', __('eys.competitions.result_awards_saved'));
     }
 
-    public function publishResults(Competition $competition, CompetitionResultService $results): RedirectResponse
+    public function publishResults(Competition $competition, CompetitionResultService $results, CompetitionAuditService $audit): RedirectResponse
     {
         if ($competition->results_published_at) {
             return back()->with('status', __('eys.competitions.results_already_published'));
+        }
+        if ($competition->publication_state !== CompetitionPublicationState::Published) {
+            return back()->withErrors(['results' => __('eys.competitions.results_require_published_competition')]);
         }
 
         $expected = CompetitionCategoryJurorAssignment::query()
@@ -299,12 +330,19 @@ class CompetitionReviewController extends Controller
             return back()->withErrors(['results' => __('eys.competitions.result_awards_incomplete', ['assigned' => $assignedAwardSlots, 'required' => $requiredAwardSlots])]);
         }
 
-        DB::transaction(function () use ($competition, $round, $results) {
+        DB::transaction(function () use ($competition, $round, $results, $audit) {
             $round->method === EvaluationRoundMethod::Committee
                 ? $results->aggregateCommittee($round)
                 : $results->aggregate($round);
             $round->update(['status' => EvaluationRoundStatus::Finalized, 'finalized_at' => now()]);
-            $competition->forceFill(['results_published_at' => now()])->save();
+            $competition->forceFill([
+                'results_published_at' => now(),
+                'results_publication_version' => $competition->results_publication_version + 1,
+            ])->save();
+            $audit->record($competition, 'results_published', Auth::guard('eys')->user(), changes: [
+                'round_id' => $round->id,
+                'publication_version' => $competition->results_publication_version,
+            ]);
         });
 
         $members = $competition->entries()->whereNotNull('submitted_at')->with('user')->get()->pluck('user')->filter()->unique('id');
@@ -315,6 +353,41 @@ class CompetitionReviewController extends Controller
         Notification::send($jurors, new JuryResultsPublishedNotification($competition));
 
         return back()->with('status', __('eys.competitions.results_published'));
+    }
+
+    public function unpublishResults(Request $request, Competition $competition, CompetitionAuditService $audit): RedirectResponse
+    {
+        abort_unless($competition->results_published_at, 422);
+        $validated = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:2000']]);
+
+        DB::transaction(function () use ($competition, $validated, $audit): void {
+            $publishedAt = $competition->results_published_at;
+            $competition->forceFill(['results_published_at' => null])->save();
+            $audit->record($competition, 'results_unpublished_for_correction', Auth::guard('eys')->user(), $validated['reason'], [
+                'previous_published_at' => $publishedAt?->toIso8601String(),
+                'publication_version' => $competition->results_publication_version,
+            ]);
+        });
+
+        return back()->with('status', __('eys.competitions.results_unpublished'));
+    }
+
+    public function updatePublication(Request $request, Competition $competition, string $action, CompetitionPublicationService $publication): RedirectResponse
+    {
+        abort_unless(in_array($action, ['suspend', 'resume', 'unpublish', 'cancel'], true), 404);
+        $validated = $request->validate([
+            'reason' => [$action === 'resume' ? 'nullable' : 'required', 'string', 'min:10', 'max:2000'],
+        ]);
+        $actor = Auth::guard('eys')->user();
+
+        match ($action) {
+            'suspend' => $publication->suspend($competition, $actor, $validated['reason']),
+            'resume' => $publication->resume($competition, $actor, $validated['reason'] ?? null),
+            'unpublish' => $publication->unpublish($competition, $actor, $validated['reason']),
+            'cancel' => $publication->cancel($competition, $actor, $validated['reason']),
+        };
+
+        return back()->with('status', __('eys.competitions.publication_action_completed'));
     }
 
     private function resultRound(Competition $competition): CompetitionEvaluationRound
@@ -400,6 +473,8 @@ class CompetitionReviewController extends Controller
                     'reviewed_at' => now(),
                     'reviewed_by' => Auth::guard('eys')->id(),
                     'published_at' => now(),
+                    'publication_state' => CompetitionPublicationState::Published,
+                    'publication_state_changed_at' => now(),
                 ],
             );
         });

@@ -6,6 +6,7 @@ use App\Enums\CompetitionEntryStatus;
 use App\Enums\CompetitionSubmissionStatus;
 use App\Enums\SubmissionApprovalStatus;
 use App\Models\CompetitionSubmissionApproval;
+use App\Notifications\Uye\CompetitionSubmissionDecisionNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -60,6 +61,8 @@ class SubmissionApprovalService
                 'actor_id' => $actor->getKey(),
                 'context' => ['submission_id' => $submission->id, 'note' => $note],
             ]);
+
+            $entry->user->notify(new CompetitionSubmissionDecisionNotification($submission->loadMissing('category.translations', 'entry.competition.translations'), $approved, $note));
         });
     }
 }

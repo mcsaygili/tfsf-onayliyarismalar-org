@@ -11,6 +11,7 @@ use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
 use App\Http\Controllers\Juri\EvaluationController;
+use App\Http\Controllers\Juri\NotificationController;
 use App\Http\Controllers\Juri\PasswordController;
 use App\Http\Controllers\Juri\ProfileController;
 use App\Http\Controllers\SetLanguageController;
@@ -51,12 +52,17 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
 
     Route::middleware(['auth:juri', 'verified.guard:juri'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('juri.dashboard');
+        Route::prefix('bildirimler')->name('juri.notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::get('{notification}', [NotificationController::class, 'show'])->name('show');
+            Route::post('tumunu-okundu-isaretle', [NotificationController::class, 'markAllRead'])->name('read-all');
+        });
         Route::get('gorevlerim', [AssignmentController::class, 'index'])->name('juri.assignments.index');
         Route::get('gorevlerim/{competition}', [AssignmentController::class, 'show'])->name('juri.assignments.show');
-        Route::get('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'show'])->name('juri.evaluations.show');
-        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'save'])->name('juri.evaluations.save');
-        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme/tamamla', [EvaluationController::class, 'finalize'])->name('juri.evaluations.finalize');
-        Route::get('degerlendirme/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('juri.evaluations.photos.show');
+        Route::get('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'show'])->middleware('throttle:120,1')->name('juri.evaluations.show');
+        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'save'])->middleware('throttle:120,1')->name('juri.evaluations.save');
+        Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme/tamamla', [EvaluationController::class, 'finalize'])->middleware('throttle:30,1')->name('juri.evaluations.finalize');
+        Route::get('degerlendirme/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->middleware('throttle:180,1')->name('juri.evaluations.photos.show');
 
         Route::get('juri-bilgilerim', [ProfileController::class, 'edit'])->name('juri.profile.edit');
         Route::patch('juri-bilgilerim', [ProfileController::class, 'update'])->name('juri.profile.update');

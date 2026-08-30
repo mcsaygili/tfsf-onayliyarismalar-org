@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Competition;
 use App\Models\CompetitionSubmissionPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,8 +11,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompetitionSubmissionPhotoController extends Controller
 {
-    public function __invoke(Request $request, CompetitionSubmissionPhoto $submissionPhoto): StreamedResponse
+    public function __invoke(Request $request): StreamedResponse
     {
+        $routePhoto = $request->route('submissionPhoto');
+        $submissionPhoto = $routePhoto instanceof CompetitionSubmissionPhoto
+            ? $routePhoto
+            : CompetitionSubmissionPhoto::query()->findOrFail($routePhoto);
+        $routeCompetition = $request->route('competition');
+        $routeCompetition = $routeCompetition instanceof Competition
+            ? $routeCompetition
+            : (filled($routeCompetition) ? Competition::query()->findOrFail($routeCompetition) : null);
+
         $submissionPhoto->loadMissing('submission.entry.competition');
         $submission = $submissionPhoto->submission;
         $entry = $submission->entry;
@@ -19,13 +29,16 @@ class CompetitionSubmissionPhotoController extends Controller
 
         $allowed = match (true) {
             $request->routeIs('competitions.photos.show') => Auth::guard('web')->check()
-                && ($entry->user_id === Auth::guard('web')->id() || filled($competition->results_published_at)),
+                && $entry->user_id === Auth::guard('web')->id(),
             $request->routeIs('institution.participant-submissions.photos.show') => Auth::guard('institution')->check()
                 && $competition->institution_id === Auth::guard('institution')->user()->institution_id,
             $request->routeIs('temsilci.participant-submissions.photos.show') => Auth::guard('temsilci')->check()
                 && $competition->representative_id === Auth::guard('temsilci')->id(),
             $request->routeIs('juri.evaluations.photos.show') => Auth::guard('juri')->check()
+                && ! $submissionPhoto->withdrawn_at
                 && $submission->category->jurorAssignments()->where('juror_id', Auth::guard('juri')->id())->exists(),
+            $request->routeIs('eys.competitions.results.photos.show') => Auth::guard('eys')->check()
+                && $routeCompetition?->is($competition),
             default => false,
         };
 

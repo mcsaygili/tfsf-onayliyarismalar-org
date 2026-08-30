@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\CompetitionOperationalPhase;
+use App\Enums\CompetitionPublicationState;
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use Illuminate\Support\Carbon;
@@ -13,7 +14,15 @@ class CompetitionPhaseService
     {
         $now ??= now();
 
-        if ($competition->status !== CompetitionStatus::Approved || ! $competition->published_at) {
+        if ($competition->publication_state === CompetitionPublicationState::Cancelled) {
+            return CompetitionOperationalPhase::Cancelled;
+        }
+        if ($competition->publication_state === CompetitionPublicationState::Suspended) {
+            return CompetitionOperationalPhase::Suspended;
+        }
+        if ($competition->status !== CompetitionStatus::Approved
+            || $competition->publication_state !== CompetitionPublicationState::Published
+            || ! $competition->published_at) {
             return CompetitionOperationalPhase::Unavailable;
         }
         if ($competition->results_published_at && $competition->results_published_at->lte($now)) {

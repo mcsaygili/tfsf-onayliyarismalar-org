@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CompetitionAudience;
 use App\Enums\CompetitionInfrastructureProvider;
+use App\Enums\CompetitionPublicationState;
 use App\Enums\CompetitionStatus;
 use App\Models\Concerns\HasTranslations;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
@@ -47,12 +48,15 @@ class Competition extends Model
             'evaluation_starts_at' => 'datetime',
             'evaluation_ends_at' => 'datetime',
             'results_published_at' => 'datetime',
+            'results_publication_version' => 'integer',
             'external_responsibility_accepted_at' => 'datetime',
             'status' => CompetitionStatus::class,
             'current_step' => 'integer',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
             'published_at' => 'datetime',
+            'publication_state' => CompetitionPublicationState::class,
+            'publication_state_changed_at' => 'datetime',
         ];
     }
 
@@ -179,6 +183,7 @@ class Competition extends Model
     {
         return $query
             ->where('status', CompetitionStatus::Approved)
+            ->where('publication_state', CompetitionPublicationState::Published)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
     }

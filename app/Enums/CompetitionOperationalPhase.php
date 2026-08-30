@@ -5,6 +5,8 @@ namespace App\Enums;
 enum CompetitionOperationalPhase: string
 {
     case Unavailable = 'unavailable';
+    case Suspended = 'suspended';
+    case Cancelled = 'cancelled';
     case Scheduled = 'scheduled';
     case ApplicationsOpen = 'applications_open';
     case ApplicationsClosed = 'applications_closed';

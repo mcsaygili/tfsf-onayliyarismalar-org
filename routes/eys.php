@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\Eys\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Eys\Auth\NewPasswordController;
 use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
@@ -293,10 +294,14 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
             Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
             Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
+            Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
+            Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
             Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->name('create-final-round');
             Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->name('save-final-round');
             Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
             Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
+            Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->name('unpublish-results');
+            Route::post('{competition}/yayin/{action}', [CompetitionReviewController::class, 'updatePublication'])->name('publication.update');
             Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
             Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
             Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Uye;
 
-use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\CaptureDevice;
 use App\Models\Competition;
@@ -27,8 +26,7 @@ class CompetitionController extends Controller
     public function index(Request $request, CompetitionPhaseService $phases): View
     {
         $competitions = Competition::query()
-            ->where('status', CompetitionStatus::Approved)
-            ->whereNotNull('published_at')
+            ->publiclyVisible()
             ->with(['translations', 'institution', 'competitionType.translations', 'categories.translations'])
             ->withCount('categories')
             ->orderBy('application_ends_at')
@@ -146,7 +144,7 @@ class CompetitionController extends Controller
 
     private function published(Competition $competition): void
     {
-        abort_unless($competition->status === CompetitionStatus::Approved && $competition->published_at, 404);
+        abort_unless($competition->newQuery()->whereKey($competition->getKey())->publiclyVisible()->exists(), 404);
     }
 
     private function ownsEntry(Request $request, CompetitionEntry $entry): void

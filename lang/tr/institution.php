@@ -162,10 +162,12 @@ return [
         'untitled' => 'İsimsiz Başvuru',
         'column_name' => 'Yarışma Adı',
         'column_status' => 'Durum',
+        'column_publication' => 'Yayın Durumu',
         'column_updated' => 'Son Güncelleme',
         'open_action' => 'Aç',
         'empty' => 'Henüz bir yarışma başvurunuz yok.',
         'pagination_info' => ':first–:last / :total kayıt',
+        'publication_states' => ['unpublished' => 'Yayında değil', 'published' => 'Yayında', 'suspended' => 'Askıya alındı', 'cancelled' => 'İptal edildi'],
 
         'status' => [
             'draft' => 'Taslak',

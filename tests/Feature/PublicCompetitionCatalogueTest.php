@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\CompetitionAudience;
+use App\Enums\CompetitionPublicationState;
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Services\CompetitionPublicSlugService;
@@ -66,7 +67,7 @@ class PublicCompetitionCatalogueTest extends TestCase
             $translations['en'] = ['name' => $name, 'subject' => 'Competition subject.', 'purpose' => 'Competition purpose.'];
         }
         $competition->upsertTranslations($translations);
-        $competition->forceFill(['status' => CompetitionStatus::Approved, 'published_at' => now()])->save();
+        $competition->forceFill(['status' => CompetitionStatus::Approved, 'published_at' => now(), 'publication_state' => CompetitionPublicationState::Published])->save();
         app(CompetitionPublicSlugService::class)->ensure($competition);
 
         return $competition->fresh(['translations', 'institution', 'competitionType.translations']);

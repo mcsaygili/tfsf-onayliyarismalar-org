@@ -92,12 +92,17 @@ return [
         'equipment' => 'My Equipment',
         'competitions' => 'Competitions',
         'entries' => 'My Entries',
+        'notifications' => 'Notifications',
         'profile' => 'My Profile',
         'privacy' => 'Privacy Settings',
         'password' => 'Password',
         'account' => 'Account',
         'soon' => 'Soon',
         'logout' => 'Log Out',
+    ],
+
+    'notifications' => [
+        'title' => 'Notifications', 'hint' => 'Updates about your entries and competition results.', 'mark_all_read' => 'Mark All as Read', 'all_read' => 'All notifications were marked as read.', 'empty' => 'You have no notifications yet.', 'results_title' => 'Competition results published', 'submission_decision_title' => 'Entry review completed', 'submission_approved' => 'Your :competition / :category entry was approved.', 'submission_rejected' => 'Your :competition / :category entry was rejected. :note',
     ],
 
     'dashboard' => [

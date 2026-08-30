@@ -696,6 +696,10 @@
                 <x-juri.icon name="assignments" />
                 {{ __('juri.nav.assignments') }}
             </a>
+            <a href="{{ route('juri.notifications.index') }}" class="ip-nav-item {{ request()->routeIs('juri.notifications.*') ? 'is-active' : '' }}">
+                <x-juri.icon name="assignments" />
+                {{ __('juri.nav.notifications') }} @if($juror->unreadNotifications()->exists()) ({{ $juror->unreadNotifications()->count() }})@endif
+            </a>
             <div x-data="{ o: {{ request()->routeIs('juri.profile.*') || request()->routeIs('juri.password.edit') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('juri.profile.*') || request()->routeIs('juri.password.edit') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
                     <x-juri.icon name="account" />
@@ -763,6 +767,7 @@
                 <x-juri.icon name="assignments" />
                 {{ __('juri.nav.assignments') }}
             </a>
+            <a href="{{ route('juri.notifications.index') }}" class="ip-nav-item {{ request()->routeIs('juri.notifications.*') ? 'is-active' : '' }}"><x-juri.icon name="assignments" />{{ __('juri.nav.notifications') }}</a>
             <a href="{{ route('juri.profile.edit') }}" class="ip-nav-item {{ request()->routeIs('juri.profile.*') ? 'is-active' : '' }}">
                 <x-juri.icon name="account" />
                 {{ __('juri.nav.profile') }}

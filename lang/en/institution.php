@@ -162,10 +162,12 @@ return [
         'untitled' => 'Untitled Application',
         'column_name' => 'Competition Name',
         'column_status' => 'Status',
+        'column_publication' => 'Publication State',
         'column_updated' => 'Last Updated',
         'open_action' => 'Open',
         'empty' => "You don't have any competition applications yet.",
         'pagination_info' => ':first–:last of :total',
+        'publication_states' => ['unpublished' => 'Not published', 'published' => 'Published', 'suspended' => 'Suspended', 'cancelled' => 'Cancelled'],
 
         'status' => [
             'draft' => 'Draft',

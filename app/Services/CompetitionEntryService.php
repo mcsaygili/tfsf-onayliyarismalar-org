@@ -40,6 +40,9 @@ class CompetitionEntryService
 
     public function addCategory(CompetitionEntry $entry, string $categoryId): CompetitionSubmission
     {
+        if (! $entry->status->isEditable()) {
+            throw ValidationException::withMessages(['category' => __('uye.competitions.errors.entry_locked')]);
+        }
         $category = $entry->competition->categories()->whereKey($categoryId)->firstOrFail();
         $check = $this->eligibility->forCategory($category, $entry->user);
         if (! $check['eligible']) {

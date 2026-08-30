@@ -107,10 +107,15 @@ return [
     'nav' => [
         'dashboard' => 'Gösterge Paneli',
         'assignments' => 'Görevlerim',
+        'notifications' => 'Bildirimler',
         'profile' => 'Jüri Bilgileri',
         'password' => 'Şifre İşlemleri',
         'logout' => 'Güvenli Çıkış',
         'mobile' => 'Jüri paneli bölümleri',
+    ],
+
+    'notifications' => [
+        'title' => 'Bildirimler', 'hint' => 'Jüri görevleri ve sonuç süreçleriyle ilgili güncellemeler.', 'mark_all_read' => 'Tümünü Okundu İşaretle', 'all_read' => 'Tüm bildirimler okundu olarak işaretlendi.', 'empty' => 'Henüz bildiriminiz yok.', 'results_title' => 'Yarışma sonuçları yayımlandı', 'evaluation_reopened_title' => 'Değerlendirme yeniden açıldı', 'evaluation_reopened' => ':competition / :category kategorisinde katılımcı eser değişikliği yaptığı için puanlamanız yeniden açıldı.',
     ],
 
     'profile' => [
