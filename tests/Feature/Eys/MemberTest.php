@@ -97,4 +97,27 @@ class MemberTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_eys_uye_kisitlamasi_ekleyebilir_ve_kaldirabilir(): void
+    {
+        $user = $this->admin();
+        $member = User::factory()->create();
+
+        $this->actingAs($user, 'eys')->post(route('eys.uyeler.restrictions.store', $member), [
+            'type' => 'competition',
+            'reason' => 'Yarışma kurallarını ihlal eden katılım kaydı.',
+            'starts_at' => now()->subMinute()->format('Y-m-d H:i:s'),
+            'ends_at' => now()->addWeek()->format('Y-m-d H:i:s'),
+        ])->assertRedirect();
+
+        $restriction = $member->activeRestrictions()->firstOrFail();
+        $this->assertSame($user->id, $restriction->created_by);
+
+        $this->actingAs($user, 'eys')->patch(route('eys.uyeler.restrictions.lift', [$member, $restriction]), [
+            'lift_reason' => 'İnceleme sonucunda kısıtlama kaldırıldı.',
+        ])->assertRedirect();
+
+        $this->assertFalse($member->activeRestrictions()->exists());
+        $this->assertSame($user->id, $restriction->fresh()->lifted_by);
+    }
 }

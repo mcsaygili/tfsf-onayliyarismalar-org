@@ -3,10 +3,14 @@
 namespace App\Notifications\Juri;
 
 use App\Models\CompetitionSubmission;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class EvaluationReopenedNotification extends Notification
+class EvaluationReopenedNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly CompetitionSubmission $submission) {}
 
     public function via(object $notifiable): array

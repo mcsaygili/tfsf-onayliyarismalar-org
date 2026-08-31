@@ -163,8 +163,7 @@ class CompetitionRuleAndRegulationTest extends TestCase
         $items = collect(app(CompetitionRegulationCompiler::class)->compile($competition)['tr'])
             ->flatMap(fn (array $section) => $section['items']);
 
-        $this->assertTrue($items->contains(fn (array $item) =>
-            $item['code'] === 'category-evaluation-criterion'
+        $this->assertTrue($items->contains(fn (array $item) => $item['code'] === 'category-evaluation-criterion'
             && str_contains($item['content'], 'Görsel Etki')
             && str_contains($item['content'], '1–20')
             && str_contains($item['content'], '1.5 göreli ağırlık')));

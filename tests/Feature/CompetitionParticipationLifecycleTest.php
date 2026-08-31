@@ -369,11 +369,24 @@ class CompetitionParticipationLifecycleTest extends TestCase
         ])->assertRedirect();
         $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
         $decision = $finalRound->committeeDecisions()->firstOrFail();
+        $session = $finalRound->jurySession()->with('attendances')->firstOrFail();
+        $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.jury-session.update', $competition), [
+            'quorum' => 1,
+            'attendances' => [$session->attendances->firstOrFail()->id => 'present'],
+            'action' => 'open',
+        ])->assertRedirect();
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-final-round', $competition), [
             'decisions' => [$decision->id => ['decision' => 'selected', 'score' => 8, 'rank' => 1, 'note' => 'Kurul ortak kararı']],
         ])->assertRedirect();
         $finalResult = $finalRound->results()->firstOrFail();
         $this->assertSame(8, (int) $finalResult->average_score);
+
+        $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.jury-session.update', $competition), [
+            'quorum' => 1,
+            'minutes' => 'Kurul ortak değerlendirmesini tamamladı.',
+            'attendances' => [$session->attendances->firstOrFail()->id => 'present'],
+            'action' => 'close',
+        ])->assertRedirect();
 
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-result-awards', $competition), [
             'award_assignments' => [$award->id => [1 => $finalResult->id]],
@@ -386,7 +399,15 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ->get(route('eys.competitions.results.photos.show', [$competition, $photo]))
             ->assertOk();
         Notification::fake();
-        $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.publish-results', $competition))->assertRedirect();
+        $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.publish-results', $competition), [
+            'publication_note' => 'Kurul tarafından onaylanan ilk sonuç yayını.',
+        ])->assertRedirect();
+
+        $publication = $competition->resultPublications()->firstOrFail();
+        $this->assertSame(1, $publication->version);
+        $this->assertSame($competition->id, $publication->snapshot['competition']['id']);
+        $this->assertCount(1, $publication->snapshot['results']);
+        $this->assertNotNull($publication->notified_at);
 
         $this->get(route('result.index'))->assertOk()->assertSee($competition->name);
         $this->get(route('result.competitions.show', $competition))

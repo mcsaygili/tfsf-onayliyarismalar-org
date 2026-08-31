@@ -164,6 +164,16 @@ class Competition extends Model
         return $this->hasMany(CompetitionEvaluationRound::class)->orderBy('round_number');
     }
 
+    public function monitoringReports(): HasMany
+    {
+        return $this->hasMany(CompetitionMonitoringReport::class)->latest('observed_at');
+    }
+
+    public function resultPublications(): HasMany
+    {
+        return $this->hasMany(CompetitionResultPublication::class)->orderByDesc('version');
+    }
+
     public function isEditable(): bool
     {
         return $this->status->isEditableByInstitution();

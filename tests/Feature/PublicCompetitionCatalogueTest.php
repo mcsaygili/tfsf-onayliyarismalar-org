@@ -59,6 +59,19 @@ class PublicCompetitionCatalogueTest extends TestCase
         $this->get(route('public.competitions.show', $hidden->public_slug))->assertNotFound();
     }
 
+    public function test_sitemap_only_includes_public_competition_urls(): void
+    {
+        $visible = $this->publishedCompetition('Sitemap Yarışması');
+        $hidden = Competition::factory()->create();
+        app(CompetitionPublicSlugService::class)->ensure($hidden);
+
+        $this->get(route('public.sitemap'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+            ->assertSee(route('public.competitions.show', $visible), escape: false)
+            ->assertDontSee(route('public.competitions.show', $hidden), escape: false);
+    }
+
     private function publishedCompetition(string $name, CompetitionAudience $audience = CompetitionAudience::National): Competition
     {
         $competition = Competition::factory()->create(['audience' => $audience]);

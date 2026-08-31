@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Eys;
 
 use App\Http\Controllers\Controller;
 use App\Models\EducationLevel;
+use App\Models\MemberRestriction;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -75,10 +77,38 @@ class MemberController extends Controller
 
     public function edit(User $uye): View
     {
+        $uye->load([
+            'restrictions.creator', 'restrictions.lifter',
+            'competitionEntries' => fn ($query) => $query->with(['competition.translations', 'submissions.photos'])->latest()->limit(20),
+        ]);
+
         return view('eys.uyeler.edit', [
             'member' => $uye,
             'educationLevels' => EducationLevel::active()->ordered()->with('translations')->get(),
         ]);
+    }
+
+    public function restrict(Request $request, User $uye): RedirectResponse
+    {
+        $validated = $request->validate([
+            'type' => ['required', Rule::in(['competition', 'account'])],
+            'reason' => ['required', 'string', 'min:10', 'max:2000'],
+            'starts_at' => ['required', 'date'],
+            'ends_at' => ['nullable', 'date', 'after:starts_at'],
+        ]);
+
+        $uye->restrictions()->create($validated + ['created_by' => Auth::guard('eys')->id()]);
+
+        return back()->with('status', 'Üye kısıtlaması kaydedildi.');
+    }
+
+    public function liftRestriction(Request $request, User $uye, MemberRestriction $restriction): RedirectResponse
+    {
+        abort_unless($restriction->user_id === $uye->id && $restriction->lifted_at === null, 404);
+        $validated = $request->validate(['lift_reason' => ['required', 'string', 'min:5', 'max:1000']]);
+        $restriction->update($validated + ['lifted_at' => now(), 'lifted_by' => Auth::guard('eys')->id()]);
+
+        return back()->with('status', 'Üye kısıtlaması kaldırıldı.');
     }
 
     public function update(Request $request, User $uye): RedirectResponse

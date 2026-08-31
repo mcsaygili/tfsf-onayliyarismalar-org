@@ -38,6 +38,11 @@ class CompetitionResultController extends Controller
             404,
         );
 
-        return view('result.competitions.show', $presentation->forCompetition($competition) + ['preview' => false]);
+        $competition->load('resultPublications.publisher');
+
+        return view('result.competitions.show', $presentation->forCompetition($competition) + [
+            'preview' => false,
+            'publicationHistory' => $competition->resultPublications,
+        ]);
     }
 }

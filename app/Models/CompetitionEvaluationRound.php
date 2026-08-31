@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['competition_id', 'round_number', 'name', 'method', 'is_final', 'status', 'opens_at', 'closes_at', 'finalized_at'])]
 class CompetitionEvaluationRound extends Model
@@ -43,5 +44,10 @@ class CompetitionEvaluationRound extends Model
     public function committeeDecisions(): HasMany
     {
         return $this->hasMany(CompetitionCommitteeDecision::class);
+    }
+
+    public function jurySession(): HasOne
+    {
+        return $this->hasOne(CompetitionJurySession::class);
     }
 }

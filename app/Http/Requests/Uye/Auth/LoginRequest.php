@@ -43,6 +43,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::guard('web')->user()->activeRestrictions()->where('type', 'account')->exists()) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Hesabınız için aktif bir erişim kısıtlaması bulunuyor.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

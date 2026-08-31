@@ -1027,6 +1027,10 @@
                                 <x-eys.icon name="wrench" />
                                 {{ __('eys.nav.maintenance_mode') }}
                             </a>
+                            <a href="{{ route('eys.system-settings.health') }}" class="ip-nav-item {{ request()->routeIs('eys.system-settings.health') ? 'is-active' : '' }}">
+                                <x-eys.icon name="settings" />
+                                Sistem sağlığı
+                            </a>
                         @endcan
                     </div>
                 </div>

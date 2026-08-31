@@ -24,7 +24,7 @@ use Illuminate\Notifications\Notifiable;
  * TODO(EYS): Bu tablo, ileride Administrator/EYS modülü tarafından
  * yönetilecek (üye yasaklama, dernek bağlantısı vb.) — bu fazda yok.
  */
-#[Fillable(['username', 'email', 'tckimlikno', 'first_name', 'last_name', 'password', 'gender', 'date_of_birth', 'phone_number', 'country_id', 'city_id', 'address', 'status', 'uye_turu', 'education_level_id'])]
+#[Fillable(['username', 'email', 'tckimlikno', 'first_name', 'last_name', 'password', 'gender', 'date_of_birth', 'phone_number', 'country_id', 'city_id', 'address', 'status', 'uye_turu', 'education_level_id', 'preferences'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -65,6 +65,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function competitionEntries(): HasMany
     {
         return $this->hasMany(CompetitionEntry::class);
+    }
+
+    public function restrictions(): HasMany
+    {
+        return $this->hasMany(MemberRestriction::class);
+    }
+
+    public function activeRestrictions(): HasMany
+    {
+        return $this->restrictions()->active();
     }
 
     public function canUploadMorePhotos(): bool

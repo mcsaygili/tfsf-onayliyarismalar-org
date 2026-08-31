@@ -40,6 +40,22 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_bildirim_tercihleri_guncellenebilir(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.preferences.update'), [
+            'results_email' => '1',
+            'marketing_email' => '1',
+        ])->assertRedirect(route('profile.account.edit'));
+
+        $this->assertSame([
+            'results_email' => true,
+            'submission_database' => false,
+            'marketing_email' => true,
+        ], $user->fresh()->preferences);
+    }
+
     public function test_uye_bilgileri_guncellenebilir(): void
     {
         $user = User::factory()->create();

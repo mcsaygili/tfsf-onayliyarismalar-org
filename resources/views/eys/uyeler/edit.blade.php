@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    <div class="ip-card">
+    <div class="ip-card ip-card-spaced">
         <div class="ip-section-title">{{ __('eys.uye.edit_title') }}</div>
 
         <form method="POST" action="{{ route('eys.uyeler.update', $member) }}" novalidate autocomplete="off">
@@ -87,6 +87,51 @@
             <div style="margin-top: 1.5rem;">
                 <x-eys.button>{{ __('eys.common.update') }}</x-eys.button>
             </div>
+        </form>
+    </div>
+
+    <div class="ip-card ip-card-spaced">
+        <div class="ip-toolbar">
+            <div><div class="ip-toolbar-title">Üye geçmişi</div><div class="ip-toolbar-hint">Son yarışma katılımları ve eser hareketleri.</div></div>
+            <span class="ip-badge {{ $member->activeRestrictions->isNotEmpty() ? 'is-inactive' : 'is-active' }}">{{ $member->activeRestrictions->isNotEmpty() ? 'Kısıtlı' : 'Katılıma uygun' }}</span>
+        </div>
+        <div class="ip-table-wrap">
+            <table class="ip-table">
+                <thead><tr><th>Yarışma</th><th>Durum</th><th>Kategori</th><th>Aktif fotoğraf</th><th>Tarih</th></tr></thead>
+                <tbody>
+                    @forelse($member->competitionEntries as $entry)
+                        <tr><td class="ip-cell-name">{{ $entry->competition?->name ?: '—' }}</td><td>{{ $entry->status->value }}</td><td>{{ $entry->submissions->count() }}</td><td>{{ $entry->submissions->flatMap->photos->whereNull('withdrawn_at')->count() }}</td><td>{{ $entry->submitted_at?->format('d.m.Y H:i') ?: 'Taslak' }}</td></tr>
+                    @empty<tr><td colspan="5" class="ip-table-empty">Üyenin henüz yarışma katılımı yok.</td></tr>@endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ip-card ip-card-spaced">
+        <div class="ip-section-title">Üye kısıtları</div>
+        <div class="ip-section-hint">Katılım engelleri uygunluk motoruna doğrudan uygulanır ve geçmiş kayıtlar silinmez.</div>
+        <div class="ip-table-wrap" style="margin-bottom:1.25rem;">
+            <table class="ip-table"><thead><tr><th>Tür</th><th>Gerekçe</th><th>Süre</th><th>Durum</th><th></th></tr></thead><tbody>
+                @forelse($member->restrictions->sortByDesc('created_at') as $restriction)
+                    <tr><td>{{ $restriction->type === 'account' ? 'Hesap' : 'Yarışma katılımı' }}</td><td>{{ $restriction->reason }}</td><td>{{ $restriction->starts_at->format('d.m.Y H:i') }} — {{ $restriction->ends_at?->format('d.m.Y H:i') ?: 'Süresiz' }}</td><td><span class="ip-badge {{ $restriction->lifted_at ? 'is-draft' : ($restriction->ends_at?->isPast() ? 'is-draft' : 'is-inactive') }}">{{ $restriction->lifted_at ? 'Kaldırıldı' : ($restriction->ends_at?->isPast() ? 'Sona erdi' : 'Aktif') }}</span></td><td>
+                        @if(!$restriction->lifted_at && (!$restriction->ends_at || $restriction->ends_at->isFuture()))
+                            <form method="POST" action="{{ route('eys.uyeler.restrictions.lift', [$member, $restriction]) }}" style="display:flex;gap:.4rem;">@csrf @method('PATCH')<input class="ia-input" style="min-width:170px;padding:.45rem .6rem;" name="lift_reason" placeholder="Kaldırma gerekçesi" required><button class="ia-btn">Kaldır</button></form>
+                        @endif
+                    </td></tr>
+                @empty<tr><td colspan="5" class="ip-table-empty">Kısıtlama kaydı bulunmuyor.</td></tr>@endforelse
+            </tbody></table>
+        </div>
+
+        <form method="POST" action="{{ route('eys.uyeler.restrictions.store', $member) }}">@csrf
+            <div class="ip-grid-2">
+                <div class="ia-field"><x-eys.label for="restriction_type" value="Kısıt türü" /><select class="ia-input" id="restriction_type" name="type"><option value="competition">Yarışma katılımı</option><option value="account">Hesap erişimi</option></select></div>
+                <div class="ia-field"><x-eys.label for="restriction_reason" value="Gerekçe" /><textarea class="ia-input" id="restriction_reason" name="reason" required>{{ old('reason') }}</textarea></div>
+            </div>
+            <div class="ip-grid-2">
+                <div class="ia-field"><x-eys.label for="restriction_starts_at" value="Başlangıç" /><input class="ia-input" id="restriction_starts_at" type="datetime-local" name="starts_at" value="{{ old('starts_at', now()->format('Y-m-d\TH:i')) }}" required></div>
+                <div class="ia-field"><x-eys.label for="restriction_ends_at" value="Bitiş (boşsa süresiz)" /><input class="ia-input" id="restriction_ends_at" type="datetime-local" name="ends_at" value="{{ old('ends_at') }}"></div>
+            </div>
+            <button class="ia-btn">Kısıtlama ekle</button>
         </form>
     </div>
 </x-eys.app-layout>

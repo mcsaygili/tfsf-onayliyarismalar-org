@@ -7,6 +7,7 @@ use App\Http\Controllers\Eys\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Eys\AwardReferenceController;
 use App\Http\Controllers\Eys\CityController;
 use App\Http\Controllers\Eys\CompetitionCategoryReferenceController;
+use App\Http\Controllers\Eys\CompetitionReportController;
 use App\Http\Controllers\Eys\CompetitionReviewController;
 use App\Http\Controllers\Eys\CompetitionTypeController;
 use App\Http\Controllers\Eys\CountryController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Eys\InstitutionController;
 use App\Http\Controllers\Eys\InstitutionStaffController;
 use App\Http\Controllers\Eys\InstitutionTypeController;
 use App\Http\Controllers\Eys\JuriController;
+use App\Http\Controllers\Eys\JurySessionController;
 use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\Eys\PhotoTechniqueController;
 use App\Http\Controllers\Eys\RegulationItemController;
 use App\Http\Controllers\Eys\RegulationSectionController;
 use App\Http\Controllers\Eys\RoleController;
+use App\Http\Controllers\Eys\SystemHealthController;
 use App\Http\Controllers\Eys\SystemSettingsController;
 use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
@@ -295,9 +298,12 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
             Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
             Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
+            Route::get('{competition}/raporlar/katilimlar.csv', [CompetitionReportController::class, 'entries'])->name('reports.entries');
+            Route::get('{competition}/raporlar/sonuclar.csv', [CompetitionReportController::class, 'results'])->name('reports.results');
             Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
             Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->name('create-final-round');
             Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->name('save-final-round');
+            Route::put('{competition}/sonuclar/final-oturumu', [JurySessionController::class, 'update'])->name('jury-session.update');
             Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
             Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
             Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->name('unpublish-results');
@@ -332,6 +338,8 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::post('/', [MemberController::class, 'store'])->name('store');
             Route::get('{uye}/duzenle', [MemberController::class, 'edit'])->name('edit');
             Route::patch('{uye}', [MemberController::class, 'update'])->name('update');
+            Route::post('{uye}/kisitlamalar', [MemberController::class, 'restrict'])->name('restrictions.store');
+            Route::patch('{uye}/kisitlamalar/{restriction}/kaldir', [MemberController::class, 'liftRestriction'])->name('restrictions.lift');
             Route::delete('{uye}', [MemberController::class, 'destroy'])->name('destroy');
         });
 
@@ -371,6 +379,7 @@ Route::domain(config('domains.eys'))->group(function () {
         });
 
         Route::prefix('sistem-ayarlari')->name('eys.system-settings.')->middleware('permission:eys.system_settings.manage')->group(function () {
+            Route::get('sistem-sagligi', SystemHealthController::class)->name('health');
             Route::get('portfolyo', [SystemSettingsController::class, 'portfolio'])->name('portfolio');
             Route::patch('portfolyo', [SystemSettingsController::class, 'updatePortfolio'])->name('portfolio.update');
             Route::get('bakim-modu', [SystemSettingsController::class, 'maintenance'])->name('maintenance');

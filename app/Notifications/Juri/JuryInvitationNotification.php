@@ -3,11 +3,15 @@
 namespace App\Notifications\Juri;
 
 use App\Models\JuryInvitation;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class JuryInvitationNotification extends Notification
+class JuryInvitationNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(
         private readonly JuryInvitation $invitation,
         private readonly string $plainToken,

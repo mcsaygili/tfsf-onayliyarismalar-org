@@ -27,6 +27,24 @@
         <p><strong>{{ __('juri.assignments.read_only_title') }}</strong> {{ __('juri.assignments.read_only_text') }}</p>
     </div>
 
+    @php
+        $finalSession = $competition->evaluationRounds->firstWhere('is_final', true)?->jurySession;
+        $myAttendance = $finalSession?->attendances->firstWhere('juror_id', auth('juri')->id());
+    @endphp
+    @if($myAttendance)
+        <section class="jp-detail-section" aria-labelledby="final-session-title" style="margin-bottom:1.5rem;">
+            <header class="jp-detail-section-heading"><div><span>Final turu</span><h2 id="final-session-title">Kurul oturumu ve çıkar çatışması beyanı</h2></div><strong>{{ ['planned'=>'Planlandı','open'=>'Açık','closed'=>'Kapalı'][$finalSession->status] }}</strong></header>
+            <dl class="jp-schedule-list"><div><dt>Toplantı zamanı</dt><dd>{{ $finalSession->scheduled_at?->format('d.m.Y H:i') ?: 'Henüz belirlenmedi' }}</dd></div><div><dt>Toplantı yeri</dt><dd>{{ $finalSession->location ?: 'Henüz belirlenmedi' }}</dd></div></dl>
+            <form method="POST" action="{{ route('juri.sessions.declaration', $competition) }}" style="margin-top:1rem;">@csrf
+                <label class="ia-label" for="conflict_declared">Bu yarışmada tarafsızlığımı etkileyebilecek bir çıkar çatışması</label>
+                <select class="ia-input" id="conflict_declared" name="conflict_declared" required><option value="0" @selected(!$myAttendance->conflict_declared)>Bulunmuyor</option><option value="1" @selected($myAttendance->conflict_declared)>Bulunuyor</option></select>
+                <label class="ia-label" for="conflict_note" style="margin-top:.8rem;">Beyan açıklaması</label>
+                <textarea class="ia-input" id="conflict_note" name="conflict_note" maxlength="2000">{{ old('conflict_note', $myAttendance->conflict_note) }}</textarea>
+                <button class="ia-btn" style="margin-top:.8rem;">Beyanı kaydet</button>
+            </form>
+        </section>
+    @endif
+
     <section class="jp-detail-facts" aria-label="{{ __('juri.assignments.overview') }}">
         <dl>
             <div>

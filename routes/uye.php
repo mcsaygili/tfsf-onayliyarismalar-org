@@ -94,6 +94,7 @@ Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(funct
 
             Route::get('sifre', [ProfileController::class, 'passwordEdit'])->name('password.edit');
             Route::get('hesap', [ProfileController::class, 'accountEdit'])->name('account.edit');
+            Route::patch('bildirim-tercihleri', [ProfileController::class, 'updatePreferences'])->name('preferences.update');
         });
 
         Route::prefix('portfolyo')->name('portfolio.')->group(function () {

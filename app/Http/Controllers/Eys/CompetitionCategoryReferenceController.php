@@ -11,9 +11,9 @@ use App\Models\ProcessingMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 
 class CompetitionCategoryReferenceController extends Controller
 {

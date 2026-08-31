@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,6 +43,16 @@ class Temsilci extends Authenticatable implements MustVerifyEmail
     public function educationLevel(): BelongsTo
     {
         return $this->belongsTo(EducationLevel::class);
+    }
+
+    public function competitions(): HasMany
+    {
+        return $this->hasMany(Competition::class, 'representative_id');
+    }
+
+    public function monitoringReports(): HasMany
+    {
+        return $this->hasMany(CompetitionMonitoringReport::class, 'representative_id');
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void

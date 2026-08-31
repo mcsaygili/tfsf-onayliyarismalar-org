@@ -16,8 +16,6 @@ use App\Models\CompetitionReview;
 use App\Models\CompetitionReviewStep;
 use App\Models\JuryEvaluationSubmission;
 use App\Models\Temsilci;
-use App\Notifications\Juri\CompetitionResultsPublishedNotification as JuryResultsPublishedNotification;
-use App\Notifications\Uye\CompetitionResultsPublishedNotification as MemberResultsPublishedNotification;
 use App\Services\CompetitionAuditService;
 use App\Services\CompetitionPublicationService;
 use App\Services\CompetitionPublicSlugService;
@@ -25,14 +23,16 @@ use App\Services\CompetitionReadinessService;
 use App\Services\CompetitionResultPresentationService;
 use App\Services\CompetitionResultService;
 use App\Services\CompetitionWorkflowService;
+use App\Services\JurySessionService;
+use App\Services\ResultPublicationService;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use App\Support\CompetitionWizard\CompetitionStep;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -73,6 +73,8 @@ class CompetitionReviewController extends Controller
             'evaluationRounds.results.awards.categoryAward.awardReference.translations',
             'evaluationRounds.evaluationSubmissions',
             'evaluationRounds.committeeDecisions.photo.submission.category.translations',
+            'evaluationRounds.jurySession.attendances.juror',
+            'monitoringReports.representative', 'resultPublications.publisher',
         ]);
 
         $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
@@ -157,6 +159,7 @@ class CompetitionReviewController extends Controller
                 ->delete();
         });
         $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
+        app(JurySessionService::class)->ensureForRound($finalRound);
         $audit->record($competition, 'final_round_created', Auth::guard('eys')->user(), changes: [
             'source_round_id' => $sourceRound->id,
             'final_round_id' => $finalRound->id,
@@ -170,6 +173,10 @@ class CompetitionReviewController extends Controller
     {
         abort_if($competition->results_published_at, 422);
         $round = $competition->evaluationRounds()->where('is_final', true)->where('method', EvaluationRoundMethod::Committee->value)->firstOrFail();
+        $session = app(JurySessionService::class)->ensureForRound($round);
+        if ($session->status !== 'open' || ! $session->hasQuorum()) {
+            throw ValidationException::withMessages(['session' => 'Kurul kararları için final oturumu açık olmalı ve yeter sayı sağlanmalıdır.']);
+        }
         $validated = $request->validate([
             'decisions' => ['required', 'array'],
             'decisions.*.decision' => ['required', Rule::enum(CommitteeDecisionStatus::class)],
@@ -294,7 +301,7 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.result_awards_saved'));
     }
 
-    public function publishResults(Competition $competition, CompetitionResultService $results, CompetitionAuditService $audit): RedirectResponse
+    public function publishResults(Request $request, Competition $competition, CompetitionResultService $results, CompetitionAuditService $audit, ResultPublicationService $publications): RedirectResponse
     {
         if ($competition->results_published_at) {
             return back()->with('status', __('eys.competitions.results_already_published'));
@@ -315,6 +322,12 @@ class CompetitionReviewController extends Controller
         }
 
         $round = $this->resultRound($competition);
+        if ($round->method === EvaluationRoundMethod::Committee) {
+            $session = app(JurySessionService::class)->ensureForRound($round);
+            if ($session->status !== 'closed') {
+                return back()->withErrors(['results' => 'Sonuçlar yayımlanmadan önce final kurul oturumu kapatılmalıdır.']);
+            }
+        }
         if ($round->method === EvaluationRoundMethod::Committee
             && ($round->committeeDecisions()->where('decision', CommitteeDecisionStatus::Finalist->value)->exists()
                 || ! $round->committeeDecisions()->where('decision', CommitteeDecisionStatus::Selected->value)->exists())) {
@@ -330,38 +343,38 @@ class CompetitionReviewController extends Controller
             return back()->withErrors(['results' => __('eys.competitions.result_awards_incomplete', ['assigned' => $assignedAwardSlots, 'required' => $requiredAwardSlots])]);
         }
 
-        DB::transaction(function () use ($competition, $round, $results, $audit) {
+        $publicationInput = $request->validate(['publication_note' => ['nullable', 'string', 'max:2000'], 'publish_at' => ['nullable', 'date', 'after_or_equal:now']]);
+        $publicationNote = $publicationInput['publication_note'] ?? null;
+        $publishAt = filled($publicationInput['publish_at'] ?? null) ? Carbon::parse($publicationInput['publish_at']) : now();
+        $publication = null;
+        DB::transaction(function () use ($competition, $round, $results, $audit, $publications, $publicationNote, $publishAt, &$publication) {
             $round->method === EvaluationRoundMethod::Committee
                 ? $results->aggregateCommittee($round)
                 : $results->aggregate($round);
             $round->update(['status' => EvaluationRoundStatus::Finalized, 'finalized_at' => now()]);
+            $publication = $publications->create($competition, $round, Auth::guard('eys')->user(), $publicationNote, $publishAt);
             $competition->forceFill([
-                'results_published_at' => now(),
-                'results_publication_version' => $competition->results_publication_version + 1,
+                'results_published_at' => $publishAt,
+                'results_publication_version' => $publication->version,
             ])->save();
             $audit->record($competition, 'results_published', Auth::guard('eys')->user(), changes: [
                 'round_id' => $round->id,
                 'publication_version' => $competition->results_publication_version,
             ]);
         });
-
-        $members = $competition->entries()->whereNotNull('submitted_at')->with('user')->get()->pluck('user')->filter()->unique('id');
-        $jurors = CompetitionCategoryJurorAssignment::query()
-            ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id))
-            ->with('juror')->get()->pluck('juror')->filter()->unique('id');
-        Notification::send($members, new MemberResultsPublishedNotification($competition));
-        Notification::send($jurors, new JuryResultsPublishedNotification($competition));
+        $publications->notify($publication);
 
         return back()->with('status', __('eys.competitions.results_published'));
     }
 
-    public function unpublishResults(Request $request, Competition $competition, CompetitionAuditService $audit): RedirectResponse
+    public function unpublishResults(Request $request, Competition $competition, CompetitionAuditService $audit, ResultPublicationService $publications): RedirectResponse
     {
         abort_unless($competition->results_published_at, 422);
         $validated = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:2000']]);
 
-        DB::transaction(function () use ($competition, $validated, $audit): void {
+        DB::transaction(function () use ($competition, $validated, $audit, $publications): void {
             $publishedAt = $competition->results_published_at;
+            $publications->withdrawCurrent($competition, $validated['reason']);
             $competition->forceFill(['results_published_at' => null])->save();
             $audit->record($competition, 'results_unpublished_for_correction', Auth::guard('eys')->user(), $validated['reason'], [
                 'previous_published_at' => $publishedAt?->toIso8601String(),

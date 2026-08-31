@@ -54,6 +54,23 @@ class UyeAuthenticationTest extends TestCase
         $this->assertGuest('web');
     }
 
+    public function test_hesap_kisitlamasi_bulunan_uye_giris_yapamaz(): void
+    {
+        $user = User::factory()->create();
+        $user->restrictions()->create([
+            'type' => 'account',
+            'reason' => 'Güvenlik incelemesi devam ediyor.',
+            'starts_at' => now()->subMinute(),
+        ]);
+
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('web');
+    }
+
     public function test_uye_cikis_yapabilir(): void
     {
         $user = User::factory()->create();

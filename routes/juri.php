@@ -11,6 +11,7 @@ use App\Http\Controllers\Juri\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Juri\Auth\VerifyEmailController;
 use App\Http\Controllers\Juri\DashboardController;
 use App\Http\Controllers\Juri\EvaluationController;
+use App\Http\Controllers\Juri\JurySessionController;
 use App\Http\Controllers\Juri\NotificationController;
 use App\Http\Controllers\Juri\PasswordController;
 use App\Http\Controllers\Juri\ProfileController;
@@ -59,6 +60,7 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
         });
         Route::get('gorevlerim', [AssignmentController::class, 'index'])->name('juri.assignments.index');
         Route::get('gorevlerim/{competition}', [AssignmentController::class, 'show'])->name('juri.assignments.show');
+        Route::post('gorevlerim/{competition}/final-oturumu/beyan', [JurySessionController::class, 'declaration'])->name('juri.sessions.declaration');
         Route::get('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'show'])->middleware('throttle:120,1')->name('juri.evaluations.show');
         Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'save'])->middleware('throttle:120,1')->name('juri.evaluations.save');
         Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme/tamamla', [EvaluationController::class, 'finalize'])->middleware('throttle:30,1')->name('juri.evaluations.finalize');

@@ -3,15 +3,19 @@
 namespace App\Notifications\Uye;
 
 use App\Models\CompetitionSubmission;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class CompetitionSubmissionDecisionNotification extends Notification
+class CompetitionSubmissionDecisionNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(private readonly CompetitionSubmission $submission, private readonly bool $approved, private readonly ?string $note = null) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return data_get($notifiable->preferences, 'submission_database', true) ? ['database'] : [];
     }
 
     /** @return array<string, mixed> */

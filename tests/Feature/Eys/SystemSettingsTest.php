@@ -79,6 +79,16 @@ class SystemSettingsTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_sistem_sagligi_sayfasi_yetkili_kullanici_icin_goruntulenebilir(): void
+    {
+        $user = $this->admin();
+
+        $this->actingAs($user, 'eys')->get(route('eys.system-settings.health'))
+            ->assertOk()
+            ->assertSee('Veritabanı bağlantısı çalışıyor.')
+            ->assertSee('Bildirim teslimatları');
+    }
+
     public function test_bakim_modu_dort_subdomain_icin_ayri_ayri_guncellenebilir(): void
     {
         $user = $this->admin();

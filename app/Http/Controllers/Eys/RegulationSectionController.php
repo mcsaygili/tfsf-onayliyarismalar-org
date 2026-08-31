@@ -7,8 +7,8 @@ use App\Models\RegulationSection;
 use App\Models\RegulationSectionTranslation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 /**
  * EYS yönetici paneli — Şartname Bölümü (referans veri) yönetimi. Yarışma

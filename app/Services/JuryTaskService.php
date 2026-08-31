@@ -55,6 +55,7 @@ class JuryTaskService
                 'captureRegions.country.translations',
                 'captureRegions.city.translations',
                 'regulationSnapshots' => fn ($query) => $query->limit(1),
+                'evaluationRounds.jurySession.attendances',
                 'categories' => fn ($query) => $query
                     ->whereHas('jurorAssignments', fn ($assignments) => $assignments->where('juror_id', $juror->id))
                     ->with([

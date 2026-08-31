@@ -52,6 +52,11 @@ class Juri extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(JuryInvitation::class, 'accepted_juror_id');
     }
 
+    public function sessionAttendances(): HasMany
+    {
+        return $this->hasMany(CompetitionJurySessionAttendance::class, 'juror_id');
+    }
+
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $this->notify(new ResetPasswordNotification($token));

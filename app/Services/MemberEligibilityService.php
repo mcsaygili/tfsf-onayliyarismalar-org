@@ -28,6 +28,9 @@ class MemberEligibilityService
         if ((int) $user->status !== 1) {
             $violations[] = 'account_inactive';
         }
+        if ($user->activeRestrictions()->exists()) {
+            $violations[] = 'member_restricted';
+        }
         if (! $user->hasVerifiedEmail()) {
             $violations[] = 'email_not_verified';
         }

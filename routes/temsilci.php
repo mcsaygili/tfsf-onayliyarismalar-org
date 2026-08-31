@@ -9,6 +9,7 @@ use App\Http\Controllers\Temsilci\Auth\NewPasswordController;
 use App\Http\Controllers\Temsilci\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Temsilci\Auth\RegisteredController;
 use App\Http\Controllers\Temsilci\Auth\VerifyEmailController;
+use App\Http\Controllers\Temsilci\CompetitionController;
 use App\Http\Controllers\Temsilci\DashboardController;
 use App\Http\Controllers\Temsilci\ParticipantSubmissionController;
 use App\Http\Controllers\Temsilci\PasswordController;
@@ -48,6 +49,12 @@ Route::domain(config('domains.temsilci'))->middleware('maintenance:temsilci')->g
 
     Route::middleware(['auth:temsilci', 'verified.guard:temsilci'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('temsilci.dashboard');
+
+        Route::prefix('yarismalarim')->name('temsilci.competitions.')->group(function () {
+            Route::get('/', [CompetitionController::class, 'index'])->name('index');
+            Route::get('{competition}', [CompetitionController::class, 'show'])->name('show');
+            Route::post('{competition}/izleme-raporu', [CompetitionController::class, 'report'])->name('reports.store');
+        });
 
         Route::prefix('katilimci-onaylari')->name('temsilci.participant-submissions.')->group(function () {
             Route::get('/', [ParticipantSubmissionController::class, 'index'])->name('index');

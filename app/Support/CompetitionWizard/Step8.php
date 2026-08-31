@@ -367,6 +367,7 @@ class Step8 implements CompetitionStep
                 function (string $attribute, mixed $value, \Closure $fail) {
                     if (is_array($value) && isset($value['min_score'], $value['max_score']) && (int) $value['max_score'] <= (int) $value['min_score']) {
                         $fail(__('institution.competitions.validation.category_criterion_range'));
+
                         return;
                     }
 

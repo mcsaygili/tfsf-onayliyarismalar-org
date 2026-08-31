@@ -31,6 +31,22 @@ class ProfileController extends Controller
         return view('uye.profile.account');
     }
 
+    public function updatePreferences(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'results_email' => ['nullable', 'boolean'],
+            'submission_database' => ['nullable', 'boolean'],
+            'marketing_email' => ['nullable', 'boolean'],
+        ]);
+        $request->user()->update(['preferences' => [
+            'results_email' => (bool) ($validated['results_email'] ?? false),
+            'submission_database' => (bool) ($validated['submission_database'] ?? false),
+            'marketing_email' => (bool) ($validated['marketing_email'] ?? false),
+        ]]);
+
+        return Redirect::route('profile.account.edit')->with('status', 'preferences-updated');
+    }
+
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
