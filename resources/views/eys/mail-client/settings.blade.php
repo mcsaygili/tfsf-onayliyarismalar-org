@@ -40,4 +40,22 @@
             </div>
         </form>
     </div>
+
+    <div class="ip-card" style="margin-top:1.25rem;">
+        <div class="ip-section-title">{{ __('eys.mail_client.domain_security') }}</div>
+        <div class="ip-section-hint">{{ __('eys.mail_client.domain_security_hint') }}</div>
+        <div class="ip-grid-2" style="margin-top:1rem;">
+            <div><div class="ip-section-hint">{{ __('eys.mail_client.sending_domain') }}</div><strong>{{ $domainStatus['domain'] ?: '—' }}</strong></div>
+            <div><div class="ip-section-hint">Resend</div><span class="ip-badge {{ $domainStatus['status'] === 'verified' ? 'is-active' : 'is-inactive' }}">{{ $domainStatus['status'] }}</span></div>
+            <div><div class="ip-section-hint">SPF + DKIM</div><span class="ip-badge {{ $domainStatus['spf_dkim'] ? 'is-active' : 'is-inactive' }}">{{ $domainStatus['spf_dkim'] ? __('eys.mail_client.dns_verified') : __('eys.mail_client.dns_pending') }}</span></div>
+            <div><div class="ip-section-hint">DMARC</div><span class="ip-badge {{ $domainStatus['dmarc'] ? 'is-active' : 'is-inactive' }}">{{ $domainStatus['dmarc'] ? __('eys.mail_client.dns_verified') : __('eys.mail_client.dns_pending') }}</span></div>
+        </div>
+        @unless($domainStatus['dmarc'])
+            <div style="margin-top:1rem;padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;color:var(--ia-muted);font-size:.82rem;overflow-wrap:anywhere;">
+                <strong>TXT · _dmarc.{{ $domainStatus['domain'] }}</strong><br><code>{{ $recommendedDmarc }}</code>
+            </div>
+        @endunless
+        @if($domainStatus['error'] ?? null)<div style="color:#e0857a;margin-top:.75rem;font-size:.82rem;">{{ $domainStatus['error'] }}</div>@endif
+        <form method="POST" action="{{ route('eys.mail-client.domain.check') }}" style="display:flex;justify-content:flex-end;margin-top:1rem;">@csrf<button class="ia-btn ia-btn-secondary">{{ __('eys.mail_client.check_domain') }}</button></form>
+    </div>
 </x-eys.app-layout>

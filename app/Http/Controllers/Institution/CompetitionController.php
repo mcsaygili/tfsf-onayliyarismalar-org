@@ -6,13 +6,13 @@ use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionReviewStep;
-use App\Services\CompetitionWorkflowService;
+use App\Services\CompetitionStateMachine;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use App\Support\CompetitionWizard\CompetitionStepRegistry;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -49,7 +49,7 @@ class CompetitionController extends Controller
 
     public function submit(Competition $competition): RedirectResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
 
         abort_unless($competition->isEditable(), 403);
         if (! $competition->canSubmit()) {
@@ -83,7 +83,7 @@ class CompetitionController extends Controller
         DB::transaction(function () use ($competition, $fromStatus) {
             app(CompetitionRegulationCompiler::class)->snapshot($competition);
 
-            app(CompetitionWorkflowService::class)->transition(
+            app(CompetitionStateMachine::class)->transition(
                 $competition,
                 CompetitionStatus::Submitted,
                 $fromStatus === CompetitionStatus::NeedsInfo ? 'resubmitted' : 'submitted',
@@ -93,12 +93,5 @@ class CompetitionController extends Controller
         });
 
         return redirect()->route('institution.competitions.index')->with('status', __('institution.competitions.submitted'));
-    }
-
-    private function authorizeSameInstitution(Competition $competition): void
-    {
-        if ($competition->institution_id !== Auth::guard('institution')->user()->institution_id) {
-            throw new AuthorizationException;
-        }
     }
 }

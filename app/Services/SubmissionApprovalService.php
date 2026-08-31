@@ -61,6 +61,13 @@ class SubmissionApprovalService
                 'actor_id' => $actor->getKey(),
                 'context' => ['submission_id' => $submission->id, 'note' => $note],
             ]);
+            app(CompetitionAuditService::class)->record(
+                $entry->competition,
+                $approved ? 'submission_approved' : 'submission_rejected',
+                $actor,
+                $note,
+                ['entry_id' => $entry->id, 'submission_id' => $submission->id, 'approval_id' => $approval->id],
+            );
 
             $entry->user->notify(new CompetitionSubmissionDecisionNotification($submission->loadMissing('category.translations', 'entry.competition.translations'), $approved, $note));
         });

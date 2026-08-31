@@ -65,8 +65,14 @@ class ResultPublicationService
         $jurors = CompetitionCategoryJurorAssignment::query()
             ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id))
             ->with('juror')->get()->pluck('juror')->filter()->unique('id');
-        Notification::send($members, new MemberResultsPublishedNotification($competition));
-        Notification::send($jurors, new JuryResultsPublishedNotification($competition));
+        Notification::sendNow($members, new MemberResultsPublishedNotification($competition, ['database']));
+        Notification::sendNow($jurors, new JuryResultsPublishedNotification($competition, ['database']));
+
+        $dispatches = app(NotificationDispatchService::class);
+        $members
+            ->filter(fn ($member) => data_get($member->preferences, 'results_email', true))
+            ->each(fn ($member) => $dispatches->queueResults($member, $competition, false));
+        $jurors->each(fn ($juror) => $dispatches->queueResults($juror, $competition, true));
         $publication->update(['notified_at' => now()]);
     }
 

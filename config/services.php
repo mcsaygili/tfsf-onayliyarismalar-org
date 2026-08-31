@@ -21,6 +21,8 @@ return [
     'resend' => [
         'key' => env('RESEND_API_KEY'),
         'webhook_secret' => env('RESEND_WEBHOOK_SECRET'),
+        'sending_domain' => env('RESEND_SENDING_DOMAIN'),
+        'dmarc_report_address' => env('RESEND_DMARC_REPORT_ADDRESS'),
     ],
 
     'ses' => [

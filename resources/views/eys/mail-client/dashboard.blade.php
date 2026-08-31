@@ -9,6 +9,10 @@
                 <div class="ip-stat-label">{{ __('eys.mail_client.total_sent') }}</div>
             </div>
         </div>
+        <a class="ip-stat-card" href="{{ route('eys.mail-client.logs', ['failed_delivery' => 1]) }}" style="text-decoration:none;">
+            <div class="ip-stat-icon"><x-eys.icon name="mail" /></div>
+            <div><div class="ip-stat-value">{{ $failedDeliveries }}</div><div class="ip-stat-label">{{ __('eys.mail_client.failed_deliveries') }}</div></div>
+        </a>
         <div class="ip-stat-card">
             <div class="ip-stat-icon"><x-eys.icon name="mail" /></div>
             <div>

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Eys;
 
 use App\Models\MailSendLog;
+use App\Models\NotificationDispatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,5 +74,33 @@ class MailWebhookTest extends TestCase
 
         $response->assertStatus(400);
         $this->assertDatabaseCount('mail_events', 0);
+    }
+
+    public function test_basarisiz_teslimat_dispatch_ve_gonderim_kaydini_gunceller(): void
+    {
+        $dispatch = NotificationDispatch::create([
+            'type' => 'jury_invitation', 'recipient_email' => 'alici@example.com', 'locale' => 'tr',
+            'template_key' => 'jury_invitation', 'status' => 'sent', 'payload' => [],
+            'provider_message_id' => 'resend-failed-123',
+        ]);
+        $log = MailSendLog::create([
+            'notification_dispatch_id' => $dispatch->id,
+            'to' => 'alici@example.com',
+            'status' => 'sent',
+            'provider_message_id' => 'resend-failed-123',
+        ]);
+        $request = $this->signedRequest([
+            'type' => 'email.bounced',
+            'data' => ['email_id' => 'resend-failed-123', 'bounce' => ['message' => 'Mailbox unavailable']],
+        ]);
+
+        $this->call('POST', route('webhooks.resend'), [], [], [], $this->transformHeadersToServerVars($request['headers']), $request['payload'])->assertOk();
+
+        $this->assertSame('bounced', $log->fresh()->status);
+        $this->assertSame('bounced', $dispatch->fresh()->status);
+        $this->assertSame('Mailbox unavailable', $dispatch->fresh()->last_error);
+
+        $this->call('POST', route('webhooks.resend'), [], [], [], $this->transformHeadersToServerVars($request['headers']), $request['payload'])->assertOk();
+        $this->assertDatabaseCount('mail_events', 1);
     }
 }

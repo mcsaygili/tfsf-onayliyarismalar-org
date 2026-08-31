@@ -3,6 +3,7 @@
 namespace App\Notifications\Uye;
 
 use App\Models\Competition;
+use App\Services\NotificationTemplateRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,20 +13,35 @@ class CompetitionResultsPublishedNotification extends Notification implements Sh
 {
     use Queueable;
 
-    public function __construct(private readonly Competition $competition) {}
+    /** @param array<int, string> $channels */
+    public function __construct(
+        private readonly Competition $competition,
+        private readonly array $channels = ['mail', 'database'],
+        private readonly ?string $dispatchId = null,
+        private readonly string $messageLocale = 'tr',
+    ) {}
 
     public function via(object $notifiable): array
     {
-        return data_get($notifiable->preferences, 'results_email', true) ? ['mail', 'database'] : ['database'];
+        if ($this->channels !== ['mail', 'database']) {
+            return $this->channels;
+        }
+
+        return data_get($notifiable->preferences, 'results_email', true) ? $this->channels : ['database'];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject(__('uye.competitions.notifications.results_subject'))
-            ->greeting(__('uye.competitions.notifications.results_greeting', ['name' => $notifiable->first_name ?: $notifiable->email]))
-            ->line(__('uye.competitions.notifications.results_line', ['competition' => $this->competition->name]))
-            ->action(__('uye.competitions.notifications.results_action'), route('competitions.show', $this->competition));
+        $competitionName = $this->competition->getTranslation($this->messageLocale)?->name ?: $this->competition->name;
+
+        return app(NotificationTemplateRenderer::class)->mail(
+            'competition_results_member',
+            $this->messageLocale,
+            ['name' => $notifiable->first_name ?: $notifiable->email, 'competition' => $competitionName],
+            route('competitions.show', $this->competition),
+            $this->dispatchId,
+            $this->competition->id,
+        );
     }
 
     /** @return array<string, mixed> */

@@ -57,15 +57,4 @@ enum CompetitionStatus: string
     {
         return in_array($this, [self::Draft, self::NeedsInfo], true);
     }
-
-    public function canTransitionTo(self $status): bool
-    {
-        return in_array($status, match ($this) {
-            self::Draft, self::NeedsInfo => [self::Submitted],
-            self::Submitted => [self::UnderReview, self::Rejected],
-            self::UnderReview => [self::NeedsInfo, self::WaitingRequirements, self::Approved, self::Rejected],
-            self::WaitingRequirements => [self::NeedsInfo, self::Approved, self::Rejected],
-            self::Approved, self::Rejected => [],
-        }, true);
-    }
 }

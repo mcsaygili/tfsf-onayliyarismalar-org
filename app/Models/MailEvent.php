@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['mail_send_log_id', 'event_type', 'payload'])]
+#[Fillable(['provider_event_id', 'mail_send_log_id', 'event_type', 'payload'])]
 class MailEvent extends Model
 {
     use HasUuids;

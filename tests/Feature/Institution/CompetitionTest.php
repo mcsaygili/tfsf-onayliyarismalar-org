@@ -840,7 +840,7 @@ class CompetitionTest extends TestCase
             route('institution.competitions.step.show', [$otherCompetition, 1])
         );
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     }
 
     public function test_adim_2_tamamlanmadan_onaya_gonderilemez(): void

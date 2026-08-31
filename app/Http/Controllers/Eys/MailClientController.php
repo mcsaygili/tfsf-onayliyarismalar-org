@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\MailEvent;
 use App\Models\MailSendLog;
 use App\Models\MailSetting;
+use App\Models\NotificationDispatch;
+use App\Services\NotificationDispatchService;
+use App\Services\ResendDomainService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,15 +30,25 @@ class MailClientController extends Controller
             'totalSent' => MailSendLog::count(),
             'sentToday' => MailSendLog::whereDate('created_at', today())->count(),
             'totalEvents' => MailEvent::count(),
+            'failedDeliveries' => NotificationDispatch::query()->whereIn('status', NotificationDispatch::RETRYABLE_STATUSES)->count(),
             'recentLogs' => MailSendLog::latest()->limit(5)->get(),
         ]);
     }
 
-    public function settings(): View
+    public function settings(ResendDomainService $domains): View
     {
         return view('eys.mail-client.settings', [
             'settings' => MailSetting::current(),
+            'domainStatus' => $domains->status(),
+            'recommendedDmarc' => $domains->recommendedDmarcRecord(),
         ]);
+    }
+
+    public function checkDomain(ResendDomainService $domains): RedirectResponse
+    {
+        $status = $domains->status(true);
+
+        return back()->with('status', __('eys.mail_client.domain_checked', ['status' => $status['status']]));
     }
 
     public function updateSettings(Request $request): RedirectResponse
@@ -82,9 +95,12 @@ class MailClientController extends Controller
         $dateFrom = $this->parseDate($request->input('date_from'));
         $dateTo = $this->parseDate($request->input('date_to'));
 
+        $failedDelivery = $request->boolean('failed_delivery');
         $logs = MailSendLog::query()
+            ->with('dispatch')
             ->when($request->filled('to'), fn ($q) => $q->where('to', 'like', '%'.$request->string('to').'%'))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
+            ->when($failedDelivery, fn ($q) => $q->whereIn('status', NotificationDispatch::RETRYABLE_STATUSES))
             ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
             ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
             ->latest()
@@ -98,8 +114,17 @@ class MailClientController extends Controller
                 'status' => $request->input('status', ''),
                 'date_from' => $request->input('date_from', ''),
                 'date_to' => $request->input('date_to', ''),
+                'failed_delivery' => $failedDelivery,
             ],
         ]);
+    }
+
+    public function retry(NotificationDispatch $notificationDispatch, NotificationDispatchService $service): RedirectResponse
+    {
+        abort_unless($notificationDispatch->isRetryable(), 422);
+        $service->retry($notificationDispatch, Auth::guard('eys')->id());
+
+        return back()->with('status', __('eys.mail_client.retry_queued'));
     }
 
     public function activity(Request $request): View

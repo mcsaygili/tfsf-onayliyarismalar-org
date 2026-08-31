@@ -7,7 +7,9 @@ use App\Models\EysUser;
 use App\Models\MaintenanceMode;
 use App\Models\Permission;
 use App\Models\PortfolioSetting;
+use App\Services\SystemHealthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -87,6 +89,33 @@ class SystemSettingsTest extends TestCase
             ->assertOk()
             ->assertSee('Veritabanı bağlantısı çalışıyor.')
             ->assertSee('Bildirim teslimatları');
+    }
+
+    public function test_sistem_sagligi_worker_ve_scheduler_heartbeat_durumlarini_gosterir(): void
+    {
+        $user = $this->admin();
+        Cache::put(SystemHealthService::QUEUE_WORKER_HEARTBEAT, now()->subSeconds(20)->toIso8601String());
+        Cache::put(SystemHealthService::SCHEDULER_HEARTBEAT, now()->subSeconds(30)->toIso8601String());
+
+        $this->actingAs($user, 'eys')->get(route('eys.system-settings.health'))
+            ->assertOk()
+            ->assertSee('Queue worker çalışıyor.')
+            ->assertSee('Scheduler çalışıyor.');
+    }
+
+    public function test_geciken_heartbeat_sistem_sagliginda_hata_olarak_isaretlenir(): void
+    {
+        $user = $this->admin();
+        Cache::put(SystemHealthService::QUEUE_WORKER_HEARTBEAT, now()->subMinutes(10)->toIso8601String());
+        Cache::put(SystemHealthService::SCHEDULER_HEARTBEAT, now()->subMinutes(10)->toIso8601String());
+
+        $response = $this->actingAs($user, 'eys')->get(route('eys.system-settings.health'));
+
+        $response->assertOk()
+            ->assertSee('Queue worker sinyali gecikmiş.')
+            ->assertSee('Scheduler sinyali gecikmiş.');
+        $this->assertSame('error', $response->viewData('checks')['queue_worker']['status']);
+        $this->assertSame('error', $response->viewData('checks')['scheduler']['status']);
     }
 
     public function test_bakim_modu_dort_subdomain_icin_ayri_ayri_guncellenebilir(): void

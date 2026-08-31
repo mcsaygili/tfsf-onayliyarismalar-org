@@ -377,8 +377,17 @@
         <div class="ip-card">
             <div class="ip-section-title">{{ __('eys.competitions.history_title') }}</div>
 
-            @forelse ($competition->statusLogs as $log)
+            @php
+                $timelineItems = $competition->statusLogs->map(fn($item) => ['type' => 'status', 'model' => $item, 'at' => $item->created_at])
+                    ->concat($competition->notificationDispatches->map(fn($item) => ['type' => 'notification', 'model' => $item, 'at' => $item->created_at]))
+                    ->sortByDesc('at');
+            @endphp
+            @forelse ($timelineItems as $timelineItem)
+                @php
+                    $log = $timelineItem['model'];
+                @endphp
                 <div style="padding: .85rem 0; border-bottom: 1px solid var(--ia-surface-border);">
+                    @if($timelineItem['type'] === 'status')
                     <div style="display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem;">
                         <strong style="color: var(--ia-cream);">{{ __('eys.competitions.log_actions.'.$log->action) }}</strong>
                         <span style="color: var(--ia-muted-dim);">{{ $log->created_at->format('d.m.Y H:i') }}</span>
@@ -406,6 +415,13 @@
                                 </li>
                             @endforeach
                         </ul>
+                    @endif
+                    @else
+                        <div style="display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;font-size:.85rem;">
+                            <div><strong style="color:var(--ia-cream);">{{ __('eys.mail_client.timeline_notification') }}</strong><div style="color:var(--ia-muted);margin-top:.25rem;">{{ __('eys.mail_client.dispatch_types.'.$log->type) }} · {{ $log->recipient_email ?: '—' }}</div></div>
+                            <div style="text-align:right;"><span class="ip-badge {{ $log->status === 'delivered' ? 'is-active' : (in_array($log->status, \App\Models\NotificationDispatch::RETRYABLE_STATUSES, true) ? 'is-inactive' : '') }}">{{ $log->status }}</span><div style="color:var(--ia-muted-dim);margin-top:.25rem;">{{ $log->created_at->format('d.m.Y H:i') }}</div></div>
+                        </div>
+                        @if($log->last_error)<div style="font-size:.8rem;color:#e0857a;margin-top:.35rem;">{{ $log->last_error }}</div>@endif
                     @endif
                 </div>
             @empty

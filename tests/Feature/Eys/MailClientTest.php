@@ -3,14 +3,18 @@
 namespace Tests\Feature\Eys;
 
 use App\Enums\Module;
+use App\Jobs\SendNotificationDispatchJob;
 use App\Models\EysUser;
 use App\Models\MailEvent;
 use App\Models\MailSendLog;
 use App\Models\MailSetting;
+use App\Models\NotificationDispatch;
+use App\Models\NotificationTemplate;
 use App\Models\Permission;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -189,5 +193,56 @@ class MailClientTest extends TestCase
         $events = $response->viewData('events');
         $this->assertSame(1, $events->total());
         $this->assertSame('clicked', $events->first()->event_type);
+    }
+
+    public function test_bildirim_sablonlari_turkce_ve_ingilizce_guncellenebilir(): void
+    {
+        $user = $this->admin();
+        $template = NotificationTemplate::query()->where('key', 'jury_invitation')->firstOrFail();
+
+        $response = $this->actingAs($user, 'eys')->patch(route('eys.mail-client.templates.update', $template), [
+            'is_active' => '1',
+            'translations' => [
+                'tr' => ['subject' => 'TR konu {{competition}}', 'greeting' => 'Merhaba {{name}}', 'body' => 'TR mesaj', 'action_label' => 'Aç'],
+                'en' => ['subject' => 'EN subject {{competition}}', 'greeting' => 'Hello {{name}}', 'body' => 'EN message', 'action_label' => 'Open'],
+            ],
+        ]);
+
+        $response->assertRedirect(route('eys.mail-client.templates.index'));
+        $this->assertDatabaseHas('notification_template_translations', [
+            'notification_template_id' => $template->id,
+            'locale' => 'en',
+            'subject' => 'EN subject {{competition}}',
+        ]);
+    }
+
+    public function test_basarisiz_teslimatlar_filtrelenebilir_ve_yeniden_kuyruga_alinabilir(): void
+    {
+        Queue::fake();
+        $user = $this->admin();
+        $dispatch = NotificationDispatch::create([
+            'type' => 'jury_invitation',
+            'recipient_email' => 'failed@example.com',
+            'locale' => 'tr',
+            'template_key' => 'jury_invitation',
+            'status' => 'failed',
+            'attempts' => 3,
+            'max_attempts' => 3,
+            'payload' => [],
+        ]);
+        MailSendLog::create(['notification_dispatch_id' => $dispatch->id, 'to' => 'failed@example.com', 'status' => 'failed']);
+        MailSendLog::create(['to' => 'sent@example.com', 'status' => 'sent']);
+
+        $this->actingAs($user, 'eys')->get(route('eys.mail-client.logs', ['failed_delivery' => 1]))
+            ->assertOk()->assertSee('failed@example.com')->assertDontSee('sent@example.com');
+
+        $this->actingAs($user, 'eys')->post(route('eys.mail-client.retry', $dispatch))
+            ->assertRedirect();
+
+        $dispatch->refresh();
+        $this->assertSame('pending', $dispatch->status);
+        $this->assertSame(1, $dispatch->manual_retry_count);
+        $this->assertSame($user->id, $dispatch->last_retried_by);
+        Queue::assertPushed(SendNotificationDispatchJob::class, fn ($job) => $job->dispatchId === $dispatch->id);
     }
 }

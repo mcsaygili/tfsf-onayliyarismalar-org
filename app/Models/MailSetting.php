@@ -27,6 +27,6 @@ class MailSetting extends Model
 
     public static function current(): self
     {
-        return static::query()->firstOrCreate(['id' => 1]);
+        return static::query()->firstOrCreate(['id' => 1], ['enabled' => true]);
     }
 }

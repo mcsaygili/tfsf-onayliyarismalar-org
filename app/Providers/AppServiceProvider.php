@@ -3,11 +3,23 @@
 namespace App\Providers;
 
 use App\Contracts\SmsSender;
+use App\Models\Competition;
+use App\Models\CompetitionCategory;
+use App\Models\CompetitionEntry;
+use App\Models\CompetitionSubmissionApproval;
+use App\Policies\CompetitionCategoryPolicy;
+use App\Policies\CompetitionEntryPolicy;
+use App\Policies\CompetitionPolicy;
+use App\Policies\CompetitionSubmissionApprovalPolicy;
 use App\Services\Resend\SvixSignatureVerifier;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\NetgsmSmsSender;
+use App\Services\SystemHealthService;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
+use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Competition::class, CompetitionPolicy::class);
+        Gate::policy(CompetitionCategory::class, CompetitionCategoryPolicy::class);
+        Gate::policy(CompetitionEntry::class, CompetitionEntryPolicy::class);
+        Gate::policy(CompetitionSubmissionApproval::class, CompetitionSubmissionApprovalPolicy::class);
+        Event::listen(Looping::class, fn () => SystemHealthService::beatQueueWorker());
+
         // Laravel'in yerleşik `guest` middleware'i (RedirectIfAuthenticated),
         // zaten oturum açmış bir kullanıcıyı login/register gibi sayfalardan
         // uzaklaştırırken varsayılan olarak SADECE bare `dashboard` route'unu

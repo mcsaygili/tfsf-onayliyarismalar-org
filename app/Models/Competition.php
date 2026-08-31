@@ -174,6 +174,11 @@ class Competition extends Model
         return $this->hasMany(CompetitionResultPublication::class)->orderByDesc('version');
     }
 
+    public function notificationDispatches(): HasMany
+    {
+        return $this->hasMany(NotificationDispatch::class)->latest();
+    }
+
     public function isEditable(): bool
     {
         return $this->status->isEditableByInstitution();

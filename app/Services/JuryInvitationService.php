@@ -4,14 +4,11 @@ namespace App\Services;
 
 use App\Enums\CompetitionStatus;
 use App\Models\Competition;
-use App\Models\CompetitionStatusLog;
 use App\Models\Juri;
 use App\Models\JuryInvitation;
-use App\Notifications\Juri\JuryInvitationNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class JuryInvitationService
@@ -55,8 +52,7 @@ class JuryInvitationService
         ])->save();
         $invitation->loadMissing(['competition.translations', 'institution']);
 
-        Notification::route('mail', $invitation->email)
-            ->notify(new JuryInvitationNotification($invitation, $plainToken));
+        app(NotificationDispatchService::class)->queueJuryInvitation($invitation, $plainToken);
 
         $invitation->forceFill(['sent_at' => now()])->save();
         $this->recordEvent($invitation, $action, $actor, [
@@ -204,13 +200,10 @@ class JuryInvitationService
             return;
         }
 
-        CompetitionStatusLog::create([
-            'competition_id' => $competition->id,
-            'action' => 'jury_requirements_completed',
-            'from_status' => $competition->status->value,
-            'to_status' => $competition->status->value,
-            'actor_id' => $actor->getKey(),
-            'actor_type' => $actor::class,
-        ]);
+        app(CompetitionAuditService::class)->record(
+            $competition,
+            'jury_requirements_completed',
+            $actor,
+        );
     }
 }

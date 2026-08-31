@@ -27,7 +27,7 @@ use App\Models\RegulationItem;
 use App\Models\User;
 use App\Notifications\Juri\CompetitionResultsPublishedNotification as JuryResultsPublishedNotification;
 use App\Notifications\Uye\CompetitionResultsPublishedNotification as MemberResultsPublishedNotification;
-use App\Services\CompetitionWorkflowService;
+use App\Services\CompetitionStateMachine;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use Database\Seeders\AwardReferenceSeeder;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
@@ -106,7 +106,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         // Fiyatlandırma adımı yönetim kararını beklediği için kurum teslim controller'ı
         // şimdilik kapalıdır. Aynı durum geçişini servis üzerinden yaparak kalan ana
         // kabul akışını bağımsız biçimde doğruluyoruz.
-        app(CompetitionWorkflowService::class)->transition(
+        app(CompetitionStateMachine::class)->transition(
             $competition,
             CompetitionStatus::Submitted,
             'submitted',

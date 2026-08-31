@@ -2,7 +2,7 @@
     <div class="ip-page-actions"><x-eys.breadcrumb :crumbs="[['label'=>__('eys.nav.dashboard'),'url'=>route('eys.dashboard')],['label'=>'Sistem sağlığı']]" /></div>
     <div class="ip-stats">
         @foreach($checks as $name => $check)
-            <div class="ip-stat-card"><div class="ip-stat-icon"><x-eys.icon :name="$name === 'mail' ? 'mail' : ($name === 'storage' ? 'folder' : 'settings')" /></div><div><div class="ip-stat-label" style="margin:0 0 .3rem;text-transform:capitalize;">{{ $name }}</div><span class="ip-badge {{ $check['status'] === 'ok' ? 'is-active' : ($check['status'] === 'warning' ? 'is-pending' : 'is-inactive') }}">{{ $check['status'] }}</span><div class="ip-field-hint">{{ $check['detail'] }}</div></div></div>
+            <div class="ip-stat-card"><div class="ip-stat-icon"><x-eys.icon :name="$name === 'mail' ? 'mail' : ($name === 'storage' ? 'folder' : 'settings')" /></div><div><div class="ip-stat-label" style="margin:0 0 .3rem;text-transform:capitalize;">{{ str_replace('_', ' ', $name) }}</div><span class="ip-badge {{ $check['status'] === 'ok' ? 'is-active' : ($check['status'] === 'warning' ? 'is-pending' : 'is-inactive') }}">{{ $check['status'] }}</span><div class="ip-field-hint">{{ $check['detail'] }}</div></div></div>
         @endforeach
     </div>
     <div class="ip-card">

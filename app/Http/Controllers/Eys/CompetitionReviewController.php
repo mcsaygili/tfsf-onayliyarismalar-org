@@ -22,7 +22,7 @@ use App\Services\CompetitionPublicSlugService;
 use App\Services\CompetitionReadinessService;
 use App\Services\CompetitionResultPresentationService;
 use App\Services\CompetitionResultService;
-use App\Services\CompetitionWorkflowService;
+use App\Services\CompetitionStateMachine;
 use App\Services\JurySessionService;
 use App\Services\ResultPublicationService;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
@@ -75,6 +75,7 @@ class CompetitionReviewController extends Controller
             'evaluationRounds.committeeDecisions.photo.submission.category.translations',
             'evaluationRounds.jurySession.attendances.juror',
             'monitoringReports.representative', 'resultPublications.publisher',
+            'notificationDispatches.lastRetriedBy',
         ]);
 
         $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
@@ -409,7 +410,7 @@ class CompetitionReviewController extends Controller
             ?? $competition->evaluationRounds()->firstOrFail();
     }
 
-    public function start(Competition $competition, CompetitionWorkflowService $workflow): RedirectResponse
+    public function start(Competition $competition, CompetitionStateMachine $workflow): RedirectResponse
     {
         abort_unless($competition->status === CompetitionStatus::Submitted, 422);
 
@@ -448,7 +449,7 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.review_saved'));
     }
 
-    public function approve(Competition $competition, CompetitionReadinessService $readiness, CompetitionWorkflowService $workflow, CompetitionPublicSlugService $slugs): RedirectResponse
+    public function approve(Competition $competition, CompetitionReadinessService $readiness, CompetitionStateMachine $workflow, CompetitionPublicSlugService $slugs): RedirectResponse
     {
         abort_unless(in_array($competition->status, [CompetitionStatus::UnderReview, CompetitionStatus::WaitingRequirements], true), 422);
 
@@ -495,7 +496,7 @@ class CompetitionReviewController extends Controller
         return redirect()->route('eys.competitions.index')->with('status', __('eys.competitions.approved'));
     }
 
-    public function reject(Request $request, Competition $competition, CompetitionWorkflowService $workflow): RedirectResponse
+    public function reject(Request $request, Competition $competition, CompetitionStateMachine $workflow): RedirectResponse
     {
         abort_unless(in_array($competition->status, [CompetitionStatus::Submitted, CompetitionStatus::UnderReview, CompetitionStatus::WaitingRequirements], true), 422);
         $validated = $request->validate(['message' => ['required', 'string', 'max:2000']]);
@@ -518,7 +519,7 @@ class CompetitionReviewController extends Controller
         return redirect()->route('eys.competitions.index')->with('status', __('eys.competitions.rejected'));
     }
 
-    public function requestInfo(Request $request, Competition $competition, CompetitionWorkflowService $workflow): RedirectResponse
+    public function requestInfo(Request $request, Competition $competition, CompetitionStateMachine $workflow): RedirectResponse
     {
         abort_unless($competition->status === CompetitionStatus::UnderReview, 422);
 

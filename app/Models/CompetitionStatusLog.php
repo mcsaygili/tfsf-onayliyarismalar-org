@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * Bir yarışma başvurusunun onay sürecindeki tek bir denetim kaydı —
  * append-only, hiçbir satır update edilmiyor (bkz. proje planı).
  */
-#[Fillable(['competition_id', 'action', 'from_status', 'to_status', 'message', 'changes', 'actor_id', 'actor_type'])]
+#[Fillable(['competition_id', 'action', 'from_status', 'to_status', 'message', 'changes', 'actor_id', 'actor_type', 'actor_guard', 'request_id', 'ip_address', 'user_agent'])]
 class CompetitionStatusLog extends Model
 {
     use HasFactory, HasUuids;

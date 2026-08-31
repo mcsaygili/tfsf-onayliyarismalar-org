@@ -26,6 +26,7 @@ use App\Http\Controllers\Eys\JurySessionController;
 use App\Http\Controllers\Eys\MailClientController;
 use App\Http\Controllers\Eys\MemberController;
 use App\Http\Controllers\Eys\ModuleDashboardController;
+use App\Http\Controllers\Eys\NotificationTemplateController;
 use App\Http\Controllers\Eys\ParticipantApprovalProcessController;
 use App\Http\Controllers\Eys\PermissionController;
 use App\Http\Controllers\Eys\PhotoCategoryController;
@@ -293,25 +294,27 @@ Route::domain(config('domains.eys'))->group(function () {
 
         Route::prefix('yarismalar')->name('eys.competitions.')->middleware(['team:Institution', 'permission:institution.competitions.manage'])->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
-            Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
-            Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
-            Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
-            Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
-            Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
-            Route::get('{competition}/raporlar/katilimlar.csv', [CompetitionReportController::class, 'entries'])->name('reports.entries');
-            Route::get('{competition}/raporlar/sonuclar.csv', [CompetitionReportController::class, 'results'])->name('reports.results');
-            Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
-            Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->name('create-final-round');
-            Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->name('save-final-round');
-            Route::put('{competition}/sonuclar/final-oturumu', [JurySessionController::class, 'update'])->name('jury-session.update');
-            Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
-            Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
-            Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->name('unpublish-results');
-            Route::post('{competition}/yayin/{action}', [CompetitionReviewController::class, 'updatePublication'])->name('publication.update');
-            Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
-            Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
-            Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');
-            Route::match(['post', 'patch'], '{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
+            Route::middleware('eys.competition')->group(function () {
+                Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
+                Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
+                Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
+                Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
+                Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
+                Route::get('{competition}/raporlar/katilimlar.csv', [CompetitionReportController::class, 'entries'])->name('reports.entries');
+                Route::get('{competition}/raporlar/sonuclar.csv', [CompetitionReportController::class, 'results'])->name('reports.results');
+                Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
+                Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->name('create-final-round');
+                Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->name('save-final-round');
+                Route::put('{competition}/sonuclar/final-oturumu', [JurySessionController::class, 'update'])->name('jury-session.update');
+                Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
+                Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
+                Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->name('unpublish-results');
+                Route::post('{competition}/yayin/{action}', [CompetitionReviewController::class, 'updatePublication'])->name('publication.update');
+                Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
+                Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
+                Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');
+                Route::match(['post', 'patch'], '{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
+            });
         });
 
         Route::prefix('temsilciler')->name('eys.temsilciler.')->middleware(['team:Temsilci', 'permission:representative.representatives.manage'])->group(function () {
@@ -351,8 +354,13 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::middleware('permission:eys.mail_client.manage')->group(function () {
                 Route::get('ayarlar', [MailClientController::class, 'settings'])->name('settings');
                 Route::patch('ayarlar', [MailClientController::class, 'updateSettings'])->name('settings.update');
+                Route::post('ayarlar/domain-kontrolu', [MailClientController::class, 'checkDomain'])->name('domain.check');
                 Route::get('test', [MailClientController::class, 'test'])->name('test');
                 Route::post('test', [MailClientController::class, 'sendTest'])->name('test.send');
+                Route::post('bildirimler/{notificationDispatch}/yeniden-gonder', [MailClientController::class, 'retry'])->name('retry');
+                Route::get('sablonlar', [NotificationTemplateController::class, 'index'])->name('templates.index');
+                Route::get('sablonlar/{notificationTemplate}/duzenle', [NotificationTemplateController::class, 'edit'])->name('templates.edit');
+                Route::patch('sablonlar/{notificationTemplate}', [NotificationTemplateController::class, 'update'])->name('templates.update');
             });
         });
 

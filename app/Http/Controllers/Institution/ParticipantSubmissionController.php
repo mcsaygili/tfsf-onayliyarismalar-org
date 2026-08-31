@@ -8,6 +8,7 @@ use App\Models\CompetitionSubmissionApproval;
 use App\Services\SubmissionApprovalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ParticipantSubmissionController extends Controller
@@ -26,7 +27,7 @@ class ParticipantSubmissionController extends Controller
 
     public function show(Request $request, CompetitionSubmissionApproval $approval): View
     {
-        $this->authorizeInstitution($request, $approval);
+        Gate::forUser($request->user('institution'))->authorize('decide', $approval);
         $approval->load(['submission.entry.user', 'submission.entry.competition.translations', 'submission.category.translations', 'submission.photos.captureDevice.translations']);
 
         return view('institution.participant-submissions.show', compact('approval'));
@@ -34,7 +35,7 @@ class ParticipantSubmissionController extends Controller
 
     public function decide(Request $request, CompetitionSubmissionApproval $approval, SubmissionApprovalService $service): RedirectResponse
     {
-        $this->authorizeInstitution($request, $approval);
+        Gate::forUser($request->user('institution'))->authorize('decide', $approval);
         abort_unless($approval->status === SubmissionApprovalStatus::Pending, 422);
         $validated = $request->validate(['decision' => ['required', 'in:approve,reject'], 'note' => ['nullable', 'string', 'max:2000']]);
         if ($validated['decision'] === 'reject' && blank($validated['note'])) {
@@ -43,11 +44,5 @@ class ParticipantSubmissionController extends Controller
         $service->decide($approval, $request->user('institution'), $validated['decision'] === 'approve', $validated['note'] ?? null);
 
         return redirect()->route('institution.participant-submissions.index')->with('status', __('institution.participant_submissions.decision_saved'));
-    }
-
-    private function authorizeInstitution(Request $request, CompetitionSubmissionApproval $approval): void
-    {
-        $approval->loadMissing('submission.entry.competition');
-        abort_unless($approval->approval_type === 'institution' && $approval->submission->entry->competition->institution_id === $request->user('institution')->institution_id, 404);
     }
 }

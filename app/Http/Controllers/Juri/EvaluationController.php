@@ -12,6 +12,7 @@ use App\Services\JuryEvaluationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class EvaluationController extends Controller
@@ -19,6 +20,7 @@ class EvaluationController extends Controller
     public function show(Competition $competition, CompetitionCategory $category, CompetitionPhaseService $phases, JuryEvaluationService $service): View
     {
         abort_unless($category->competition_id === $competition->id, 404);
+        Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
         $phase = $phases->phase($competition);
         abort_unless(in_array($phase, [CompetitionOperationalPhase::EvaluationOpen, CompetitionOperationalPhase::EvaluationClosed, CompetitionOperationalPhase::ResultsPublished], true), 404);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
@@ -36,6 +38,7 @@ class EvaluationController extends Controller
     public function save(Request $request, Competition $competition, CompetitionCategory $category, CompetitionPhaseService $phases, JuryEvaluationService $service): RedirectResponse
     {
         abort_unless($category->competition_id === $competition->id && $phases->phase($competition) === CompetitionOperationalPhase::EvaluationOpen, 422);
+        Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
         $round = $service->roundFor($competition);
         $validated = $request->validate(['scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);
@@ -47,6 +50,7 @@ class EvaluationController extends Controller
     public function finalize(Request $request, Competition $competition, CompetitionCategory $category, CompetitionPhaseService $phases, JuryEvaluationService $service): RedirectResponse
     {
         abort_unless($category->competition_id === $competition->id && $phases->phase($competition) === CompetitionOperationalPhase::EvaluationOpen, 422);
+        Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
         $round = $service->roundFor($competition);
         $validated = $request->validate(['scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);

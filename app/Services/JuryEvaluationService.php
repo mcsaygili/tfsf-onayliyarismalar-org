@@ -122,6 +122,16 @@ class JuryEvaluationService
             JuryScore::where('competition_evaluation_round_id', $round->id)
                 ->where('juror_assignment_id', $assignment->id)
                 ->update(['submitted_at' => now()]);
+            app(CompetitionAuditService::class)->record(
+                $round->competition,
+                'jury_evaluation_finalized',
+                $assignment->juror,
+                changes: [
+                    'round_id' => $round->id,
+                    'category_id' => $assignment->competition_category_id,
+                    'assignment_id' => $assignment->id,
+                ],
+            );
         });
     }
 }

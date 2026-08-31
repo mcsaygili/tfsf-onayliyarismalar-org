@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthorizeEysCompetition;
 use App\Http\Middleware\CheckMaintenanceMode;
 use App\Http\Middleware\EnsureGuardEmailIsVerified;
 use App\Http\Middleware\ResolveGuardSessionCookie;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'eys.competition' => AuthorizeEysCompetition::class,
             'verified.guard' => EnsureGuardEmailIsVerified::class,
             // EYS Roller/İzinler (Spatie laravel-permission, teams = App\Enums\Module).
             'team' => SetPermissionsTeam::class,

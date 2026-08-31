@@ -7,6 +7,7 @@ use App\Models\Competition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class CompetitionController extends Controller
@@ -25,7 +26,7 @@ class CompetitionController extends Controller
 
     public function show(Competition $competition): View
     {
-        $this->authorizeAssigned($competition);
+        Gate::forUser(Auth::guard('temsilci')->user())->authorize('operate', $competition);
         $competition->load([
             'translations', 'institution', 'categories.translations', 'monitoringReports.representative',
             'evaluationRounds.evaluationSubmissions', 'evaluationRounds.results',
@@ -40,7 +41,7 @@ class CompetitionController extends Controller
 
     public function report(Request $request, Competition $competition): RedirectResponse
     {
-        $this->authorizeAssigned($competition);
+        Gate::forUser(Auth::guard('temsilci')->user())->authorize('operate', $competition);
         $validated = $request->validate([
             'status' => ['required', 'in:observation,risk,completed'],
             'subject' => ['required', 'string', 'max:255'],
@@ -53,10 +54,5 @@ class CompetitionController extends Controller
         ]);
 
         return back()->with('status', 'İzleme raporu TFSF kayıtlarına iletildi.');
-    }
-
-    private function authorizeAssigned(Competition $competition): void
-    {
-        abort_unless($competition->representative_id === Auth::guard('temsilci')->id(), 404);
     }
 }

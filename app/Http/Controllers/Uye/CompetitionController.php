@@ -18,6 +18,7 @@ use App\Services\MemberEligibilityService;
 use App\Services\MemberScorecardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -152,12 +153,12 @@ class CompetitionController extends Controller
 
     private function ownsEntry(Request $request, CompetitionEntry $entry): void
     {
-        abort_unless($entry->user_id === $request->user()->id, 404);
+        Gate::forUser($request->user())->authorize('manage', $entry);
     }
 
     private function ownsSubmission(Request $request, CompetitionSubmission $submission): void
     {
         $submission->loadMissing('entry');
-        abort_unless($submission->entry->user_id === $request->user()->id, 404);
+        Gate::forUser($request->user())->authorize('manage', $submission->entry);
     }
 }

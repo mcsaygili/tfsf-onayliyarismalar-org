@@ -6,10 +6,10 @@ use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionReviewStep;
-use App\Models\CompetitionStatusLog;
 use App\Models\Country;
 use App\Models\Juri;
 use App\Models\JuryInvitation;
+use App\Services\CompetitionAuditService;
 use App\Services\CompetitionReadinessService;
 use App\Services\JuryInvitationService;
 use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
@@ -21,13 +21,13 @@ use App\Support\CompetitionWizard\Step6;
 use App\Support\CompetitionWizard\Step7;
 use App\Support\CompetitionWizard\Step8;
 use App\Support\CompetitionWizard\Step9;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -41,7 +41,7 @@ class CompetitionStepController extends Controller
 {
     public function show(Competition $competition, int $step): View|RedirectResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
 
         $correctionStepNumbers = $competition->requestedCorrectionStepNumbers();
         if ($competition->status === CompetitionStatus::NeedsInfo
@@ -176,7 +176,7 @@ class CompetitionStepController extends Controller
 
     public function update(Request $request, Competition $competition, int $step): RedirectResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
 
         abort_unless($competition->isEditable(), 403);
 
@@ -211,15 +211,12 @@ class CompetitionStepController extends Controller
                         'addressed_by' => Auth::guard('institution')->id(),
                     ]);
 
-                CompetitionStatusLog::create([
-                    'competition_id' => $competition->id,
-                    'action' => 'correction_addressed',
-                    'from_status' => CompetitionStatus::NeedsInfo->value,
-                    'to_status' => CompetitionStatus::NeedsInfo->value,
-                    'message' => $stepDef->label(),
-                    'actor_id' => Auth::guard('institution')->id(),
-                    'actor_type' => Auth::guard('institution')->user()::class,
-                ]);
+                app(CompetitionAuditService::class)->record(
+                    $competition,
+                    'correction_addressed',
+                    Auth::guard('institution')->user(),
+                    $stepDef->label(),
+                );
             }
         });
 
@@ -256,7 +253,7 @@ class CompetitionStepController extends Controller
 
     public function jurors(Request $request, Competition $competition): JsonResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
         abort_unless($competition->isEditable(), 403);
 
         $search = trim((string) $request->input('q'));
@@ -287,7 +284,7 @@ class CompetitionStepController extends Controller
 
     public function resendJuryInvitation(Competition $competition, JuryInvitation $invitation, JuryInvitationService $service): RedirectResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
         abort_unless($competition->isEditable(), 403);
         abort_unless($invitation->competition_id === $competition->id && $invitation->isPending(), 404);
         abort_unless($invitation->assignments()->exists(), 422);
@@ -300,7 +297,7 @@ class CompetitionStepController extends Controller
 
     public function cancelJuryInvitation(Competition $competition, JuryInvitation $invitation, JuryInvitationService $service): RedirectResponse
     {
-        $this->authorizeSameInstitution($competition);
+        Gate::forUser(Auth::guard('institution')->user())->authorize('update', $competition);
         abort_unless($competition->isEditable(), 403);
         abort_unless($invitation->competition_id === $competition->id, 404);
 
@@ -329,21 +326,11 @@ class CompetitionStepController extends Controller
             return;
         }
 
-        CompetitionStatusLog::create([
-            'competition_id' => $competition->id,
-            'action' => 'field_updated',
-            'from_status' => CompetitionStatus::NeedsInfo->value,
-            'to_status' => CompetitionStatus::NeedsInfo->value,
-            'changes' => $changes,
-            'actor_id' => Auth::guard('institution')->id(),
-            'actor_type' => Auth::guard('institution')->user()::class,
-        ]);
-    }
-
-    private function authorizeSameInstitution(Competition $competition): void
-    {
-        if ($competition->institution_id !== Auth::guard('institution')->user()->institution_id) {
-            throw new AuthorizationException;
-        }
+        app(CompetitionAuditService::class)->record(
+            $competition,
+            'field_updated',
+            Auth::guard('institution')->user(),
+            changes: $changes,
+        );
     }
 }
