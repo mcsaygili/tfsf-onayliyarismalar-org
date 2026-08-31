@@ -23,16 +23,22 @@ use App\Models\ParticipantGender;
 use App\Models\Permission;
 use App\Models\Photo;
 use App\Models\ProcessingMethod;
+use App\Models\RegulationItem;
 use App\Models\User;
 use App\Notifications\Juri\CompetitionResultsPublishedNotification as JuryResultsPublishedNotification;
 use App\Notifications\Uye\CompetitionResultsPublishedNotification as MemberResultsPublishedNotification;
+use App\Services\CompetitionWorkflowService;
+use App\Support\CompetitionRegulations\CompetitionRegulationCompiler;
 use Database\Seeders\AwardReferenceSeeder;
 use Database\Seeders\CompetitionCategoryReferenceSeeder;
 use Database\Seeders\EvaluationCriterionSeeder;
 use Database\Seeders\ParticipantApprovalProcessSeeder;
+use Database\Seeders\RegulationItemSeeder;
+use Database\Seeders\RegulationSectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -52,6 +58,237 @@ class CompetitionParticipationLifecycleTest extends TestCase
             EvaluationCriterionSeeder::class,
             ParticipantApprovalProcessSeeder::class,
         ]);
+    }
+
+    #[Group('acceptance')]
+    public function test_main_acceptance_scenario_covers_the_complete_competition_lifecycle(): void
+    {
+        $this->seed([RegulationSectionSeeder::class, RegulationItemSeeder::class]);
+
+        // 1. Kurum yarışmayı hazırlar.
+        $approvalProcess = ParticipantApprovalProcess::where('code', 'institution')->firstOrFail();
+        $competition = Competition::factory()->create([
+            'audience' => CompetitionAudience::International,
+            'participant_approval_process_id' => $approvalProcess->id,
+            'application_starts_at' => now()->subDay(),
+            'application_ends_at' => now()->addDay(),
+            'competition_ends_at' => now()->addDays(2),
+            'evaluation_starts_at' => now()->addDays(3),
+            'evaluation_ends_at' => now()->addDays(4),
+            'current_step' => 11,
+        ]);
+        $category = $this->category($competition);
+        $award = $category->awards()->create([
+            'award_reference_id' => AwardReference::where('code', 'first-prize')->value('id'),
+            'quantity' => 1,
+            'sort_order' => 10,
+        ]);
+        $firstJuror = Juri::factory()->create(['first_name' => 'Gizli', 'last_name' => 'Bir']);
+        $secondJuror = Juri::factory()->create(['first_name' => 'Gizli', 'last_name' => 'Iki']);
+        $category->jurorAssignments()->create(['juror_id' => $firstJuror->id, 'sort_order' => 10]);
+        $category->jurorAssignments()->create(['juror_id' => $secondJuror->id, 'sort_order' => 20]);
+        foreach (RegulationItem::active()->where('content_type', 'institution_input')->get() as $item) {
+            foreach (['tr', 'en'] as $locale) {
+                $competition->regulationInputs()->create([
+                    'regulation_item_id' => $item->id,
+                    'locale' => $locale,
+                    'content' => $locale === 'tr' ? 'Kuruma özel koşul bulunmamaktadır.' : 'There are no institution-specific conditions.',
+                ]);
+            }
+        }
+        app(CompetitionRegulationCompiler::class)->snapshot($competition);
+
+        $this->assertSame(CompetitionStatus::Draft, $competition->status);
+        $this->assertCount(1, $competition->categories);
+        $this->assertCount(2, $category->jurorAssignments);
+        $this->assertCount(1, $category->awards);
+
+        // Fiyatlandırma adımı yönetim kararını beklediği için kurum teslim controller'ı
+        // şimdilik kapalıdır. Aynı durum geçişini servis üzerinden yaparak kalan ana
+        // kabul akışını bağımsız biçimde doğruluyoruz.
+        app(CompetitionWorkflowService::class)->transition(
+            $competition,
+            CompetitionStatus::Submitted,
+            'submitted',
+            $competition->institutionStaff,
+            extra: ['submitted_at' => now()],
+        );
+        $this->assertDatabaseHas('competition_status_logs', [
+            'competition_id' => $competition->id,
+            'action' => 'submitted',
+            'to_status' => CompetitionStatus::Submitted->value,
+        ]);
+
+        // 2. EYS yarışmayı inceler ve onaylar.
+        $reviewer = $this->reviewer();
+        $this->actingAs($reviewer, 'eys')
+            ->post(route('eys.competitions.start', $competition))
+            ->assertRedirect();
+        $review = $competition->reviews()->with('steps')->firstOrFail();
+        $steps = $review->steps->mapWithKeys(fn ($step) => [
+            $step->step_number => ['status' => 'approved', 'note' => null],
+        ])->all();
+        $this->actingAs($reviewer, 'eys')
+            ->patch(route('eys.competitions.save-review', $competition), ['steps' => $steps])
+            ->assertRedirect();
+        $this->actingAs($reviewer, 'eys')
+            ->post(route('eys.competitions.approve', $competition))
+            ->assertRedirect(route('eys.competitions.index'));
+
+        $competition->refresh();
+        $this->assertSame(CompetitionStatus::Approved, $competition->status);
+        $this->assertNotNull($competition->public_slug);
+        $this->assertNotNull($competition->published_at);
+
+        // 3. Yarışma public katalogda yayımlanır.
+        $this->get(route('public.competitions.index'))
+            ->assertOk()
+            ->assertSee($competition->name);
+        $this->get(route('public.competitions.show', $competition))
+            ->assertOk()
+            ->assertSee($competition->name);
+
+        // 4. Üye uygunluk kontrolünden geçer.
+        $member = $this->member();
+        $detail = $this->actingAs($member)->get(route('competitions.show', $competition));
+        $detail->assertOk();
+        $this->assertTrue($detail->viewData('competitionCheck')['eligible']);
+
+        // 5. Üye portföyündeki bir fotoğrafla katılır.
+        $entry = $this->startEntry($member, $competition, $category);
+        $submission = $entry->submissions()->firstOrFail();
+        $portfolioPhoto = Photo::factory()->for($member)->create([
+            'disk_path' => 'portfolio/main-acceptance.jpg',
+            'thumb_path' => null,
+        ]);
+        Storage::disk('public')->put($portfolioPhoto->disk_path, $this->fixture());
+        $this->actingAs($member)
+            ->post(route('competitions.submission.portfolio.store', $submission), ['photo_id' => $portfolioPhoto->id])
+            ->assertRedirect();
+        $this->actingAs($member)
+            ->post(route('competitions.entry.submit', $entry), ['consent' => '1'])
+            ->assertRedirect(route('competitions.entry.show', $entry));
+
+        $entry->refresh();
+        $submission->refresh();
+        $submissionPhoto = $submission->photos()->firstOrFail();
+        $this->assertSame(CompetitionEntryStatus::PendingApproval, $entry->status);
+        $this->assertSame(CompetitionSubmissionStatus::PendingApproval, $submission->status);
+
+        // 6. Kurum katılımı onaylar.
+        $approval = $submission->approvals()->firstOrFail();
+        $this->actingAs($competition->institutionStaff, 'institution')
+            ->post(route('institution.participant-submissions.decide', $approval), ['decision' => 'approve'])
+            ->assertRedirect(route('institution.participant-submissions.index'));
+        $this->assertSame(CompetitionEntryStatus::Approved, $entry->refresh()->status);
+        $this->assertSame(CompetitionSubmissionStatus::Approved, $submission->refresh()->status);
+
+        // 7. Jüriler tek kriter için 3-9 aralığında puan verir.
+        $criterion = $category->evaluationCriteria()->firstOrFail();
+        $this->openEvaluation($competition);
+        $this->actingAs($firstJuror, 'juri')
+            ->put(route('juri.evaluations.finalize', [$competition, $category]), [
+                'scores' => [$submissionPhoto->id => [$criterion->id => 7]],
+            ])->assertRedirect();
+        $this->actingAs($secondJuror, 'juri')
+            ->put(route('juri.evaluations.finalize', [$competition, $category]), [
+                'scores' => [$submissionPhoto->id => [$criterion->id => 9]],
+            ])->assertRedirect();
+        $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $submissionPhoto->id, 'score' => 7]);
+        $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $submissionPhoto->id, 'score' => 9]);
+
+        // Üye bu aşamada jüri isimleri olmadan puan kartını görebilir.
+        $this->actingAs($member)->get(route('competitions.entry.show', $entry))
+            ->assertOk()
+            ->assertSee(__('uye.competitions.scorecard_title', ['round' => 1]))
+            ->assertSee(__('uye.competitions.scorecard_evaluation', ['number' => 1]))
+            ->assertSee(__('uye.competitions.scorecard_evaluation', ['number' => 2]))
+            ->assertDontSee('Gizli Bir')
+            ->assertDontSee('Gizli Iki');
+
+        $this->actingAs($reviewer, 'eys')
+            ->post(route('eys.competitions.aggregate-results', $competition))
+            ->assertRedirect();
+        $firstRoundResult = $competition->evaluationRounds()->firstOrFail()
+            ->results()->where('submission_photo_id', $submissionPhoto->id)->firstOrFail();
+
+        // 8. EYS final kurul oturumunu açar ve ortak kararı kaydeder.
+        $this->actingAs($reviewer, 'eys')
+            ->post(route('eys.competitions.create-final-round', $competition), [
+                'photo_result_ids' => [$firstRoundResult->id],
+            ])->assertRedirect();
+        $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
+        $decision = $finalRound->committeeDecisions()->firstOrFail();
+        $session = $finalRound->jurySession()->with('attendances')->firstOrFail();
+        $attendances = $session->attendances->mapWithKeys(fn ($attendance) => [
+            $attendance->id => 'present',
+        ])->all();
+        $this->actingAs($reviewer, 'eys')
+            ->put(route('eys.competitions.jury-session.update', $competition), [
+                'quorum' => 2,
+                'attendances' => $attendances,
+                'action' => 'open',
+            ])->assertRedirect();
+        $this->actingAs($reviewer, 'eys')
+            ->put(route('eys.competitions.save-final-round', $competition), [
+                'decisions' => [$decision->id => [
+                    'decision' => 'selected',
+                    'score' => 8,
+                    'rank' => 1,
+                    'note' => 'Final kurulunun ortak kararı.',
+                ]],
+            ])->assertRedirect();
+        $this->actingAs($reviewer, 'eys')
+            ->put(route('eys.competitions.jury-session.update', $competition), [
+                'quorum' => 2,
+                'minutes' => 'Final kurulu değerlendirmeyi oy birliğiyle tamamladı.',
+                'attendances' => $attendances,
+                'action' => 'close',
+            ])->assertRedirect();
+        $this->assertSame('closed', $session->fresh()->status);
+
+        // 9. Ödül kategori sonucuna atanır.
+        $finalResult = $finalRound->results()->where('submission_photo_id', $submissionPhoto->id)->firstOrFail();
+        $this->actingAs($reviewer, 'eys')
+            ->put(route('eys.competitions.save-result-awards', $competition), [
+                'award_assignments' => [$award->id => [1 => $finalResult->id]],
+            ])->assertRedirect();
+        $this->assertDatabaseHas('competition_result_awards', [
+            'competition_photo_result_id' => $finalResult->id,
+            'competition_category_award_id' => $award->id,
+            'slot_number' => 1,
+        ]);
+
+        // 10. Sonuçlar yayımlanır.
+        Notification::fake();
+        $this->actingAs($reviewer, 'eys')
+            ->post(route('eys.competitions.publish-results', $competition), [
+                'publication_note' => 'Ana kabul testi sonuç yayını.',
+            ])->assertRedirect();
+        $this->assertNotNull($competition->refresh()->results_published_at);
+        $this->assertDatabaseHas('competition_result_publications', [
+            'competition_id' => $competition->id,
+            'version' => 1,
+        ]);
+
+        // 11. Üye anonim puan kartını ve yayımlanan sonucu görür.
+        $this->actingAs($member)->get(route('competitions.entry.show', $entry))
+            ->assertOk()
+            ->assertSee(__('uye.competitions.scorecard_title', ['round' => 1]))
+            ->assertDontSee('Gizli Bir')
+            ->assertDontSee('Gizli Iki');
+        $this->actingAs($member)->get(route('competitions.show', $competition))
+            ->assertOk()
+            ->assertSee(__('uye.competitions.results'))
+            ->assertSee('#1')
+            ->assertSee('First Prize');
+        $this->get(route('result.competitions.show', $competition))
+            ->assertOk()
+            ->assertSee(trim($member->first_name.' '.$member->last_name))
+            ->assertSee('First Prize');
+        Notification::assertSentTo($member, MemberResultsPublishedNotification::class);
+        Notification::assertSentTo($firstJuror, JuryResultsPublishedNotification::class);
+        Notification::assertSentTo($secondJuror, JuryResultsPublishedNotification::class);
     }
 
     public function test_member_catalogue_only_lists_published_approved_competitions(): void

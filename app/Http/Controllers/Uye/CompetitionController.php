@@ -42,6 +42,8 @@ class CompetitionController extends Controller
         $competition->load(['translations', 'institution', 'competitionType.translations', 'categories.translations', 'categories.genders.translations', 'categories.ageEligibilityRule.translations', 'categories.memberGroups.translations', 'regulationSnapshots', 'evaluationRounds.results.photo.submission.category.translations', 'evaluationRounds.results.awards.categoryAward.translations', 'evaluationRounds.results.awards.categoryAward.awardReference.translations']);
         $categoryChecks = $competition->categories->mapWithKeys(fn ($category) => [$category->id => $eligibility->forCategory($category, $request->user())]);
         $entry = $competition->entries()->where('user_id', $request->user()->id)->first();
+        $resultRound = $competition->evaluationRounds->firstWhere('is_final', true)
+            ?? $competition->evaluationRounds->sortByDesc('round_number')->first();
 
         return view('uye.competitions.show', [
             'competition' => $competition,
@@ -49,6 +51,7 @@ class CompetitionController extends Controller
             'competitionCheck' => $eligibility->forCompetition($competition, $request->user()),
             'categoryChecks' => $categoryChecks,
             'entry' => $entry,
+            'resultRound' => $resultRound,
         ]);
     }
 

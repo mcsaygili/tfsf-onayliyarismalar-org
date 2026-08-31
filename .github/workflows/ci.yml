@@ -8,19 +8,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: mbstring, sqlite3, imagick
           coverage: none
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
+      - name: Install EXIF tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libimage-exiftool-perl
       - run: composer install --no-interaction --prefer-dist
       - run: npm ci
       - run: cp .env.example .env && php artisan key:generate
       - run: npm run build
       - run: vendor/bin/pint --test
+      - name: Run main competition lifecycle acceptance test
+        run: php artisan test --group=acceptance
       - run: php artisan test --compact

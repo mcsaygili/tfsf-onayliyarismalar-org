@@ -39,9 +39,9 @@
         </div>
     </section>
 
-    @if($phase->value === 'results_published' && $competition->evaluationRounds->first()?->results->isNotEmpty())
+    @if($phase->value === 'results_published' && $resultRound?->results->isNotEmpty())
         <section class="mp-category-section"><header><h2>{{ __('uye.competitions.results') }}</h2><p>{{ __('uye.competitions.results_hint') }}</p></header><div class="mp-selected-photos">
-            @foreach($competition->evaluationRounds->first()->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)<article><img src="{{ route('competitions.photos.show', $result->photo) }}" alt=""><div><strong>#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><span>{{ __('uye.competitions.result_score', ['score' => $result->average_score]) }}</span>@if($result->awards->isNotEmpty())<span style="color:var(--ia-copper-bright);font-weight:700;">{{ $result->awards->map(fn ($assignment) => $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text)->filter()->join(' · ') }}</span>@endif</div></article>@endforeach
+            @foreach($resultRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)<article><img src="{{ route('competitions.photos.show', $result->photo) }}" alt=""><div><strong>#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><span>{{ __('uye.competitions.result_score', ['score' => $result->average_score]) }}</span>@if($result->awards->isNotEmpty())<span style="color:var(--ia-copper-bright);font-weight:700;">{{ $result->awards->map(fn ($assignment) => $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text)->filter()->join(' · ') }}</span>@endif</div></article>@endforeach
         </div></section>
     @endif
 
