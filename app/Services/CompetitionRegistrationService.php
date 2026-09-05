@@ -142,7 +142,8 @@ class CompetitionRegistrationService
     {
         DB::transaction(function () use ($registration, $actor, $version, $decision, $note) {
             $registration = $this->lock($registration, $version);
-            Gate::forUser($actor->fresh())->authorize('review', $registration);
+            $actor = ReviewerAccountLock::acquire($actor);
+            Gate::forUser($actor)->authorize('review', $registration);
             if (! in_array($decision, ['approved', 'rejected', 'changes_requested'], true) || ($decision !== 'approved' && blank($note)) || mb_strlen($note ?? '') > 2000) {
                 $this->invalid('decision_required');
             }
@@ -171,6 +172,7 @@ class CompetitionRegistrationService
     {
         return DB::transaction(function () use ($competition, $actor, $member, $version, $grantVersion, $waiveDocuments, $reason) {
             $competition = CompetitionMutationLock::acquire($competition->id);
+            $actor = ReviewerAccountLock::acquire($actor);
             $exceptions = app(RegistrationExceptionService::class);
             $grant = $exceptions->authorize($competition, $actor, $grantVersion);
             $exceptions->requireReason($reason);

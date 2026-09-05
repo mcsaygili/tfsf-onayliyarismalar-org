@@ -6,6 +6,7 @@ use App\Models\CompetitionRegistration;
 use App\Models\InstitutionStaff;
 use App\Models\Temsilci;
 use App\Models\User;
+use App\Services\InstitutionCompetitionAccess;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,7 +28,7 @@ class CompetitionRegistrationPolicy
             return Response::denyAsNotFound();
         }
         $allowed = match (true) {
-            $actor instanceof InstitutionStaff => $actor->status && $registration->reviewer === 'institution' && app(\App\Services\InstitutionCompetitionAccess::class)->allows($competition, $actor),
+            $actor instanceof InstitutionStaff => $actor->status && $registration->reviewer === 'institution' && app(InstitutionCompetitionAccess::class)->allows($competition, $actor),
             $actor instanceof Temsilci => $actor->status && $registration->reviewer === 'representative' && $actor->id === $competition->representative_id,
             default => false,
         };

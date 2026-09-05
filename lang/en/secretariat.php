@@ -1,4 +1,5 @@
 <?php
+
 return [
     'title' => 'Secretariat accounts', 'new' => 'Create secretariat account', 'edit' => 'Edit secretariat account', 'name' => 'First name', 'surname' => 'Last name', 'email' => 'Email', 'phone' => 'Phone', 'status' => 'Account status', 'active' => 'Active', 'inactive' => 'Inactive', 'password' => 'Initial password', 'password_confirmation' => 'Confirm initial password', 'save' => 'Save', 'saved' => 'Changes saved.', 'empty' => 'No secretariat accounts yet.',
     'hint' => 'A secretariat account is independent of institutions. It can only operate competitions assigned by EYS. It cannot manage institutions or staff.',

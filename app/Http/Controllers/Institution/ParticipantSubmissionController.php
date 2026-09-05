@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Institution;
 use App\Enums\SubmissionApprovalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionSubmissionApproval;
+use App\Services\InstitutionCompetitionAccess;
 use App\Services\SubmissionApprovalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class ParticipantSubmissionController extends Controller
     {
         $approvals = CompetitionSubmissionApproval::query()
             ->where('approval_type', 'institution')
-            ->whereHas('submission.entry.competition', fn ($query) => app(\App\Services\InstitutionCompetitionAccess::class)->scope($query, $request->user('institution')))
+            ->whereHas('submission.entry.competition', fn ($query) => app(InstitutionCompetitionAccess::class)->scope($query, $request->user('institution')))
             ->with(['submission.entry.user', 'submission.entry.competition.translations', 'submission.category.translations'])
             ->orderByRaw("CASE status WHEN 'pending' THEN 1 ELSE 2 END")
             ->latest()->paginate(20);

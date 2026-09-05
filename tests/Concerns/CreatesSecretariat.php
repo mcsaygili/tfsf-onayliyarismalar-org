@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Concerns;
 
 use App\Models\InstitutionStaff;
@@ -16,6 +17,7 @@ trait CreatesSecretariat
         $f['manager']->givePermissionTo('institution.secretariats.manage');
         $secretariat = InstitutionStaff::factory()->create(['account_kind' => 'secretariat', 'institution_id' => null]);
         app(SecretariatService::class)->assign($f['competition'], $f['manager'], $secretariat->id, 0, 'Synthetic secretariat assignment.');
+
         return $f + compact('secretariat');
     }
 }

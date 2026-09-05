@@ -48,7 +48,7 @@ $events = 0;
 Event::listen([Verified::class, PasswordReset::class], function () use (&$events) {
     $events++;
 });
-fwrite(STDOUT, "ready\n");
+fwrite(STDOUT, 'connection:'.DB::selectOne('SELECT CONNECTION_ID() AS id')->id."\nready\n");
 $deadline = microtime(true) + 15;
 while (! is_file($argv[2])) {
     clearstatcache(true, $argv[2]);

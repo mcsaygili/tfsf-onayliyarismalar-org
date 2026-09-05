@@ -1068,6 +1068,7 @@
                 <a href="{{ route('institution.secretariat.profile') }}" class="ip-nav-item">{{ __('secretariat.profile') }}</a>
                 <a href="{{ route('institution.password.edit') }}" class="ip-nav-item">{{ __('institution.nav.password') }}</a>
             @endunless
+            <a href="{{ route('institution.operations.index') }}" class="ip-nav-item {{ request()->routeIs('institution.operations.*') ? 'is-active' : '' }}">{{ __('operations.title') }}</a>
             <a href="{{ route('institution.registrations.index') }}" class="ip-nav-item {{ request()->routeIs('institution.registrations.*') ? 'is-active' : '' }}">{{ __('registration.heading') }}</a>
             <a href="{{ route('institution.participant-submissions.index') }}" class="ip-nav-item {{ request()->routeIs('institution.participant-submissions.*') ? 'is-active' : '' }}">
                 <x-institution.icon name="staff" />

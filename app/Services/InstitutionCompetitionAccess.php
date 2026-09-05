@@ -13,6 +13,7 @@ class InstitutionCompetitionAccess
         if (! $actor->status) {
             return $query->whereRaw('1 = 0');
         }
+
         return $actor->isSecretariat()
             ? $query->where('secretariat_id', $actor->id)->whereHas('institution', fn ($q) => $q->where('status', true))
             : $query->where('institution_id', $actor->institution_id)->whereHas('institution', fn ($q) => $q->where('status', true));

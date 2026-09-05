@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Competition;
 use App\Models\CompetitionSubmissionPhoto;
+use App\Services\InstitutionCompetitionAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +32,7 @@ class CompetitionSubmissionPhotoController extends Controller
             $request->routeIs('competitions.photos.show') => Auth::guard('web')->check()
                 && $entry->user_id === Auth::guard('web')->id(),
             $request->routeIs('institution.participant-submissions.photos.show') => Auth::guard('institution')->check()
-                && app(\App\Services\InstitutionCompetitionAccess::class)->allows($competition, Auth::guard('institution')->user()),
+                && app(InstitutionCompetitionAccess::class)->allows($competition, Auth::guard('institution')->user()),
             $request->routeIs('temsilci.participant-submissions.photos.show') => Auth::guard('temsilci')->check()
                 && $competition->representative_id === Auth::guard('temsilci')->id(),
             $request->routeIs('juri.evaluations.photos.show') => Auth::guard('juri')->check()

@@ -1,0 +1,18 @@
+{
+  "package": 21,
+  "files": {
+    "app/Services/InstitutionCompetitionOperations.php": "74666130c996ee46a7202dce76ed2b6c74642e779b09626800354abffeb81f48",
+    "app/Http/Controllers/Institution/CompetitionOperationsController.php": "f7f94ea441fa0dbc3f02a07716f62bec4afbd5b6f71438433b2e10823906c22b",
+    "app/Models/User.php": "8a12a61ee2a2e36748fe50c09456ec73b9612ab32b537cdee5973eadd129f57c",
+    "app/Http/Middleware/RestrictSecretariatRoutes.php": "e2cc14dafc4b59292358858598acba7ed826eca0b2ab2ceacf1a080daeac08ad",
+    "routes/institution.php": "2c788b6911501f110ca3f2359fd7319b353aa1e0e02f70db9e0dd1d3c42fc305",
+    "lang/tr/operations.php": "33d01e9509e53cd6a62432fe9363df84038eb8cdc733975795d71503ae6d35aa",
+    "lang/en/operations.php": "4cde782b37a0965966bc5f175acf7f152115a1a867ef9491a411d7eea816e943",
+    "resources/views/institution/operations/index.blade.php": "c0f781e639b5d4e8f4d5c27d02a1712cfd7e8a07ce4328d309b8792622f4e81f",
+    "resources/views/institution/operations/show.blade.php": "c6fecee0af2350ec68b5df35cb11f9c51e1e3a52cbbef8284a08f7a8c4da27f4",
+    "resources/views/secretariat/dashboard.blade.php": "83d69414b952613deb162cd5436f598f9f4a1197c0c6a2f8de8338c754a95c50",
+    "resources/views/components/institution/app-layout.blade.php": "960692fb912ced64af3a6eee67c2afabc6f9704b345f929cb67ed6f565a11456",
+    "resources/css/app.css": "c37263f146c4f3be83765ee162bacc262238b5488eb6378a6264ff252306e805",
+    "tests/Feature/InstitutionCompetitionOperationsTest.php": "0ac36d78072479c612562a594a7c7c9c1d7053a5eddbd874f7ad9ffa5b05a42f"
+  }
+}

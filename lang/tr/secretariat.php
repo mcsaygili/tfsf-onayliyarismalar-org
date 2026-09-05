@@ -1,4 +1,5 @@
 <?php
+
 return [
     'title' => 'Sekreterya hesapları', 'new' => 'Sekreterya hesabı oluştur', 'edit' => 'Sekreterya hesabını düzenle', 'name' => 'Ad', 'surname' => 'Soyad', 'email' => 'E-posta', 'phone' => 'Telefon', 'status' => 'Hesap durumu', 'active' => 'Aktif', 'inactive' => 'Pasif', 'password' => 'İlk parola', 'password_confirmation' => 'İlk parola tekrarı', 'save' => 'Kaydet', 'saved' => 'Değişiklik kaydedildi.', 'empty' => 'Henüz sekreterya hesabı yok.',
     'hint' => 'Sekreterya hesabı bir kuruma bağlı değildir. Yalnızca EYS tarafından atandığı yarışmalarda işlem yapabilir. Kurum ve personel yönetimine erişemez.',

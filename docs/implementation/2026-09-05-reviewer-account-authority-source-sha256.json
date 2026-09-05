@@ -1,0 +1,12 @@
+{
+  "package": 20,
+  "files": {
+    "app/Services/ReviewerAccountLock.php": "c45bff43d4d7f3835ef027b18aeec516303c463c1ac357706298c01cdafc4faa",
+    "app/Services/SubmissionApprovalService.php": "19c232dd85eb3995a5d2a13dec7d60a184dc6031994ff3a45cac1d93b807d2c0",
+    "app/Services/CompetitionRegistrationService.php": "dad6d5b7d533e9281f770792c337b7c67f5dc46147539faeef28f713bae48e87",
+    "app/Policies/CompetitionSubmissionApprovalPolicy.php": "2999484cf1ae852e6756cf23bf02bf5ed92f9a3ae978ba5c731338d8a67b91c7",
+    "tests/Feature/ReviewerAccountAuthorityTest.php": "8d00462740cd7bd4edd86ecb496df3ece0300992729f0ecd9f4bdfff30880bf0",
+    "tests/Feature/ReviewerAccountConcurrencyTest.php": "b6757d6264e4a68345eb271ec39a2fd9b099afa8ddb81825870587dc077d9218",
+    "tests/Support/account-http-worker.php": "4fff433daad0583db24c7932ab0ccfa3a18421fb2176c8b5eb8e11f025158deb"
+  }
+}

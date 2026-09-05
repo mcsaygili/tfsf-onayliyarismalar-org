@@ -35,3 +35,9 @@ Geliştirme durumu, doğrulama sonuçları ve mevcut fotoğrafların güvenli ge
 [Kategori başvurusunda anonim seri, sıra ve yayın arşivi](docs/implementation/2026-09-05-submission-series.md).
 
 [Yetkili doğrudan ön kayıt, belge sayısı istisnası ve denetim](docs/implementation/2026-09-05-registration-exceptions.md).
+
+[Kurumdan bağımsız sekreterya hesapları ve yarışma atamaları](docs/implementation/2026-09-05-independent-secretariats.md).
+
+[Onay kararlarında güncel hesap yetkisi ve eşzamanlı hesap değişikliği](docs/implementation/2026-09-05-reviewer-account-authority.md).
+
+[Kurum/sekreterya yarışma operasyonları, katılımcı listesi ve güncel istatistikler](docs/implementation/2026-09-05-institution-competition-operations.md).

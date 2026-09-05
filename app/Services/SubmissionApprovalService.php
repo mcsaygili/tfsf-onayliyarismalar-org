@@ -9,6 +9,7 @@ use App\Models\CompetitionSubmissionApproval;
 use App\Notifications\Uye\CompetitionSubmissionDecisionNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class SubmissionApprovalService
@@ -18,8 +19,9 @@ class SubmissionApprovalService
         $competitionId = $approval->submission->entry->competition_id;
         DB::transaction(function () use ($competitionId, $approval, $actor, $approved, $note) {
             $competition = CompetitionMutationLock::acquire($competitionId);
+            $actor = ReviewerAccountLock::acquire($actor);
             $approval = CompetitionSubmissionApproval::query()->whereKey($approval->id)->lockForUpdate()->firstOrFail();
-            \Illuminate\Support\Facades\Gate::forUser($actor->fresh())->authorize('decide', $approval);
+            Gate::forUser($actor)->authorize('decide', $approval);
             if ($approval->status !== SubmissionApprovalStatus::Pending) {
                 return;
             }

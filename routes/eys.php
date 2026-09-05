@@ -41,6 +41,7 @@ use App\Http\Controllers\Eys\UserController;
 use App\Http\Controllers\Eys\UserRoleController;
 use App\Http\Controllers\RegistrationExceptionController;
 use App\Http\Controllers\Result\ResultPhotoController;
+use App\Http\Controllers\SecretariatController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Middleware\SerializeCompetitionMutation;
 use Illuminate\Support\Facades\Route;
@@ -296,19 +297,19 @@ Route::domain(config('domains.eys'))->middleware('panel.session:eys')->group(fun
         });
 
         Route::prefix('sekreteryalar')->name('eys.secretariats.')->middleware(['team:Institution', 'permission:institution.secretariats.manage'])->group(function () {
-            Route::get('/', [\App\Http\Controllers\SecretariatController::class, 'index'])->name('index');
-            Route::get('yeni', [\App\Http\Controllers\SecretariatController::class, 'create'])->name('create');
-            Route::post('/', [\App\Http\Controllers\SecretariatController::class, 'store'])->middleware('throttle:10,1')->name('store');
-            Route::get('{account}', [\App\Http\Controllers\SecretariatController::class, 'edit'])->name('edit');
-            Route::patch('{account}', [\App\Http\Controllers\SecretariatController::class, 'update'])->middleware('throttle:20,1')->name('update');
+            Route::get('/', [SecretariatController::class, 'index'])->name('index');
+            Route::get('yeni', [SecretariatController::class, 'create'])->name('create');
+            Route::post('/', [SecretariatController::class, 'store'])->middleware('throttle:10,1')->name('store');
+            Route::get('{account}', [SecretariatController::class, 'edit'])->name('edit');
+            Route::patch('{account}', [SecretariatController::class, 'update'])->middleware('throttle:20,1')->name('update');
         });
 
         Route::prefix('yarismalar')->name('eys.competitions.')->middleware(['team:Institution', 'permission:institution.competitions.manage'])->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
             Route::middleware('eys.competition')->group(function () {
                 Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
-                Route::get('{competition}/sekreterya', [\App\Http\Controllers\SecretariatController::class, 'assignment'])->name('secretariat');
-                Route::post('{competition}/sekreterya', [\App\Http\Controllers\SecretariatController::class, 'assign'])->middleware('throttle:20,1')->name('secretariat.store');
+                Route::get('{competition}/sekreterya', [SecretariatController::class, 'assignment'])->name('secretariat');
+                Route::post('{competition}/sekreterya', [SecretariatController::class, 'assign'])->middleware('throttle:20,1')->name('secretariat.store');
                 Route::get('{competition}/on-kayit-yetkileri', [RegistrationExceptionController::class, 'permissions'])->name('registration-permissions');
                 Route::post('{competition}/on-kayit-yetkileri', [RegistrationExceptionController::class, 'grant'])->middleware('throttle:20,1')->name('registration-permissions.store');
                 Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->middleware(SerializeCompetitionMutation::class)->name('start');

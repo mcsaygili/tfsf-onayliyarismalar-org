@@ -8,6 +8,7 @@ use App\Models\CompetitionRegistrationDocument;
 use App\Models\InstitutionStaff;
 use App\Models\RegistrationExceptionGrant;
 use App\Services\CompetitionRegistrationService;
+use App\Services\InstitutionCompetitionAccess;
 use App\Services\RegistrationExceptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -62,7 +63,7 @@ class CompetitionRegistrationController extends Controller
         $actor = $request->user();
         $institution = $actor instanceof InstitutionStaff;
         $registrations = CompetitionRegistration::whereNotNull('submitted_at')->where('reviewer', $institution ? 'institution' : 'representative')
-            ->whereHas('competition', fn ($q) => $institution ? app(\App\Services\InstitutionCompetitionAccess::class)->scope($q, $actor) : $q->where('representative_id', $actor->id))
+            ->whereHas('competition', fn ($q) => $institution ? app(InstitutionCompetitionAccess::class)->scope($q, $actor) : $q->where('representative_id', $actor->id))
             ->with(['user', 'competition.translations'])->latest('submitted_at')->paginate(20);
         $panel = $institution ? 'institution' : 'temsilci';
 

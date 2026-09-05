@@ -9,6 +9,7 @@ use App\Models\InstitutionStaff;
 use App\Models\RegistrationExceptionGrant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
@@ -36,6 +37,7 @@ class SecretariatService
             $account->forceFill(['account_kind' => 'secretariat', 'institution_id' => null]);
             $account->fill(collect($data)->only(['first_name', 'last_name', 'email', 'password', 'phone', 'status'])->all())->save();
             $this->event($account, $manager, 'created', ['status' => $account->status, 'email' => $account->email]);
+
             return $account;
         });
     }
@@ -79,7 +81,7 @@ class SecretariatService
         DB::transaction(function () use ($competition, $manager, $accountId, $version, $reason) {
             $competition = CompetitionMutationLock::acquire($competition->id);
             $this->authorize($manager);
-            \Illuminate\Support\Facades\Gate::forUser($manager->fresh())->authorize('manage', $competition);
+            Gate::forUser($manager->fresh())->authorize('manage', $competition);
             if ($competition->secretariat_version !== $version) {
                 throw ValidationException::withMessages(['secretariat' => __('secretariat.stale')]);
             }

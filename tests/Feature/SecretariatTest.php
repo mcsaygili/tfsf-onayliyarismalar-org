@@ -9,11 +9,18 @@ use App\Models\RegistrationExceptionGrant;
 use App\Services\CompetitionRegistrationService;
 use App\Services\InstitutionCompetitionAccess;
 use App\Services\PanelAccountAccess;
+use App\Services\RegistrationDocumentScanService;
 use App\Services\RegistrationExceptionService;
 use App\Services\SecretariatService;
+use App\Services\SubmissionApprovalService;
+use App\Support\Documents\PdfDocumentScanner;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\CreatesSecretariat;
+use Tests\Support\PassingDocumentScanner;
 use Tests\TestCase;
 
 class SecretariatTest extends TestCase
@@ -154,16 +161,16 @@ class SecretariatTest extends TestCase
 
     public function test_secretariat_can_review_photos_but_service_rechecks_assignment_before_deciding(): void
     {
-        \Illuminate\Support\Facades\Notification::fake();
+        Notification::fake();
         $f = $this->secretariatFixture();
         $approval = $f['submission']->approvals()->create(['approval_type' => 'institution', 'status' => 'pending', 'sequence' => 1]);
         $this->actingAs($f['secretariat'], 'institution')->get(route('institution.participant-submissions.index'))->assertOk()->assertSee($f['member']->first_name);
         $this->get(route('institution.participant-submissions.show', $approval))->assertOk();
         app(SecretariatService::class)->assign($f['competition'], $f['manager'], null, 1, 'Assignment removed before decision.');
         try {
-            app(\App\Services\SubmissionApprovalService::class)->decide($approval, $f['secretariat'], true);
+            app(SubmissionApprovalService::class)->decide($approval, $f['secretariat'], true);
             $this->fail('Stale assignment must fail');
-        } catch (\Illuminate\Auth\Access\AuthorizationException) {
+        } catch (AuthorizationException) {
             $this->assertSame('pending', $approval->fresh()->status->value);
         }
         app(SecretariatService::class)->assign($f['competition'], $f['manager'], $f['secretariat']->id, 2, 'Assignment restored for review.');
@@ -173,11 +180,11 @@ class SecretariatTest extends TestCase
 
     public function test_assigned_secretariat_document_download_obeys_private_scope(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('local');
+        Storage::fake('local');
         $f = $this->secretariatFixture();
         $document = app(CompetitionRegistrationService::class)->upload($f['registration'], $f['member'], 1, 1, $this->registrationPdf());
-        $this->app->instance(\App\Support\Documents\PdfDocumentScanner::class, new \Tests\Support\PassingDocumentScanner);
-        app(\App\Services\RegistrationDocumentScanService::class)->scan($document->id);
+        $this->app->instance(PdfDocumentScanner::class, new PassingDocumentScanner);
+        app(RegistrationDocumentScanService::class)->scan($document->id);
         app(CompetitionRegistrationService::class)->submit($f['registration']->fresh(), $f['member'], 2);
         $this->actingAs($f['secretariat'], 'institution')->get(route('institution.registrations.documents.show', $document))->assertOk();
         $other = InstitutionStaff::factory()->create(['account_kind' => 'secretariat', 'institution_id' => null]);

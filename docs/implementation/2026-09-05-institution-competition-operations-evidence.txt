@@ -1,0 +1,98 @@
+Package 21: institution competition operations
+Synthetic local databases only. Full MariaDB will be appended on completion.
+
+FINAL FOCUSED SQLITE
+
+  ...........
+
+  Tests:    11 passed (51 assertions)
+  Duration: 1.38s
+
+
+FOCUSED MARIADB (FIRST 9 + SECRETARIAT)
+
+  .......................
+
+  Tests:    23 passed (116 assertions)
+  Duration: 7.02s
+
+
+FULL SQLITE WITH SCANNER INTEGRATION
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................sss.............................
+  ............................................................................
+  ............................................................................
+  .......s.............................sss....................................
+  ........................s...................................................
+  ........................................................................sss.
+  ...........sss............s.................................................
+  .......ssss.......................sssssssss................ss...............
+  ...s........................................................................
+  ........
+
+  Tests:    48 skipped, 872 passed (4003 assertions)
+  Duration: 61.79s
+
+
+BROWSER
+{
+  "checks": [
+    "Real secretary login -> scoped list -> detail; 28 people, 29 category entries, 2 photos; 25 records on page one.",
+    "Category and rejected status filters update counts and actual participant rows together.",
+    "Clearing filters and page two preserve total counts.",
+    "English mobile/desktop empty state and translated competition name render.",
+    "Foreign competition detail is denied by the server."
+  ],
+  "errors": [],
+  "screenshots": 4,
+  "browser": "Playwright Chrome; Browser plugin not available"
+}
+PINT
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ..........................................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 666 files  
+
+
+VITE
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-BTIl2WFt.css  91.05 kB │ gzip: 16.95 kB
+public/build/assets/app-D3jIom87.js   99.26 kB │ gzip: 31.75 kB
+
+✓ built in 300ms
+
+DETECTOR: EXISTING PORTFOLIO WARNING
+[
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/Users/mcsaygili/workspace-tfsf/tfsf-onayliyarismalar-org/resources/css/app.css",
+    "line": 183,
+    "snippet": ".pf-competition-card::before — absolute 3px pseudo-element stripe (left: 0)"
+  }
+]
+

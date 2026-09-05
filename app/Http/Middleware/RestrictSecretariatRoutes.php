@@ -10,8 +10,9 @@ class RestrictSecretariatRoutes
     public function handle(Request $request, Closure $next)
     {
         if ($request->user('institution')->isSecretariat()) {
-            abort_unless($request->routeIs('institution.dashboard', 'institution.password.*', 'institution.secretariat.*', 'institution.registrations.*', 'institution.participant-submissions.*'), 403);
+            abort_unless($request->routeIs('institution.dashboard', 'institution.operations.*', 'institution.password.*', 'institution.secretariat.*', 'institution.registrations.*', 'institution.participant-submissions.*'), 403);
         }
+
         return $next($request);
     }
 }

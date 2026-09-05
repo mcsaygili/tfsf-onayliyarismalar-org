@@ -17,12 +17,14 @@ class SecretariatController extends Controller
     {
         $service->authorize($request->user());
         $accounts = InstitutionStaff::where('account_kind', 'secretariat')->orderBy('email')->paginate(20);
+
         return view('secretariat.accounts', compact('accounts'));
     }
 
     public function create(Request $request, SecretariatService $service)
     {
         $service->authorize($request->user());
+
         return view('secretariat.account', ['account' => null, 'context' => null]);
     }
 
@@ -31,6 +33,7 @@ class SecretariatController extends Controller
         $service->authorize($request->user());
         $data = $request->validate($this->rules() + ['password' => ['required', 'confirmed', Password::defaults()]]);
         $service->create($request->user(), $data);
+
         return redirect()->route('eys.secretariats.index')->with('status', __('secretariat.saved'));
     }
 
@@ -38,6 +41,7 @@ class SecretariatController extends Controller
     {
         $service->authorize($request->user());
         abort_unless($account->isSecretariat(), 404);
+
         return view('secretariat.account', ['account' => $account, 'context' => $service->context($account)]);
     }
 
@@ -45,6 +49,7 @@ class SecretariatController extends Controller
     {
         $service->authorize($request->user());
         $service->update($request->user(), $account, $request->validate($this->rules($account) + ['context' => ['required', 'string', 'size:64']]));
+
         return redirect()->route('eys.secretariats.index')->with('status', __('secretariat.saved'));
     }
 
@@ -52,6 +57,7 @@ class SecretariatController extends Controller
     {
         $service->authorize($request->user());
         $accounts = InstitutionStaff::where('account_kind', 'secretariat')->where('status', true)->whereNotNull('email_verified_at')->orderBy('email')->get();
+
         return view('secretariat.assignment', compact('competition', 'accounts'));
     }
 
@@ -60,6 +66,7 @@ class SecretariatController extends Controller
         $service->authorize($request->user());
         $data = $request->validate(['account_id' => ['nullable', 'uuid'], 'version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'min:10', 'max:2000']]);
         $service->assign($competition, $request->user(), $data['account_id'] ?? null, $data['version'], $data['reason']);
+
         return back()->with('status', __('secretariat.saved'));
     }
 
@@ -68,6 +75,7 @@ class SecretariatController extends Controller
         $actor = $request->user('institution');
         abort_unless($actor->isSecretariat(), 404);
         $competitions = $access->scope(Competition::query(), $actor)->with(['translations', 'institution'])->withCount('entries')->latest()->paginate(15);
+
         return view('secretariat.dashboard', compact('competitions'));
     }
 
@@ -75,6 +83,7 @@ class SecretariatController extends Controller
     {
         $account = $request->user('institution');
         abort_unless($account->isSecretariat(), 404);
+
         return view('secretariat.profile', ['account' => $account, 'context' => $service->context($account)]);
     }
 
@@ -85,6 +94,7 @@ class SecretariatController extends Controller
         $data = $request->validate(['first_name' => ['required', 'string', 'max:255'], 'last_name' => ['required', 'string', 'max:255'], 'phone' => ['nullable', 'string', 'max:50'], 'context' => ['required', 'string', 'size:64']]);
         $service->profile($account, $data);
         app(PanelSession::class)->stamp($request->session(), $account->fresh(), 'institution');
+
         return back()->with('status', __('secretariat.saved'));
     }
 
