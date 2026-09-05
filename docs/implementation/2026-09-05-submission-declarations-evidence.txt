@@ -1,0 +1,109 @@
+2026-09-05 Submission declarations — final local verification
+Commands: php artisan test --compact; vendor/bin/pint --test; npm run build.
+DB: SQLite :memory:, isolated MariaDB tfsf_testing. Migration: isolated tfsf_declarations_ui only.
+
+=== final-sqlite ===
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ..s.............................ss..........................................
+  ............................................
+
+  Tests:    20 skipped, 708 passed (2862 assertions)
+  Duration: 45.77s
+
+
+=== final-mariadb ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................
+
+  Tests:    728 passed (3076 assertions)
+  Duration: 130.27s
+
+
+=== pint ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ...........................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 575 files  
+
+
+=== final-format ===
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ tests/Feature/SubmissionDeclarationsTest.php class_attributes_separation,…  
+
+
+=== build ===
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Ck1sm6xt.css  84.72 kB │ gzip: 15.81 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 346ms
+
+=== migration ===
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_170000_add_submission_declarations ................. 17.46ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_170000_add_submission_declarations ................. 23.67ms DONE
+
+
+=== browser-results.json ===
+{
+  "checks": [
+    "Institution story/order requirements persist after save and reload",
+    "Missing required stories block final submission",
+    "Category/photo stories and chosen photo order survive save",
+    "Stale tab is rejected with recoverable input; saved date/title preserved",
+    "Labeled fields, keyboard focus and no horizontal overflow at 1440px",
+    "Labeled fields, keyboard focus and no horizontal overflow at 390px",
+    "Complete entry submits successfully; details become read-only",
+    "Jury reads requested stories in photo order without member email or raw EXIF",
+    "English jury story labels render correctly"
+  ],
+  "errors": []
+}
+=== impeccable.json ===
+[]
+
+Final git diff --check: passed.

@@ -1,0 +1,7 @@
+{
+  "app/Services/CompetitionEntryService.php": "cc270b20b3003b5966980854747280e3d9c78d17f7d5444cc52aba1e0affd405",
+  "app/Services/CompetitionSubmissionPhotoService.php": "84ead5d85099300fbb267621fff7a5bd0b1930397dcb85cf000302e01685a392",
+  "tests/Feature/CompetitionEntryAtomicityTest.php": "40ccc4877d0122d7f08f44f4aa75176680684da1cf7d0df6f4355aa638889416",
+  "tests/Feature/CompetitionEntryConcurrencyTest.php": "fbe0890435a877c9e0ccc697b004ef3dc8921440fb32a4c8640e2576573754fe",
+  "tests/Support/account-http-worker.php": "37a1f9b6a1a15a7060d5bf213aebf2c6c8a673e8bc642257d6ab0563dd09d9d4"
+}

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use Database\Factories\InstitutionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Institution extends Model
 {
     /** @use HasFactory<InstitutionFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasSecurityStamp, HasUuids;
 
     protected function casts(): array
     {

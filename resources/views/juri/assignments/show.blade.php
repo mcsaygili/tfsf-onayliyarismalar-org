@@ -8,6 +8,7 @@
     @endphp
 
     <div class="jp-detail-page">
+    @if($errors->any())<div class="jp-readonly-note" role="alert"><p>{{ $errors->first() }}</p></div>@endif
     <a class="jp-back-link" href="{{ route('juri.assignments.index') }}">
         <span aria-hidden="true">←</span> {{ __('juri.assignments.back_to_list') }}
     </a>
@@ -36,12 +37,15 @@
             <header class="jp-detail-section-heading"><div><span>Final turu</span><h2 id="final-session-title">Kurul oturumu ve çıkar çatışması beyanı</h2></div><strong>{{ ['planned'=>'Planlandı','open'=>'Açık','closed'=>'Kapalı'][$finalSession->status] }}</strong></header>
             <dl class="jp-schedule-list"><div><dt>Toplantı zamanı</dt><dd>{{ $finalSession->scheduled_at?->format('d.m.Y H:i') ?: 'Henüz belirlenmedi' }}</dd></div><div><dt>Toplantı yeri</dt><dd>{{ $finalSession->location ?: 'Henüz belirlenmedi' }}</dd></div></dl>
             <form method="POST" action="{{ route('juri.sessions.declaration', $competition) }}" style="margin-top:1rem;">@csrf
+                <input type="hidden" name="session_version" value="{{ old('session_version', $finalSession->version) }}">
+                <fieldset @disabled($finalSession->status === 'closed' || $competition->results_published_at) style="border:0;padding:0;min-width:0;">
                 <label class="ia-label" for="conflict_declared">Bu yarışmada tarafsızlığımı etkileyebilecek bir çıkar çatışması</label>
-                <select class="ia-input" id="conflict_declared" name="conflict_declared" required><option value="0" @selected(!$myAttendance->conflict_declared)>Bulunmuyor</option><option value="1" @selected($myAttendance->conflict_declared)>Bulunuyor</option></select>
+                <select class="ia-input" id="conflict_declared" name="conflict_declared" required><option value="0" @selected(!old('conflict_declared', $myAttendance->conflict_declared))>Bulunmuyor</option><option value="1" @selected(old('conflict_declared', $myAttendance->conflict_declared))>Bulunuyor</option></select>
                 <label class="ia-label" for="conflict_note" style="margin-top:.8rem;">Beyan açıklaması</label>
                 <textarea class="ia-input" id="conflict_note" name="conflict_note" maxlength="2000">{{ old('conflict_note', $myAttendance->conflict_note) }}</textarea>
-                <button class="ia-btn" style="margin-top:.8rem;">Beyanı kaydet</button>
-            </form>
+                @unless($finalSession->status === 'closed' || $competition->results_published_at)<button class="ia-btn" style="margin-top:.8rem;">Beyanı kaydet</button>@endunless
+             </fieldset>
+</form>
         </section>
     @endif
 

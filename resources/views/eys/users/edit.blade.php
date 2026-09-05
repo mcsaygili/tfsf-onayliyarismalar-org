@@ -2,10 +2,10 @@
     <div class="ip-page-actions" style="justify-content: space-between;">
         <x-eys.breadcrumb :crumbs="[
             ['label' => __('eys.nav.dashboard'), 'url' => route('eys.dashboard')],
-            ['label' => __('eys.users.list_title'), 'url' => route('eys.users.index')],
+            ['label' => __('eys.users.list_title'), 'url' => route($backRoute)],
             ['label' => __('eys.users.edit_title')],
         ]" />
-        <a href="{{ route('eys.users.index') }}" class="ia-btn ia-btn-secondary ip-btn-sm">
+        <a href="{{ route($backRoute) }}" class="ia-btn ia-btn-secondary ip-btn-sm">
             <x-eys.icon name="back" />
             {{ __('eys.common.back') }}
         </a>
@@ -34,7 +34,7 @@
 
             <div class="ia-field">
                 <x-eys.label for="email" :value="__('eys.users.column_email')" />
-                <x-eys.input id="email" type="email" name="email" :value="old('email', $user->email)" autocomplete="off" />
+                <x-eys.input id="email" type="email" name="email" :value="old('email', $user->email)" :readonly="! $self && ! $canManageIdentity" autocomplete="off" />
                 <x-eys.input-error :messages="$errors->get('email')" />
             </div>
 
@@ -44,6 +44,14 @@
                 <x-eys.input-error :messages="$errors->get('phone')" />
             </div>
 
+            @if ($self)
+                <div class="ia-field">
+                    <x-eys.label for="current_password" :value="__('auth.current_password_for_email')" />
+                    <x-eys.input id="current_password" type="password" name="current_password" autocomplete="current-password" />
+                    <x-eys.input-error :messages="$errors->get('current_password')" />
+                </div>
+            @endif
+            @if ($canManageIdentity)
             <div class="ia-field" style="margin-bottom: 0;" x-data="{ active: {{ old('status', (int) $user->status) ? 'true' : 'false' }} }">
                 <x-eys.label :value="__('eys.users.column_status')" />
                 <label class="ip-switch">
@@ -54,6 +62,8 @@
                 </label>
                 <x-eys.input-error :messages="$errors->get('status')" />
             </div>
+
+            @endif
 
             <div style="margin-top: 1.5rem;">
                 <x-eys.button>{{ __('eys.common.update') }}</x-eys.button>

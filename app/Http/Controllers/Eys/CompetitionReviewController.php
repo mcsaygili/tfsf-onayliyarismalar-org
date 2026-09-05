@@ -9,19 +9,19 @@ use App\Enums\EvaluationRoundMethod;
 use App\Enums\EvaluationRoundStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
-use App\Models\CompetitionCategoryJurorAssignment;
 use App\Models\CompetitionEvaluationRound;
 use App\Models\CompetitionResultAward;
 use App\Models\CompetitionReview;
 use App\Models\CompetitionReviewStep;
-use App\Models\JuryEvaluationSubmission;
 use App\Models\Temsilci;
 use App\Services\CompetitionAuditService;
+use App\Services\CompetitionMutationLock;
 use App\Services\CompetitionPublicationService;
 use App\Services\CompetitionPublicSlugService;
 use App\Services\CompetitionReadinessService;
 use App\Services\CompetitionResultPresentationService;
 use App\Services\CompetitionResultService;
+use App\Services\CompetitionResultState;
 use App\Services\CompetitionStateMachine;
 use App\Services\JurySessionService;
 use App\Services\ResultPublicationService;
@@ -56,41 +56,47 @@ class CompetitionReviewController extends Controller
 
     public function show(Competition $competition): View
     {
-        $competition->load([
-            'institution', 'institutionStaff', 'competitionType.translations',
-            'country.translations', 'city.translations', 'participantApprovalProcess.translations',
-            'categories.translations', 'categories.ageEligibilityRule.translations',
-            'categories.genders.translations', 'categories.memberGroups.translations',
-            'categories.captureDevices.translations', 'categories.processingMethods.translations',
-            'categories.awards.translations', 'categories.awards.awardReference.translations',
-            'categories.jurorAssignments.juror', 'categories.jurorAssignments.invitation',
-            'categories.evaluationCriteria.criterion.translations',
-            'captureRegions.country.translations', 'captureRegions.city.translations',
-            'regulationInputs', 'regulationSnapshots', 'translations', 'statusLogs.actor',
-            'reviews.reviewer', 'reviews.steps.addressedBy',
-            'evaluationRounds.results.photo.submission.category.translations',
-            'evaluationRounds.results.awards.categoryAward.translations',
-            'evaluationRounds.results.awards.categoryAward.awardReference.translations',
-            'evaluationRounds.evaluationSubmissions',
-            'evaluationRounds.committeeDecisions.photo.submission.category.translations',
-            'evaluationRounds.jurySession.attendances.juror',
-            'monitoringReports.representative', 'resultPublications.publisher',
-            'notificationDispatches.lastRetriedBy',
-        ]);
+        return DB::transaction(function () use ($competition) {
+            $competition = CompetitionMutationLock::acquire($competition->id);
+            $competition->load([
+                'institution', 'institutionStaff', 'competitionType.translations',
+                'country.translations', 'city.translations', 'participantApprovalProcess.translations',
+                'categories.translations', 'categories.ageEligibilityRule.translations',
+                'categories.genders.translations', 'categories.memberGroups.translations',
+                'categories.captureDevices.translations', 'categories.processingMethods.translations',
+                'categories.awards.translations', 'categories.awards.awardReference.translations',
+                'categories.jurorAssignments.juror', 'categories.jurorAssignments.invitation',
+                'categories.evaluationCriteria.criterion.translations',
+                'captureRegions.country.translations', 'captureRegions.city.translations',
+                'regulationInputs', 'regulationSnapshots', 'translations', 'statusLogs.actor',
+                'reviews.reviewer', 'reviews.steps.addressedBy',
+                'evaluationRounds.results.photo.submission.category.translations',
+                'evaluationRounds.results.awards.categoryAward.translations',
+                'evaluationRounds.results.awards.categoryAward.awardReference.translations',
+                'evaluationRounds.evaluationSubmissions',
+                'evaluationRounds.committeeDecisions.photo.submission.category.translations',
+                'evaluationRounds.jurySession.attendances.juror',
+                'monitoringReports.representative', 'resultPublications.publisher',
+                'notificationDispatches.lastRetriedBy',
+            ]);
 
-        $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
+            $latestSnapshot = $competition->regulationSnapshots->sortByDesc('version')->first();
 
-        return view('eys.competitions.show', [
-            'competition' => $competition,
-            'steps' => CompetitionStepRegistry::all(),
-            'reviewableSteps' => $this->reviewableSteps($competition),
-            'latestReview' => $competition->reviews->sortByDesc('round')->first(),
-            'pendingJuryAssignments' => app(CompetitionReadinessService::class)->pendingJuryAssignments($competition),
-            'compiledRegulation' => $latestSnapshot?->content
-                ?? app(CompetitionRegulationCompiler::class)->preview($competition)['content'],
-            'regulationSnapshot' => $latestSnapshot,
-            'representatives' => Temsilci::query()->where('status', true)->orderBy('first_name')->orderBy('last_name')->get(),
-        ]);
+            return view('eys.competitions.show', [
+                'competition' => $competition,
+                'resultContext' => app(CompetitionResultState::class)->context($competition),
+                'resultFreshness' => $competition->evaluationRounds->mapWithKeys(fn ($round) => [$round->id => app(CompetitionResultState::class)->isFresh($round)]),
+                'awardFreshness' => $competition->evaluationRounds->mapWithKeys(fn ($round) => [$round->id => app(CompetitionResultState::class)->awardsFresh($round)]),
+                'steps' => CompetitionStepRegistry::all(),
+                'reviewableSteps' => $this->reviewableSteps($competition),
+                'latestReview' => $competition->reviews->sortByDesc('round')->first(),
+                'pendingJuryAssignments' => app(CompetitionReadinessService::class)->pendingJuryAssignments($competition),
+                'compiledRegulation' => $latestSnapshot?->content
+                    ?? app(CompetitionRegulationCompiler::class)->preview($competition)['content'],
+                'regulationSnapshot' => $latestSnapshot,
+                'representatives' => Temsilci::query()->where('status', true)->orderBy('first_name')->orderBy('last_name')->get(),
+            ]);
+        });
     }
 
     public function assignRepresentative(Request $request, Competition $competition): RedirectResponse
@@ -126,15 +132,17 @@ class CompetitionReviewController extends Controller
     public function createFinalRound(Request $request, Competition $competition, CompetitionAuditService $audit): RedirectResponse
     {
         abort_if($competition->results_published_at, 422);
+        app(CompetitionResultState::class)->assertCurrent($request, $competition);
+        if ($competition->evaluationRounds()->where(fn ($query) => $query->where('is_final', true)->orWhere('round_number', '>', 1))->exists()) {
+            throw ValidationException::withMessages(['results' => __('result_selection.final_exists')]);
+        }
         $validated = $request->validate([
             'photo_result_ids' => ['required', 'array', 'min:1'],
             'photo_result_ids.*' => ['required', 'uuid'],
         ]);
         $sourceRound = $competition->evaluationRounds()->where('method', EvaluationRoundMethod::Individual->value)->with('results.photo')->firstOrFail();
-        $expected = CompetitionCategoryJurorAssignment::query()
-            ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id)->whereHas('submissions', fn ($submissions) => $submissions->where('status', 'approved')))
-            ->whereNotNull('juror_id')->count();
-        $completed = JuryEvaluationSubmission::where('competition_evaluation_round_id', $sourceRound->id)->count();
+        app(CompetitionResultState::class)->assertFresh($sourceRound);
+        [$expected, $completed] = app(CompetitionResultState::class)->completionCounts($competition, $sourceRound);
         if ($expected === 0 || $completed < $expected) {
             throw ValidationException::withMessages(['photo_result_ids' => __('eys.competitions.results_incomplete', ['completed' => $completed, 'expected' => $expected])]);
         }
@@ -143,6 +151,8 @@ class CompetitionReviewController extends Controller
             throw ValidationException::withMessages(['photo_result_ids' => __('eys.competitions.final_round_invalid_photos')]);
         }
 
+        $clearedAwards = CompetitionResultAward::query()->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
+            ->get(['id', 'competition_photo_result_id', 'competition_category_award_id', 'slot_number'])->toArray();
         DB::transaction(function () use ($competition, $photoIds, $sourceRound): void {
             $sourceRound->update(['status' => EvaluationRoundStatus::Finalized, 'finalized_at' => now()]);
             $round = $competition->evaluationRounds()->firstOrCreate(
@@ -159,12 +169,14 @@ class CompetitionReviewController extends Controller
                 ->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
                 ->delete();
         });
+        $competition->increment('results_edit_version');
         $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
         app(JurySessionService::class)->ensureForRound($finalRound);
         $audit->record($competition, 'final_round_created', Auth::guard('eys')->user(), changes: [
             'source_round_id' => $sourceRound->id,
             'final_round_id' => $finalRound->id,
             'photo_count' => $photoIds->count(),
+            'cleared_awards' => $clearedAwards,
         ]);
 
         return back()->with('status', __('eys.competitions.final_round_created'));
@@ -179,16 +191,24 @@ class CompetitionReviewController extends Controller
             throw ValidationException::withMessages(['session' => 'Kurul kararları için final oturumu açık olmalı ve yeter sayı sağlanmalıdır.']);
         }
         $validated = $request->validate([
+            'session_version' => ['required', 'integer', 'min:0'],
             'decisions' => ['required', 'array'],
             'decisions.*.decision' => ['required', Rule::enum(CommitteeDecisionStatus::class)],
             'decisions.*.score' => ['nullable', 'integer', 'between:3,9'],
             'decisions.*.rank' => ['nullable', 'integer', 'min:1'],
             'decisions.*.note' => ['nullable', 'string', 'max:2000'],
         ]);
+        if ((int) $validated['session_version'] !== $session->version) {
+            throw ValidationException::withMessages(['session' => __('jury_session.stale')]);
+        }
         $decisions = $round->committeeDecisions()->with('photo.submission')->get()->keyBy('id');
+        if (array_diff(array_keys($validated['decisions']), $decisions->keys()->all())) {
+            throw ValidationException::withMessages(['decisions' => __('eys.competitions.final_round_invalid_photos')]);
+        }
         $errors = [];
         $usedRanks = [];
-        foreach ($validated['decisions'] as $id => $data) {
+        foreach ($decisions as $id => $existing) {
+            $data = $validated['decisions'][$id] ?? ['decision' => $existing->decision->value, 'rank' => $existing->rank];
             $decision = $decisions->get($id);
             if (! $decision) {
                 continue;
@@ -200,15 +220,16 @@ class CompetitionReviewController extends Controller
                 $key = $decision->photo->submission->competition_category_id.':'.$data['rank'];
                 if (isset($usedRanks[$key])) {
                     $errors["decisions.{$id}.rank"] = __('eys.competitions.final_round_rank_duplicate');
+                    $errors["decisions.{$usedRanks[$key]}.rank"] = __('eys.competitions.final_round_rank_duplicate');
                 }
-                $usedRanks[$key] = true;
+                $usedRanks[$key] = $id;
             }
         }
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
 
-        DB::transaction(function () use ($validated, $decisions, $round, $results): void {
+        DB::transaction(function () use ($validated, $decisions, $round, $results, $session): void {
             foreach ($validated['decisions'] as $id => $data) {
                 if ($decision = $decisions->get($id)) {
                     $decision->update([
@@ -222,6 +243,7 @@ class CompetitionReviewController extends Controller
                 }
             }
             $results->aggregateCommittee($round);
+            $session->increment('version');
         });
         $audit->record($competition, 'final_round_updated', Auth::guard('eys')->user(), changes: [
             'round_id' => $round->id,
@@ -235,6 +257,8 @@ class CompetitionReviewController extends Controller
     {
         abort_if($competition->results_published_at, 422);
 
+        app(CompetitionResultState::class)->assertCurrent($request, $competition);
+        $validated = $request->validate(['award_assignments' => ['present', 'array'], 'award_assignments.*' => ['array'], 'award_assignments.*.*' => ['nullable', 'uuid']]);
         $round = $competition->evaluationRounds()->when(
             $competition->evaluationRounds()->where('is_final', true)->exists(),
             fn ($query) => $query->where('is_final', true),
@@ -242,11 +266,17 @@ class CompetitionReviewController extends Controller
         )->with([
             'results.photo.submission',
         ])->firstOrFail();
+        app(CompetitionResultState::class)->assertFresh($round);
         $categoryAwards = $competition->categories()->with('awards')->get()
             ->flatMap->awards
             ->keyBy('id');
         $results = $round->results->keyBy('id');
-        $assignments = $request->input('award_assignments', []);
+        $assignments = $validated['award_assignments'];
+        $expectedSlots = $categoryAwards->flatMap(fn ($award) => collect($award->quantity > 0 ? range(1, $award->quantity) : [])->map(fn ($slot) => $award->id.'.'.$slot))->sort()->values()->all();
+        $actualSlots = collect($assignments)->flatMap(fn ($slots, $id) => collect(array_keys($slots))->map(fn ($slot) => $id.'.'.$slot))->sort()->values()->all();
+        if ($expectedSlots !== $actualSlots) {
+            throw ValidationException::withMessages(['award_assignments' => __('result_selection.award_slots')]);
+        }
         $errors = [];
         $rows = [];
 
@@ -294,6 +324,8 @@ class CompetitionReviewController extends Controller
                 ]);
             }
         });
+        $round->forceFill(['awards_context_hash' => app(CompetitionResultState::class)->awardHash($round)])->save();
+        $competition->increment('results_edit_version');
         $audit->record($competition, 'result_awards_updated', Auth::guard('eys')->user(), changes: [
             'assignment_count' => count($rows),
             'result_ids' => collect($rows)->pluck(2)->values()->all(),
@@ -307,22 +339,19 @@ class CompetitionReviewController extends Controller
         if ($competition->results_published_at) {
             return back()->with('status', __('eys.competitions.results_already_published'));
         }
+        app(CompetitionResultState::class)->assertCurrent($request, $competition);
         if ($competition->publication_state !== CompetitionPublicationState::Published) {
             return back()->withErrors(['results' => __('eys.competitions.results_require_published_competition')]);
         }
 
-        $expected = CompetitionCategoryJurorAssignment::query()
-            ->whereHas('category', fn ($query) => $query->where('competition_id', $competition->id)->whereHas('submissions', fn ($submissions) => $submissions->where('status', 'approved')))
-            ->whereNotNull('juror_id')->count();
         $individualRound = $competition->evaluationRounds()->where('method', EvaluationRoundMethod::Individual->value)->first();
-        $completed = $individualRound
-            ? JuryEvaluationSubmission::where('competition_evaluation_round_id', $individualRound->id)->count()
-            : 0;
+        [$expected, $completed] = app(CompetitionResultState::class)->completionCounts($competition, $individualRound);
         if ($expected === 0 || $completed < $expected) {
             return back()->withErrors(['results' => __('eys.competitions.results_incomplete', ['completed' => $completed, 'expected' => $expected])]);
         }
 
         $round = $this->resultRound($competition);
+        app(CompetitionResultState::class)->assertFresh($round);
         if ($round->method === EvaluationRoundMethod::Committee) {
             $session = app(JurySessionService::class)->ensureForRound($round);
             if ($session->status !== 'closed') {
@@ -340,10 +369,13 @@ class CompetitionReviewController extends Controller
             ->whereHas('categoryAward.category', fn ($query) => $query->where('competition_id', $competition->id))
             ->whereHas('result', fn ($query) => $query->where('competition_evaluation_round_id', $round->id))
             ->count();
-        if ($assignedAwardSlots < $requiredAwardSlots) {
+        if ((int) $assignedAwardSlots !== (int) $requiredAwardSlots) {
             return back()->withErrors(['results' => __('eys.competitions.result_awards_incomplete', ['assigned' => $assignedAwardSlots, 'required' => $requiredAwardSlots])]);
         }
 
+        if ($requiredAwardSlots > 0 && ! app(CompetitionResultState::class)->awardsFresh($round)) {
+            throw ValidationException::withMessages(['results' => __('result_selection.review_awards')]);
+        }
         $publicationInput = $request->validate(['publication_note' => ['nullable', 'string', 'max:2000'], 'publish_at' => ['nullable', 'date', 'after_or_equal:now']]);
         $publicationNote = $publicationInput['publication_note'] ?? null;
         $publishAt = filled($publicationInput['publish_at'] ?? null) ? Carbon::parse($publicationInput['publish_at']) : now();
@@ -363,7 +395,7 @@ class CompetitionReviewController extends Controller
                 'publication_version' => $competition->results_publication_version,
             ]);
         });
-        $publications->notify($publication);
+        DB::afterCommit(fn () => $publications->notify($publication));
 
         return back()->with('status', __('eys.competitions.results_published'));
     }
@@ -449,7 +481,7 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.review_saved'));
     }
 
-    public function approve(Competition $competition, CompetitionReadinessService $readiness, CompetitionStateMachine $workflow, CompetitionPublicSlugService $slugs): RedirectResponse
+    public function approve(Request $request, Competition $competition, CompetitionReadinessService $readiness, CompetitionStateMachine $workflow, CompetitionPublicSlugService $slugs): RedirectResponse
     {
         abort_unless(in_array($competition->status, [CompetitionStatus::UnderReview, CompetitionStatus::WaitingRequirements], true), 422);
 
@@ -471,6 +503,10 @@ class CompetitionReviewController extends Controller
                     );
                 });
             }
+
+            // Waiting for jurors is a successful workflow transition, although
+            // the existing UI presents the reason in its approval error area.
+            $request->attributes->set('competition_transition_succeeded', true);
 
             return back()->withErrors(['approval' => __('eys.competitions.jury_approval_blocked')]);
         }

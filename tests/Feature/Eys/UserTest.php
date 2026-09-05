@@ -2,17 +2,30 @@
 
 namespace Tests\Feature\Eys;
 
+use App\Enums\Module;
 use App\Models\EysUser;
+use App\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function admin(): EysUser
+    {
+        app(PermissionRegistrar::class)->setPermissionsTeamId(Module::Eys->value);
+        Permission::firstOrCreate(['name' => 'eys.users.manage', 'guard_name' => 'eys']);
+        $user = EysUser::factory()->create();
+        $user->givePermissionTo('eys.users.manage');
+
+        return $user;
+    }
+
     public function test_kullanici_listesi_goruntulenebilir(): void
     {
-        $user = EysUser::factory()->create();
+        $user = $this->admin();
         EysUser::factory()->count(3)->create();
 
         $response = $this->actingAs($user, 'eys')->get(route('eys.users.index'));
@@ -23,7 +36,7 @@ class UserTest extends TestCase
 
     public function test_kullanici_listesi_sayfalanir(): void
     {
-        $user = EysUser::factory()->create();
+        $user = $this->admin();
         EysUser::factory()->count(12)->create();
 
         $response = $this->actingAs($user, 'eys')->get(route('eys.users.index'));
@@ -33,7 +46,7 @@ class UserTest extends TestCase
 
     public function test_yeni_kullanici_eklenebilir(): void
     {
-        $user = EysUser::factory()->create();
+        $user = $this->admin();
 
         $response = $this->actingAs($user, 'eys')->post(route('eys.users.store'), [
             'email' => 'yeni@ornek-eys.test',
@@ -53,7 +66,7 @@ class UserTest extends TestCase
 
     public function test_kullanici_bilgileri_duzenlenebilir(): void
     {
-        $user = EysUser::factory()->create();
+        $user = $this->admin();
         $other = EysUser::factory()->create(['first_name' => 'Eski']);
 
         $response = $this->actingAs($user, 'eys')->patch(route('eys.users.update', $other), [
@@ -71,7 +84,7 @@ class UserTest extends TestCase
 
     public function test_pasif_kullanici_giris_yapamaz(): void
     {
-        $user = EysUser::factory()->create();
+        $user = $this->admin();
         $target = EysUser::factory()->create();
 
         $this->actingAs($user, 'eys')->patch(route('eys.users.update', $target), [

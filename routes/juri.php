@@ -15,10 +15,11 @@ use App\Http\Controllers\Juri\JurySessionController;
 use App\Http\Controllers\Juri\NotificationController;
 use App\Http\Controllers\Juri\PasswordController;
 use App\Http\Controllers\Juri\ProfileController;
+use App\Http\Controllers\Juri\TagController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(function () {
+Route::domain(config('domains.juri'))->middleware(['maintenance:juri', 'panel.session:juri'])->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('juri.language');
 
     Route::middleware('guest:juri')->group(function () {
@@ -31,10 +32,10 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('juri.password.request');
-        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('juri.password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:10,1')->name('juri.password.email');
 
         Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('juri.password.reset');
-        Route::post('reset-password', [NewPasswordController::class, 'store'])->name('juri.password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:30,1')->name('juri.password.store');
     });
 
     Route::middleware('auth:juri')->group(function () {
@@ -65,6 +66,14 @@ Route::domain(config('domains.juri'))->middleware('maintenance:juri')->group(fun
         Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme', [EvaluationController::class, 'save'])->middleware('throttle:120,1')->name('juri.evaluations.save');
         Route::put('gorevlerim/{competition}/kategori/{category}/degerlendirme/tamamla', [EvaluationController::class, 'finalize'])->middleware('throttle:30,1')->name('juri.evaluations.finalize');
         Route::get('degerlendirme/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->middleware('throttle:180,1')->name('juri.evaluations.photos.show');
+
+        Route::prefix('gorevlerim/{competition}/kategori/{category}/etiketler')->name('juri.tags.')->middleware('throttle:120,1')->group(function () {
+            Route::get('/', [TagController::class, 'index'])->name('index');
+            Route::post('/', [TagController::class, 'store'])->name('store');
+            Route::delete('{tag}', [TagController::class, 'destroy'])->whereUuid('tag')->name('destroy');
+            Route::put('{tag}/fotograflar/{photo}', [TagController::class, 'attach'])->whereUuid(['tag', 'photo'])->name('attach');
+            Route::delete('{tag}/fotograflar/{photo}', [TagController::class, 'detach'])->whereUuid(['tag', 'photo'])->name('detach');
+        });
 
         Route::get('juri-bilgilerim', [ProfileController::class, 'edit'])->name('juri.profile.edit');
         Route::patch('juri-bilgilerim', [ProfileController::class, 'update'])->name('juri.profile.update');

@@ -18,7 +18,7 @@ use App\Http\Controllers\Institution\StaffController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.institution'))->middleware('maintenance:institution')->group(function () {
+Route::domain(config('domains.institution'))->middleware(['maintenance:institution', 'panel.session:institution'])->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('institution.language');
 
     Route::middleware('guest:institution')->group(function () {
@@ -29,10 +29,10 @@ Route::domain(config('domains.institution'))->middleware('maintenance:institutio
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('institution.password.request');
-        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('institution.password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:10,1')->name('institution.password.email');
 
         Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('institution.password.reset');
-        Route::post('reset-password', [NewPasswordController::class, 'store'])->name('institution.password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:30,1')->name('institution.password.store');
     });
 
     Route::middleware('auth:institution')->group(function () {

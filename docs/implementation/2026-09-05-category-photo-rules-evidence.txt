@@ -1,0 +1,104 @@
+2026-09-05 category photo rules — local synthetic-data verification
+
+=== sqlite ===
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .s..........................................................................
+  .......................
+
+  Tests:    18 skipped, 689 passed (2775 assertions)
+  Duration: 45.39s
+
+
+=== mariadb ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .......................
+
+  Tests:    707 passed (2966 assertions)
+  Duration: 129.18s
+
+
+=== pint ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ....................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 568 files  
+
+
+=== build ===
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Ck1sm6xt.css  84.72 kB │ gzip: 15.81 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 326ms
+
+=== migration ===
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_160000_add_category_photo_rules ..................... 8.09ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_160000_add_category_photo_rules ..................... 6.61ms DONE
+
+
+=== tfsf-photo-browser-results.json ===
+{
+  "checks": [
+    "Authenticated category form and real system limit visible",
+    "Save and reload preserve all six numeric rules and JPEG-only format",
+    "Server rejects reversed DPI interval and preserves input",
+    "Duplicated category copies rules independently",
+    "Visible labeled inputs, keyboard focus and no overflow at 1440px",
+    "Visible labeled inputs, keyboard focus and no overflow at 390px",
+    "Mobile save normalizes zero and blank bounds to disabled"
+  ],
+  "errors": []
+}
+=== tfsf-photo-member-browser-results.json ===
+{
+  "checks": [
+    "Public category detail shows technical rules in Turkish",
+    "Member competition detail shows the same technical rules",
+    "JPEG-only input hint and server-side actual file size rejection in real upload flow",
+    "Member English translation and no horizontal overflow at 390px"
+  ],
+  "errors": []
+}
+=== tfsf-photo-rules-impeccable.json ===
+[]

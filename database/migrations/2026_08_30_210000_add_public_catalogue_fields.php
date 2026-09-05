@@ -55,6 +55,15 @@ return new class extends Migration
 
     public function down(): void
     {
+        // InnoDB may replace the implicit foreign-key index with our composite
+        // index. Restore a supporting index before removing the composite one.
+        if (in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)
+            && ! Schema::hasIndex('competitions', ['competition_type_id'])) {
+            Schema::table('competitions', function (Blueprint $table) {
+                $table->index('competition_type_id');
+            });
+        }
+
         Schema::table('competitions', function (Blueprint $table) {
             $table->dropIndex('competitions_public_listing_index');
             $table->dropIndex('competitions_public_type_date_index');

@@ -10,6 +10,7 @@ use App\Models\Competition;
 use App\Models\CompetitionEntry;
 use App\Models\CompetitionSubmission;
 use App\Models\User;
+use App\Support\Photo\SubmissionDeclarations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -40,26 +41,31 @@ class CompetitionEntryService
 
     public function addCategory(CompetitionEntry $entry, string $categoryId): CompetitionSubmission
     {
-        if (! $entry->status->isEditable()) {
-            throw ValidationException::withMessages(['category' => __('uye.competitions.errors.entry_locked')]);
-        }
-        $category = $entry->competition->categories()->whereKey($categoryId)->firstOrFail();
-        $check = $this->eligibility->forCategory($category, $entry->user);
-        if (! $check['eligible']) {
-            throw ValidationException::withMessages(['category' => collect($check['violations'])->map(fn ($code) => __('uye.competitions.violations.'.$code))->join(' ')]);
-        }
+        return DB::transaction(function () use ($entry, $categoryId) {
+            CompetitionMutationLock::acquire($entry->competition_id);
+            $entry = CompetitionEntry::whereKey($entry->id)->lockForUpdate()->firstOrFail();
+            if (! $entry->status->isEditable()) {
+                throw ValidationException::withMessages(['category' => __('uye.competitions.errors.entry_locked')]);
+            }
+            $category = $entry->competition->categories()->whereKey($categoryId)->firstOrFail();
+            $check = $this->eligibility->forCategory($category, $entry->user);
+            if (! $check['eligible']) {
+                throw ValidationException::withMessages(['category' => collect($check['violations'])->map(fn ($code) => __('uye.competitions.violations.'.$code))->join(' ')]);
+            }
 
-        return $entry->submissions()->firstOrCreate(
-            ['competition_category_id' => $category->id],
-            ['status' => CompetitionSubmissionStatus::Draft, 'eligibility_snapshot' => $check],
-        );
+            return $entry->submissions()->firstOrCreate(
+                ['competition_category_id' => $category->id],
+                ['status' => CompetitionSubmissionStatus::Draft, 'eligibility_snapshot' => $check],
+            );
+        });
     }
 
     public function submit(CompetitionEntry $entry): CompetitionEntry
     {
         return DB::transaction(function () use ($entry) {
+            CompetitionMutationLock::acquire($entry->competition_id);
             $entry = CompetitionEntry::query()->whereKey($entry->id)->lockForUpdate()->firstOrFail();
-            $entry->load(['competition.participantApprovalProcess', 'competition.regulationSnapshots', 'user', 'submissions.category', 'submissions.photos']);
+            $entry->load(['competition.participantApprovalProcess', 'competition.regulationSnapshots', 'user', 'submissions.category', 'submissions.activePhotos']);
             if (! $entry->status->isEditable()) {
                 throw ValidationException::withMessages(['entry' => __('uye.competitions.errors.entry_locked')]);
             }
@@ -77,12 +83,14 @@ class CompetitionEntryService
                 if (! $check['eligible']) {
                     throw ValidationException::withMessages(['entry' => __('uye.competitions.errors.eligibility_changed')]);
                 }
-                if ($submission->photos->isEmpty()) {
+                if ($submission->activePhotos->isEmpty()) {
                     throw ValidationException::withMessages(['entry' => __('uye.competitions.errors.photo_required', ['category' => $submission->category->name])]);
                 }
-                if ($submission->photos->count() > $submission->category->max_photos_per_participant) {
+                if ($submission->activePhotos->count() > $submission->category->max_photos_per_participant) {
                     throw ValidationException::withMessages(['entry' => __('uye.competitions.errors.photo_limit')]);
                 }
+
+                SubmissionDeclarations::assertComplete($submission);
 
                 $processCode = $entry->competition->participantApprovalProcess?->code;
                 $submissionStatus = $processCode ? CompetitionSubmissionStatus::PendingApproval : CompetitionSubmissionStatus::Approved;

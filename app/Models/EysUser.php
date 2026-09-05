@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use App\Notifications\Eys\ResetPasswordNotification;
 use Database\Factories\EysUserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -28,7 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
 class EysUser extends Authenticatable
 {
     /** @use HasFactory<EysUserFactory> */
-    use HasFactory, HasRoles, HasUuids, Notifiable;
+    use HasFactory, HasRoles, HasSecurityStamp, HasUuids, Notifiable;
 
     protected $table = 'eys_users';
 

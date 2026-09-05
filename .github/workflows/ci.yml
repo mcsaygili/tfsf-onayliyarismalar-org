@@ -7,12 +7,38 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [sqlite, mysql]
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_DATABASE: tfsf_testing
+          MARIADB_ROOT_PASSWORD: tfsf-ci-test-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: ${{ matrix.database }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: ${{ matrix.database == 'mysql' && 'tfsf_testing' || ':memory:' }}
+      DB_USERNAME: root
+      DB_PASSWORD: tfsf-ci-test-only
+      DB_URL: ''
     steps:
       - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, sqlite3, imagick
+          extensions: mbstring, sqlite3, pdo_mysql, imagick
           coverage: none
       - uses: actions/setup-node@v5
         with:
@@ -23,7 +49,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes libimage-exiftool-perl
       - run: composer install --no-interaction --prefer-dist
+      - run: composer audit --locked
       - run: npm ci
+      - run: npm audit --audit-level=high
       - run: cp .env.example .env && php artisan key:generate
       - run: npm run build
       - run: vendor/bin/pint --test

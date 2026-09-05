@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Juri;
 
 use App\Enums\CompetitionOperationalPhase;
-use App\Enums\EvaluationRoundStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\CompetitionCategory;
 use App\Services\CompetitionPhaseService;
 use App\Services\JuryEvaluationService;
+use App\Services\JuryTagService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ use Illuminate\View\View;
 
 class EvaluationController extends Controller
 {
-    public function show(Competition $competition, CompetitionCategory $category, CompetitionPhaseService $phases, JuryEvaluationService $service): View
+    public function show(Request $request, Competition $competition, CompetitionCategory $category, CompetitionPhaseService $phases, JuryEvaluationService $service, JuryTagService $tags): View
     {
         abort_unless($category->competition_id === $competition->id, 404);
         Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
@@ -25,12 +25,13 @@ class EvaluationController extends Controller
         abort_unless(in_array($phase, [CompetitionOperationalPhase::EvaluationOpen, CompetitionOperationalPhase::EvaluationClosed, CompetitionOperationalPhase::ResultsPublished], true), 404);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
         $round = $service->roundFor($competition);
-        if ($phase !== CompetitionOperationalPhase::EvaluationOpen && $round->status === EvaluationRoundStatus::Open) {
-            $round->update(['status' => EvaluationRoundStatus::Closed]);
-        }
+
+        $privateTags = $tags->listing(Auth::guard('juri')->user(), $competition, $category);
+        $selectedTag = $request->validate(['tag' => ['nullable', 'uuid']])['tag'] ?? '';
+        abort_if($selectedTag !== '' && ! $privateTags->contains('id', $selectedTag), 404);
 
         return view('juri.evaluations.show', array_merge(
-            ['competition' => $competition, 'assignment' => $assignment, 'round' => $round, 'phase' => $phase],
+            ['competition' => $competition, 'assignment' => $assignment, 'round' => $round, 'phase' => $phase, 'privateTags' => $privateTags, 'selectedTag' => $selectedTag],
             $service->evaluationData($assignment, $round),
         ));
     }
@@ -41,8 +42,8 @@ class EvaluationController extends Controller
         Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
         $round = $service->roundFor($competition);
-        $validated = $request->validate(['scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);
-        $service->save($assignment, $round, $validated['scores'] ?? []);
+        $validated = $request->validate(['evaluation_context' => ['required', 'string', 'size:64'], 'scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);
+        $service->save($assignment, $round, $validated['scores'] ?? [], $validated['evaluation_context']);
 
         return back()->with('status', __('juri.evaluation.saved'));
     }
@@ -53,9 +54,8 @@ class EvaluationController extends Controller
         Gate::forUser(Auth::guard('juri')->user())->authorize('evaluate', $category);
         $assignment = $service->assignmentFor(Auth::guard('juri')->user(), $competition, $category->id);
         $round = $service->roundFor($competition);
-        $validated = $request->validate(['scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);
-        $service->save($assignment, $round, $validated['scores'] ?? []);
-        $service->finalize($assignment, $round);
+        $validated = $request->validate(['evaluation_context' => ['required', 'string', 'size:64'], 'scores' => ['nullable', 'array'], 'scores.*' => ['array'], 'scores.*.*' => ['nullable', 'integer']]);
+        $service->save($assignment, $round, $validated['scores'] ?? [], $validated['evaluation_context'], true);
 
         return back()->with('status', __('juri.evaluation.finalized'));
     }

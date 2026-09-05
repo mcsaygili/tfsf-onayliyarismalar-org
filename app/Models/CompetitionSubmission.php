@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['competition_entry_id', 'competition_category_id', 'status', 'eligibility_snapshot', 'submitted_at', 'approved_at', 'rejected_at', 'rejection_reason'])]
+#[Fillable(['competition_entry_id', 'competition_category_id', 'status', 'eligibility_snapshot', 'submitted_at', 'approved_at', 'rejected_at', 'rejection_reason', 'category_story'])]
 class CompetitionSubmission extends Model
 {
     use HasUuids;
@@ -17,6 +17,7 @@ class CompetitionSubmission extends Model
     protected function casts(): array
     {
         return [
+            'details_version' => 'integer',
             'status' => CompetitionSubmissionStatus::class,
             'eligibility_snapshot' => 'array',
             'submitted_at' => 'datetime',

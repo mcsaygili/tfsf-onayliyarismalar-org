@@ -31,7 +31,7 @@
                     $check = $categoryChecks[$category->id];
                 @endphp
                 <article>
-                    <div><h3>{{ $category->name }}</h3><p>{{ trans_choice('uye.competitions.photo_limit_label', $category->max_photos_per_participant, ['count' => $category->max_photos_per_participant]) }}</p></div>
+                    <div><h3>{{ $category->name }}</h3><p>{{ \App\Support\Photo\CategoryPhotoRules::summary($category->photo_rules) }}</p><p>{{ \App\Support\Photo\SubmissionDeclarations::summary($category) }}</p><p>{{ trans_choice('uye.competitions.photo_limit_label', $category->max_photos_per_participant, ['count' => $category->max_photos_per_participant]) }}</p></div>
                     <span class="mp-eligibility is-{{ $check['state'] }}">{{ __('uye.competitions.eligibility.'.$check['state']) }}</span>
                     @if(!$check['eligible'])<ul>@foreach($check['violations'] as $violation)<li>{{ __('uye.competitions.violations.'.$violation) }}</li>@endforeach</ul>@endif
                 </article>

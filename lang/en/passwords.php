@@ -2,6 +2,8 @@
 
 return [
 
+    'requested' => 'If an eligible account exists for this address, a password reset link will be sent.',
+
     /*
     |--------------------------------------------------------------------------
     | Password Reset Language Lines

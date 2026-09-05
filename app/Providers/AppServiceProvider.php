@@ -2,19 +2,25 @@
 
 namespace App\Providers;
 
+use App\Auth\BoundAccountProvider;
+use App\Auth\PasswordBrokerManager;
 use App\Contracts\SmsSender;
 use App\Models\Competition;
 use App\Models\CompetitionCategory;
 use App\Models\CompetitionEntry;
 use App\Models\CompetitionSubmissionApproval;
+use App\Models\EysUser;
 use App\Policies\CompetitionCategoryPolicy;
 use App\Policies\CompetitionEntryPolicy;
 use App\Policies\CompetitionPolicy;
 use App\Policies\CompetitionSubmissionApprovalPolicy;
+use App\Policies\EysUserPolicy;
+use App\Services\PanelSession;
 use App\Services\Resend\SvixSignatureVerifier;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\NetgsmSmsSender;
 use App\Services\SystemHealthService;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->extend('auth.password', fn ($manager, $app) => new PasswordBrokerManager($app));
         // SMS göndericisi — config'teki sürücüye göre (mock 'log' / gerçek 'netgsm').
         $this->app->singleton(SmsSender::class, function () {
             $cfg = config('services.sms');
@@ -49,6 +56,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Auth::provider('bound-account', fn ($app, array $config) => new BoundAccountProvider($app['hash'], $config['model']));
+        Gate::policy(EysUser::class, EysUserPolicy::class);
+        Event::listen(Login::class, function ($event): void {
+            $request = app('request');
+            if ($request->hasSession()) {
+                app(PanelSession::class)->stamp($request->session(), $event->user, $event->guard);
+            }
+        });
         Gate::policy(Competition::class, CompetitionPolicy::class);
         Gate::policy(CompetitionCategory::class, CompetitionCategoryPolicy::class);
         Gate::policy(CompetitionEntry::class, CompetitionEntryPolicy::class);

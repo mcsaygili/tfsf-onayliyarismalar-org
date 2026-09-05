@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Uye\Auth;
 use App\Contracts\SmsSender;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AccountSecurityContext;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -36,35 +38,50 @@ class SmsPasswordResetController extends Controller
     public function sendCode(Request $request, SmsSender $sms): RedirectResponse
     {
         $request->validate([
-            'phone_number' => ['required', 'string'],
+            'phone_number' => ['required', 'string', 'max:32'],
         ]);
 
         $this->ensureIsNotRateLimited($request);
+        RateLimiter::hit($this->throttleKey($request), 600);
 
         $phoneNumber = $request->string('phone_number')->value();
-        $exists = User::where('phone_number', $phoneNumber)->exists();
+        $code = (string) random_int(100000, 999999);
+        $codeHash = Hash::make($code);
+        $recordId = DB::transaction(function () use ($phoneNumber, $codeHash) {
+            // Lock in the same order as verification. A phone must identify one account.
+            $users = User::where('phone_number', $phoneNumber)->orderBy('id')->lockForUpdate()->get();
+            if ($users->count() !== 1) {
+                return null;
+            }
 
-        // Numara kayıtlı değilse bile aynı yanıtı döndürüyoruz — telefon
-        // numarası enumeration'ını önlemek için (bkz. e-posta broker'ının
-        // RESET_LINK_SENT davranışıyla tutarlı yaklaşım).
-        if ($exists) {
-            $code = (string) random_int(100000, 999999);
+            DB::table('sms_password_reset_codes')->where('phone_number', $phoneNumber)->delete();
 
-            DB::table('sms_password_reset_codes')->insert([
+            return DB::table('sms_password_reset_codes')->insertGetId([
+                'user_id' => $users->first()->id,
+                'security_context' => app(AccountSecurityContext::class)->fingerprint($users->first()),
                 'phone_number' => $phoneNumber,
-                'code_hash' => Hash::make($code),
+                'code_hash' => $codeHash,
                 'expires_at' => now()->addMinutes(10),
                 'created_at' => now(),
             ]);
+        }, 3);
 
-            $sms->send($phoneNumber, __('TFSF Onaylı Yarışmalar şifre sıfırlama kodunuz: :code', ['code' => $code]));
+        if ($recordId !== null) {
+            try {
+                $sent = $sms->send($phoneNumber, __('TFSF Onaylı Yarışmalar şifre sıfırlama kodunuz: :code', ['code' => $code]));
+            } catch (\Throwable $exception) {
+                // Do not log the provider's response, phone number or plaintext code.
+                Log::warning('SMS password reset delivery failed.', ['exception_type' => $exception::class]);
+                $sent = false;
+            }
+            if (! $sent) {
+                DB::table('sms_password_reset_codes')->where('id', $recordId)->delete();
+            }
         }
-
-        RateLimiter::hit($this->throttleKey($request));
 
         return redirect()
             ->route('password.sms.request')
-            ->with('status', __('Numaranız sistemde kayıtlıysa, doğrulama kodu gönderildi.'))
+            ->with('status', __('auth.sms_requested'))
             ->with('phone_number', $phoneNumber);
     }
 
@@ -74,31 +91,48 @@ class SmsPasswordResetController extends Controller
     public function verifyAndReset(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'phone_number' => ['required', 'string'],
-            'code' => ['required', 'string'],
+            'phone_number' => ['required', 'string', 'max:32'],
+            'code' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $record = DB::table('sms_password_reset_codes')
-            ->where('phone_number', $validated['phone_number'])
-            ->where('expires_at', '>=', now())
-            ->orderByDesc('id')
-            ->first();
+        $user = DB::transaction(function () use ($validated) {
+            $users = User::where('phone_number', $validated['phone_number'])->orderBy('id')->lockForUpdate()->get();
+            if ($users->count() !== 1) {
+                return null;
+            }
+            $user = $users->first();
+            $record = DB::table('sms_password_reset_codes')
+                ->where('phone_number', $validated['phone_number'])
+                ->orderByDesc('id')->lockForUpdate()->first();
 
-        if (! $record || ! Hash::check($validated['code'], $record->code_hash)) {
+            if (! $record || $record->user_id !== $user->id
+                || ! app(AccountSecurityContext::class)->matches($user, $record->security_context) || $record->expires_at <= now()->toDateTimeString()
+                || $record->failed_attempts >= 5) {
+                return null;
+            }
+
+            if (! Hash::check($validated['code'], $record->code_hash)) {
+                DB::table('sms_password_reset_codes')->where('id', $record->id)->increment('failed_attempts');
+
+                // Returning commits the failed attempt; throwing here would roll it back.
+                return null;
+            }
+
+            $user->forceFill([
+                'password' => Hash::make($validated['password']),
+                'remember_token' => Str::random(60),
+            ])->save();
+            DB::table('sms_password_reset_codes')->where('phone_number', $validated['phone_number'])->delete();
+
+            return $user;
+        }, 3);
+
+        if (! $user) {
             throw ValidationException::withMessages([
-                'code' => __('Kod geçersiz veya süresi dolmuş.'),
+                'code' => __('auth.sms_invalid'),
             ]);
         }
-
-        $user = User::where('phone_number', $validated['phone_number'])->firstOrFail();
-
-        $user->forceFill([
-            'password' => Hash::make($validated['password']),
-            'remember_token' => Str::random(60),
-        ])->save();
-
-        DB::table('sms_password_reset_codes')->where('phone_number', $validated['phone_number'])->delete();
 
         event(new PasswordReset($user));
 
@@ -126,6 +160,6 @@ class SmsPasswordResetController extends Controller
 
     private function throttleKey(Request $request): string
     {
-        return 'uye-sms-reset|'.$request->string('phone_number').'|'.$request->ip();
+        return 'uye-sms-reset|'.hash('sha256', $request->string('phone_number')->value());
     }
 }

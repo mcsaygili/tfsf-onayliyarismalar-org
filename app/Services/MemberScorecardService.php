@@ -16,8 +16,11 @@ class MemberScorecardService
             ->pluck('id');
 
         return JuryScore::query()
+            ->weightedTotals()
             ->whereIn('submission_photo_id', $photoIds)
             ->whereNotNull('submitted_at')
+            ->addSelect('jury_scores.submission_photo_id', 'jury_scores.competition_evaluation_round_id', 'jury_scores.juror_assignment_id')
+            ->groupBy('jury_scores.submission_photo_id', 'jury_scores.competition_evaluation_round_id', 'jury_scores.juror_assignment_id')
             ->with('round:id,name,round_number')
             ->get()
             ->groupBy('submission_photo_id')
@@ -26,10 +29,9 @@ class MemberScorecardService
                 ->map(function (Collection $roundScores) {
                     $round = $roundScores->first()->round;
                     $jurorScores = $roundScores
-                        ->groupBy('juror_assignment_id')
-                        ->map(fn (Collection $scores, string $assignmentId) => [
-                            'key' => hash('sha256', $roundScores->first()->submission_photo_id.':'.$assignmentId),
-                            'score' => round((float) $scores->avg('score'), 2),
+                        ->map(fn (JuryScore $scores) => [
+                            'key' => hash('sha256', $scores->submission_photo_id.':'.$scores->juror_assignment_id),
+                            'score' => round((float) $scores->average_score, 2),
                         ])
                         ->sortBy('key')
                         ->values()
@@ -38,7 +40,9 @@ class MemberScorecardService
                     return [
                         'round_name' => $round->name,
                         'round_number' => $round->round_number,
-                        'average' => round((float) $jurorScores->avg('score'), 2),
+                        'average' => $roundScores->sum('total_weight') > 0
+                            ? round($roundScores->sum('total_score') / $roundScores->sum('total_weight'), 2)
+                            : 0.0,
                         'scores' => $jurorScores->all(),
                     ];
                 })->sortBy('round_number')->values()->all())

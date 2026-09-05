@@ -40,6 +40,7 @@ use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
 use App\Http\Controllers\Eys\UserRoleController;
 use App\Http\Controllers\SetLanguageController;
+use App\Http\Middleware\SerializeCompetitionMutation;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -48,7 +49,7 @@ use Illuminate\Support\Facades\Route;
  * route'u YOK: yeni EYS kullanıcıları sadece panel içinden, mevcut bir EYS
  * kullanıcısı tarafından oluşturuluyor (bkz. UserController).
  */
-Route::domain(config('domains.eys'))->group(function () {
+Route::domain(config('domains.eys'))->middleware('panel.session:eys')->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('eys.language');
 
     Route::middleware('guest:eys')->group(function () {
@@ -56,10 +57,10 @@ Route::domain(config('domains.eys'))->group(function () {
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('eys.password.request');
-        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('eys.password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:10,1')->name('eys.password.email');
 
         Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('eys.password.reset');
-        Route::post('reset-password', [NewPasswordController::class, 'store'])->name('eys.password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:30,1')->name('eys.password.store');
     });
 
     // Oturum açmış her EYS kullanıcısı için Spatie "team" context'i sabit
@@ -296,24 +297,24 @@ Route::domain(config('domains.eys'))->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
             Route::middleware('eys.competition')->group(function () {
                 Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
-                Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->name('start');
-                Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->name('assign-representative');
-                Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->name('aggregate-results');
+                Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->middleware(SerializeCompetitionMutation::class)->name('start');
+                Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->middleware(SerializeCompetitionMutation::class)->name('assign-representative');
+                Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->middleware(SerializeCompetitionMutation::class)->name('aggregate-results');
                 Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
                 Route::get('{competition}/raporlar/katilimlar.csv', [CompetitionReportController::class, 'entries'])->name('reports.entries');
                 Route::get('{competition}/raporlar/sonuclar.csv', [CompetitionReportController::class, 'results'])->name('reports.results');
                 Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
-                Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->name('create-final-round');
-                Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->name('save-final-round');
+                Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->middleware(SerializeCompetitionMutation::class)->name('create-final-round');
+                Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->middleware(SerializeCompetitionMutation::class)->name('save-final-round');
                 Route::put('{competition}/sonuclar/final-oturumu', [JurySessionController::class, 'update'])->name('jury-session.update');
-                Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->name('save-result-awards');
-                Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->name('publish-results');
-                Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->name('unpublish-results');
-                Route::post('{competition}/yayin/{action}', [CompetitionReviewController::class, 'updatePublication'])->name('publication.update');
-                Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->name('save-review');
-                Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->name('approve');
-                Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->name('reject');
-                Route::match(['post', 'patch'], '{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->name('request-info');
+                Route::put('{competition}/sonuclar/oduller', [CompetitionReviewController::class, 'saveResultAwards'])->middleware(SerializeCompetitionMutation::class)->name('save-result-awards');
+                Route::post('{competition}/sonuclar/yayinla', [CompetitionReviewController::class, 'publishResults'])->middleware(SerializeCompetitionMutation::class)->name('publish-results');
+                Route::post('{competition}/sonuclar/yayindan-kaldir', [CompetitionReviewController::class, 'unpublishResults'])->middleware(SerializeCompetitionMutation::class)->name('unpublish-results');
+                Route::post('{competition}/yayin/{action}', [CompetitionReviewController::class, 'updatePublication'])->middleware(SerializeCompetitionMutation::class)->name('publication.update');
+                Route::patch('{competition}/inceleme', [CompetitionReviewController::class, 'save'])->middleware(SerializeCompetitionMutation::class)->name('save-review');
+                Route::post('{competition}/onayla', [CompetitionReviewController::class, 'approve'])->middleware(SerializeCompetitionMutation::class)->name('approve');
+                Route::post('{competition}/reddet', [CompetitionReviewController::class, 'reject'])->middleware(SerializeCompetitionMutation::class)->name('reject');
+                Route::match(['post', 'patch'], '{competition}/bilgi-talep-et', [CompetitionReviewController::class, 'requestInfo'])->middleware(SerializeCompetitionMutation::class)->name('request-info');
             });
         });
 

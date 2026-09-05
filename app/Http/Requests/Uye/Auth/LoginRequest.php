@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Uye\Auth;
 
+use App\Services\MemberAccessPolicy;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,12 +44,12 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::guard('web')->user()->activeRestrictions()->where('type', 'account')->exists()) {
+        if ($reason = app(MemberAccessPolicy::class)->denialReason(Auth::guard('web')->user())) {
             Auth::guard('web')->logout();
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Hesabınız için aktif bir erişim kısıtlaması bulunuyor.',
+                'email' => $reason,
             ]);
         }
 

@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 // Route adları guard adıyla ÖNEKLENMİYOR (bare `login`/`register`/`dashboard`)
 // — Üye framework'ün varsayılan `web` guard'ı, bootstrap/app.php'deki
 // redirectGuestsTo() default dalı da bu bare isimlere göre kuruldu.
-Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(function () {
+Route::domain(config('domains.uye'))->middleware(['maintenance:uye', 'panel.session:web'])->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('language');
 
     Route::middleware('guest')->group(function () {
@@ -36,14 +36,14 @@ Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(funct
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:10,1')->name('password.email');
 
         Route::get('forgot-password/sms', [SmsPasswordResetController::class, 'create'])->name('password.sms.request');
-        Route::post('forgot-password/sms', [SmsPasswordResetController::class, 'sendCode'])->name('password.sms.send');
-        Route::post('forgot-password/sms/verify', [SmsPasswordResetController::class, 'verifyAndReset'])->name('password.sms.verify');
+        Route::post('forgot-password/sms', [SmsPasswordResetController::class, 'sendCode'])->middleware('throttle:10,1')->name('password.sms.send');
+        Route::post('forgot-password/sms/verify', [SmsPasswordResetController::class, 'verifyAndReset'])->middleware('throttle:30,1')->name('password.sms.verify');
 
         Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-        Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:30,1')->name('password.store');
     });
 
     Route::middleware('auth')->group(function () {
@@ -82,6 +82,7 @@ Route::domain(config('domains.uye'))->middleware('maintenance:uye')->group(funct
             Route::post('katilim/{entry}/kategori', [CompetitionController::class, 'addCategory'])->middleware('throttle:30,1')->name('entry.categories.store');
             Route::post('basvuru/{submission}/portfolyo', [CompetitionController::class, 'addPortfolioPhoto'])->middleware('throttle:20,1')->name('submission.portfolio.store');
             Route::post('basvuru/{submission}/yukle', [CompetitionController::class, 'uploadPhoto'])->middleware('throttle:10,1')->name('submission.upload');
+            Route::put('basvuru/{submission}/bilgiler', [CompetitionController::class, 'updateDetails'])->middleware('throttle:30,1')->name('submission.details.update');
             Route::get('fotograf/{submissionPhoto}/goruntule', CompetitionSubmissionPhotoController::class)->middleware('throttle:120,1')->name('photos.show');
             Route::delete('fotograf/{submissionPhoto}', [CompetitionController::class, 'removePhoto'])->middleware('throttle:30,1')->name('submission.photos.destroy');
             Route::post('katilim/{entry}/gonder', [CompetitionController::class, 'submit'])->middleware('throttle:5,1')->name('entry.submit');

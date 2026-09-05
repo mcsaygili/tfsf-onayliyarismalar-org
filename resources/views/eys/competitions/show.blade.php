@@ -1,5 +1,7 @@
 <x-eys.app-layout :title="__('eys.competitions.title')">
+    @php $submittedResultContext = old('result_context', $resultContext); @endphp
     <div class="ip-panel-stack">
+        @if($errors->any())<div class="ip-alert ip-alert-warning" role="alert"><div class="ip-alert-text">{{ $errors->first() }}</div></div>@endif
         <x-eys.breadcrumb :crumbs="[
             ['label' => __('eys.nav.dashboard'), 'url' => route('eys.dashboard')],
             ['label' => __('eys.module_names.Institution'), 'url' => route('eys.institution.dashboard')],
@@ -260,15 +262,19 @@
         <div class="ip-card">
             <div class="ip-toolbar"><div><div class="ip-toolbar-title">{{ __('eys.competitions.results_title') }}</div><div class="ip-toolbar-hint">{{ __('eys.competitions.results_hint') }}</div></div><div style="display:flex;gap:.5rem;"><a class="ia-btn ia-btn-secondary" href="{{ route('eys.competitions.reports.entries', $competition) }}">Katılım CSV</a>@if($evaluationRound)<a class="ia-btn ia-btn-secondary" href="{{ route('eys.competitions.reports.results', $competition) }}">Sonuç CSV</a>@endif</div></div>
             @if($evaluationRound)
+                @unless($competition->results_published_at || $resultFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __('result_selection.recalculate') }}</div>@endunless
+                @if(!$competition->results_published_at && $competition->categories->flatMap->awards->sum('quantity') > 0 && !$awardFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __('result_selection.review_awards') }}</div>@endif
                 <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0;"><span>{{ __('eys.competitions.active_result_round') }}: <strong>{{ $evaluationRound->round_number }} · {{ $evaluationRound->name }}</strong></span><span>{{ __('eys.competitions.completed_jury_evaluations') }}: <strong>{{ $individualRound?->evaluationSubmissions->count() ?? 0 }}</strong></span><span>{{ __('eys.competitions.calculated_results') }}: <strong>{{ $evaluationRound->results->count() }}</strong></span></div>
 
                 @if(!$finalRound && $individualRound?->results->isNotEmpty() && !$competition->results_published_at)
                     <form method="POST" action="{{ route('eys.competitions.create-final-round', $competition) }}" style="margin:1rem 0 1.5rem;padding:1rem;border:1px solid rgba(201,168,76,.3);border-radius:.75rem;">@csrf
+                        <input type="hidden" name="result_context" value="{{ is_string($submittedResultContext) ? $submittedResultContext : '' }}">
                         <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.create_final_round') }}</div>
                         <div class="ip-section-hint">{{ __('eys.competitions.create_final_round_hint') }}</div>
+                        @if($resultAwardAssignments->isNotEmpty())<p class="ip-section-hint">{{ __('result_selection.final_resets_awards') }}</p>@endif
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.55rem;margin-top:.85rem;">
                             @foreach($individualRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
-                                <label style="display:flex;gap:.55rem;align-items:center;padding:.65rem;border:1px solid var(--ia-surface-border);border-radius:.55rem;"><input type="checkbox" name="photo_result_ids[]" value="{{ $result->id }}"><span><strong style="color:var(--ia-cream);">#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><small style="display:block;color:var(--ia-muted-dim);">{{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</small></span></label>
+                                <label style="display:flex;gap:.55rem;align-items:center;padding:.65rem;border:1px solid var(--ia-surface-border);border-radius:.55rem;"><input type="checkbox" name="photo_result_ids[]" value="{{ $result->id }}" @checked(in_array($result->id, (array) old('photo_result_ids', []), true))><span><strong style="color:var(--ia-cream);">#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><small style="display:block;color:var(--ia-muted-dim);">{{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</small></span></label>
                             @endforeach
                         </div>
                         @error('photo_result_ids')<small style="color:#e0857a;">{{ $message }}</small>@enderror
@@ -280,6 +286,8 @@
                     @php $jurySession = $finalRound->jurySession; @endphp
                     @if($jurySession)
                         <form method="POST" action="{{ route('eys.competitions.jury-session.update', $competition) }}" style="margin:1rem 0 1.5rem;padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">@csrf @method('PUT')
+                            <input type="hidden" name="session_version" value="{{ old('session_version', $jurySession->version) }}">
+                            <fieldset @disabled($jurySession->status === 'closed') style="border:0;padding:0;min-width:0;">
                             <div class="ip-toolbar"><div><div class="ip-toolbar-title">Final kurul oturumu</div><div class="ip-toolbar-hint">Yüz yüze ortak değerlendirme için zaman, yeter sayı, katılım ve tutanak kaydı.</div></div><span class="ip-badge {{ $jurySession->status === 'closed' ? 'is-approved' : ($jurySession->status === 'open' ? 'is-under-review' : 'is-draft') }}">{{ ['planned'=>'Planlandı','open'=>'Açık','closed'=>'Kapalı'][$jurySession->status] }}</span></div>
                             <div class="ip-grid-3">
                                 <div class="ia-field"><x-eys.label for="session_scheduled_at" value="Toplantı zamanı" /><input class="ia-input" id="session_scheduled_at" type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at', $jurySession->scheduled_at?->format('Y-m-d\TH:i')) }}"></div>
@@ -287,14 +295,18 @@
                                 <div class="ia-field"><x-eys.label for="session_quorum" value="Yeter sayı" /><input class="ia-input" id="session_quorum" type="number" min="1" max="30" name="quorum" value="{{ old('quorum', $jurySession->quorum) }}" required></div>
                             </div>
                             <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>Jüri</th><th>Katılım</th><th>Çıkar çatışması</th></tr></thead><tbody>
-                                @foreach($jurySession->attendances as $attendance)<tr><td class="ip-cell-name">{{ trim($attendance->juror->first_name.' '.$attendance->juror->last_name) }}</td><td><select class="ia-input" name="attendances[{{ $attendance->id }}]">@foreach(['invited'=>'Davetli','present'=>'Katıldı','absent'=>'Katılmadı'] as $value=>$label)<option value="{{ $value }}" @selected($attendance->attendance_status === $value)>{{ $label }}</option>@endforeach</select></td><td>{{ $attendance->declared_at ? ($attendance->conflict_declared ? 'Beyan edildi — '.$attendance->conflict_note : 'Bulunmuyor') : 'Beyan bekleniyor' }}</td></tr>@endforeach
+                                @foreach($jurySession->attendances as $attendance)<tr><td class="ip-cell-name">{{ trim($attendance->juror->first_name.' '.$attendance->juror->last_name) }}</td><td>@if($jurySession->status === 'closed'){{ ['invited'=>'Davetli','present'=>'Katıldı','absent'=>'Katılmadı'][$attendance->attendance_status] }}@else<select class="ia-input" style="min-width:100px;" name="attendances[{{ $attendance->id }}]">@foreach(['invited'=>'Davetli','present'=>'Katıldı','absent'=>'Katılmadı'] as $value=>$label)<option value="{{ $value }}" @selected(old('attendances.'.$attendance->id, $attendance->attendance_status) === $value)>{{ $label }}</option>@endforeach</select>@endif</td><td>{{ $attendance->declared_at ? ($attendance->conflict_declared ? 'Beyan edildi — '.$attendance->conflict_note : 'Bulunmuyor') : 'Beyan bekleniyor' }}</td></tr>@endforeach
                             </tbody></table></div>
                             <div class="ia-field" style="margin-top:1rem;"><x-eys.label for="session_minutes" value="Kurul tutanağı" /><textarea class="ia-input" id="session_minutes" name="minutes" maxlength="10000">{{ old('minutes', $jurySession->minutes) }}</textarea></div>
                             @error('session')<div class="ia-error">{{ $message }}</div>@enderror
-                            <div style="display:flex;justify-content:flex-end;gap:.6rem;"><button class="ia-btn ia-btn-secondary" name="action" value="save">Planı kaydet</button>@if($jurySession->status === 'planned')<button class="ia-btn" name="action" value="open">Oturumu aç</button>@elseif($jurySession->status === 'open')<button class="ia-btn" name="action" value="close">Oturumu kapat</button>@endif</div>
-                        </form>
+                            <div style="display:flex;justify-content:flex-end;gap:.6rem;">@unless($jurySession->status === 'closed')<button class="ia-btn ia-btn-secondary" name="action" value="save">Planı kaydet</button>@endunless
+                            @if($jurySession->status === 'planned')<button class="ia-btn" name="action" value="open">Oturumu aç</button>@elseif($jurySession->status === 'open')<button class="ia-btn" name="action" value="close">Oturumu kapat</button>@endif</div>
+                         </fieldset>
+</form>
                     @endif
                     <form method="POST" action="{{ route('eys.competitions.save-final-round', $competition) }}" style="margin:1rem 0 1.5rem;">@csrf @method('PUT')
+                        <input type="hidden" name="session_version" value="{{ old('session_version', $jurySession?->version) }}">
+                        <fieldset @disabled($jurySession?->status !== 'open') style="border:0;padding:0;min-width:0;">
                         <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.committee_evaluation') }}</div>
                         <div class="ip-section-hint">{{ __('eys.competitions.committee_evaluation_hint') }}</div>
                         <div class="ip-table-wrap" style="margin-top:.85rem;"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.committee_decision') }}</th><th>{{ __('eys.competitions.committee_score') }}</th><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.committee_note') }}</th></tr></thead><tbody>
@@ -302,8 +314,9 @@
                                 <tr><td>{{ $decision->photo->submission->category->name }}</td><td><select class="ia-input" name="decisions[{{ $decision->id }}][decision]">@foreach(['finalist','selected','not_selected'] as $status)<option value="{{ $status }}" @selected(old('decisions.'.$decision->id.'.decision', $decision->decision->value) === $status)>{{ __('eys.competitions.committee_decisions.'.$status) }}</option>@endforeach</select></td><td><input class="ia-input" type="number" min="3" max="9" name="decisions[{{ $decision->id }}][score]" value="{{ old('decisions.'.$decision->id.'.score', $decision->score) }}"></td><td><input class="ia-input" type="number" min="1" name="decisions[{{ $decision->id }}][rank]" value="{{ old('decisions.'.$decision->id.'.rank', $decision->rank) }}">@error('decisions.'.$decision->id.'.rank')<small style="color:#e0857a;">{{ $message }}</small>@enderror</td><td><input class="ia-input" type="text" maxlength="2000" name="decisions[{{ $decision->id }}][note]" value="{{ old('decisions.'.$decision->id.'.note', $decision->note) }}"></td></tr>
                             @endforeach
                         </tbody></table></div>
-                        <div style="display:flex;justify-content:flex-end;margin-top:.85rem;"><button class="ia-btn">{{ __('eys.competitions.save_committee_evaluation') }}</button></div>
-                    </form>
+                        <div style="display:flex;justify-content:flex-end;margin-top:.85rem;">@if($jurySession?->status === 'open')<button class="ia-btn">{{ __('eys.competitions.save_committee_evaluation') }}</button>@endif</div>
+                     </fieldset>
+</form>
                 @endif
                 @if($evaluationRound->results->isNotEmpty())
                     <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.result_total') }}</th><th>{{ __('eys.competitions.result_average') }}</th><th>{{ __('eys.competitions.result_score_count') }}</th><th>{{ __('eys.competitions.result_awards') }}</th></tr></thead><tbody>
@@ -312,8 +325,9 @@
                     @endforeach
                     </tbody></table></div>
 
-                    @if($competition->categories->flatMap->awards->isNotEmpty())
-                        <form method="POST" action="{{ route('eys.competitions.save-result-awards', $competition) }}" style="margin-top:1.5rem;">@csrf @method('PUT')
+                    @if($competition->categories->flatMap->awards->sum('quantity') > 0)
+                        <form method="POST" action="{{ route('eys.competitions.save-result-awards', $competition) }}" style="margin-top:1.5rem;">@csrf
+                        <input type="hidden" name="result_context" value="{{ is_string($submittedResultContext) ? $submittedResultContext : '' }}"> @method('PUT')
                             <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.result_award_assignment_title') }}</div>
                             <div class="ip-section-hint">{{ __('eys.competitions.result_award_assignment_hint') }}</div>
                             <div style="display:grid;gap:1rem;margin-top:1rem;">
@@ -357,7 +371,8 @@
                     @if($competition->results_published_at)
                         <form method="POST" action="{{ route('eys.competitions.unpublish-results', $competition) }}" style="display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;">@csrf<input class="ia-input" name="reason" required minlength="10" maxlength="2000" placeholder="{{ __('eys.competitions.result_correction_reason') }}" style="min-width:270px;"><button class="ia-btn ia-btn-secondary">{{ __('eys.competitions.unpublish_results') }}</button></form>
                     @else
-                        <form method="POST" action="{{ route('eys.competitions.publish-results', $competition) }}" style="display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;">@csrf<input class="ia-input" type="datetime-local" name="publish_at" aria-label="Planlı yayın zamanı"><input class="ia-input" name="publication_note" maxlength="2000" placeholder="Yayın notu (opsiyonel)" style="min-width:270px;"><button class="ia-btn">{{ __('eys.competitions.publish_results') }}</button></form>
+                        <form method="POST" action="{{ route('eys.competitions.publish-results', $competition) }}" style="display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;">@csrf
+                        <input type="hidden" name="result_context" value="{{ is_string($submittedResultContext) ? $submittedResultContext : '' }}"><input class="ia-input" type="datetime-local" name="publish_at" aria-label="Planlı yayın zamanı"><input class="ia-input" name="publication_note" maxlength="2000" placeholder="Yayın notu (opsiyonel)" style="min-width:270px;"><button class="ia-btn">{{ __('eys.competitions.publish_results') }}</button></form>
                     @endif
                 </div>
             @else<p style="margin-top:1rem;">{{ __('eys.competitions.no_evaluation_round') }}</p>@endif

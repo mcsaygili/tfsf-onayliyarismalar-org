@@ -2,6 +2,8 @@
 
 return [
 
+    'requested' => 'Bu adres için uygun bir hesap varsa şifre sıfırlama bağlantısı gönderilecektir.',
+
     'reset' => 'Şifreniz sıfırlandı.',
     'sent' => 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
     'throttled' => 'Lütfen tekrar denemeden önce biraz bekleyin.',

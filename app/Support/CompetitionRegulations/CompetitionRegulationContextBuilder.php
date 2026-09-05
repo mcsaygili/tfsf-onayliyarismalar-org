@@ -3,6 +3,8 @@
 namespace App\Support\CompetitionRegulations;
 
 use App\Models\Competition;
+use App\Support\Photo\CategoryPhotoRules;
+use App\Support\Photo\SubmissionDeclarations;
 use Illuminate\Database\Eloquent\Model;
 
 class CompetitionRegulationContextBuilder
@@ -48,6 +50,8 @@ class CompetitionRegulationContextBuilder
                 'name' => $this->translated($category, 'name', $locale),
                 'genders' => $this->translatedList($category->genders, 'name', $locale),
                 'age_rule' => $this->translated($category->ageEligibilityRule, 'name', $locale),
+                'declarations' => SubmissionDeclarations::summary($category, $locale),
+                'photo_rules' => CategoryPhotoRules::summary($category->photo_rules, $locale),
                 'age_rule_code' => $category->ageEligibilityRule?->code,
                 'member_groups' => $this->translatedList($category->memberGroups, 'name', $locale),
                 'capture_devices' => $this->translatedList($category->captureDevices, 'name', $locale),

@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'title' => 'Photo technical requirements',
+    'hint' => 'Leave a limit blank or set it to 0 to disable it. Lower and upper limits work independently. File size uses MiB (1 MiB = 1,048,576 bytes).',
+    'server_limit' => 'System upload limit: :value MiB.',
+    'dpi_hint' => 'When a DPI limit is set, both axes are checked and the file must contain resolution metadata with a physical unit.',
+    'accepted_formats' => 'Accepted formats: :formats',
+    'dpi_required' => 'DPI metadata with a physical unit is required.',
+    'invalid_range' => ':min must not exceed :max.',
+    'fields' => [
+        'formats' => 'Accepted formats',
+        'min_file_size_mb' => 'Minimum file size (MiB)',
+        'max_file_size_mb' => 'Maximum file size (MiB)',
+        'min_short_edge' => 'Minimum short edge (px)',
+        'max_long_edge' => 'Maximum long edge (px)',
+        'min_dpi' => 'Minimum DPI',
+        'max_dpi' => 'Maximum DPI',
+    ],
+    'summary' => [
+        'min_file_size_mb' => 'At least :value MiB',
+        'max_file_size_mb' => 'At most :value MiB',
+        'min_short_edge' => 'Short edge ≥ :value px',
+        'max_long_edge' => 'Long edge ≤ :value px',
+        'min_dpi' => 'Both axes ≥ :value DPI',
+        'max_dpi' => 'Both axes ≤ :value DPI',
+    ],
+    'errors' => [
+        'formats' => 'The actual file format must be :value for this category.',
+        'min_file_size_mb' => 'The file must be at least :value MiB.',
+        'max_file_size_mb' => 'The file must be at most :value MiB.',
+        'min_short_edge' => 'The short edge must be at least :value pixels.',
+        'max_long_edge' => 'The long edge must be at most :value pixels.',
+        'min_dpi' => 'Both axes must have a resolution of at least :value DPI.',
+        'max_dpi' => 'Both axes must have a resolution of at most :value DPI.',
+        'dpi_missing' => 'DPI or its physical unit could not be read. Export the photo with resolution metadata and try again.',
+        'dpi_unreadable' => 'The photo’s DPI could not be checked at this time. Please try again.',
+        'max_pixels' => 'The photo may contain at most :value pixels. Please reduce its pixel dimensions.',
+    ],
+];

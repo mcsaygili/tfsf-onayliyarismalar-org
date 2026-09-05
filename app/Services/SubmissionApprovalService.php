@@ -9,15 +9,22 @@ use App\Models\CompetitionSubmissionApproval;
 use App\Notifications\Uye\CompetitionSubmissionDecisionNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SubmissionApprovalService
 {
     public function decide(CompetitionSubmissionApproval $approval, Model $actor, bool $approved, ?string $note = null): void
     {
-        DB::transaction(function () use ($approval, $actor, $approved, $note) {
+        $competitionId = $approval->submission->entry->competition_id;
+        DB::transaction(function () use ($competitionId, $approval, $actor, $approved, $note) {
+            $competition = CompetitionMutationLock::acquire($competitionId);
             $approval = CompetitionSubmissionApproval::query()->whereKey($approval->id)->lockForUpdate()->firstOrFail();
             if ($approval->status !== SubmissionApprovalStatus::Pending) {
                 return;
+            }
+
+            if ($competition->results_published_at || $competition->evaluationRounds()->where(fn ($query) => $query->where('is_final', true)->orWhere('round_number', '>', 1))->exists()) {
+                throw ValidationException::withMessages(['decision' => __('evaluation_revision.approval_locked')]);
             }
 
             $approval->update([
@@ -40,6 +47,7 @@ class SubmissionApprovalService
                 'rejection_reason' => $note,
             ]);
 
+            app(CompetitionSubmissionPhotoService::class)->reopenForDetailsChange($submission);
             $entry = $submission->entry;
             $statuses = $entry->submissions()->get(['status'])->pluck('status');
             if ($statuses->contains(CompetitionSubmissionStatus::PendingApproval)) {
@@ -69,7 +77,7 @@ class SubmissionApprovalService
                 ['entry_id' => $entry->id, 'submission_id' => $submission->id, 'approval_id' => $approval->id],
             );
 
-            $entry->user->notify(new CompetitionSubmissionDecisionNotification($submission->loadMissing('category.translations', 'entry.competition.translations'), $approved, $note));
+            $entry->user->notify((new CompetitionSubmissionDecisionNotification($submission->loadMissing('category.translations', 'entry.competition.translations'), $approved, $note))->afterCommit());
         });
     }
 }

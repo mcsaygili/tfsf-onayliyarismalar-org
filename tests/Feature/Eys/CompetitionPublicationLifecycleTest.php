@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 class CompetitionPublicationLifecycleTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, \Tests\Concerns\ReadsResultContext;
 
     public function test_eys_can_suspend_resume_unpublish_and_cancel_an_approved_competition_with_audit_history(): void
     {
@@ -84,7 +84,7 @@ class CompetitionPublicationLifecycleTest extends TestCase
         ]);
 
         $this->actingAs($reviewer, 'eys')
-            ->post(route('eys.competitions.publish-results', $competition))
+            ->post(route('eys.competitions.publish-results', $competition), ['result_context' => $this->resultContextFor($competition)])
             ->assertSessionHasErrors('results');
 
         $this->assertNull($competition->refresh()->results_published_at);

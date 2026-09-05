@@ -16,7 +16,7 @@ use App\Http\Controllers\Temsilci\PasswordController;
 use App\Http\Controllers\Temsilci\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('domains.temsilci'))->middleware('maintenance:temsilci')->group(function () {
+Route::domain(config('domains.temsilci'))->middleware(['maintenance:temsilci', 'panel.session:temsilci'])->group(function () {
     Route::get('language/{locale}', SetLanguageController::class)->name('temsilci.language');
 
     Route::middleware('guest:temsilci')->group(function () {
@@ -27,10 +27,10 @@ Route::domain(config('domains.temsilci'))->middleware('maintenance:temsilci')->g
         Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('temsilci.password.request');
-        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('temsilci.password.email');
+        Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:10,1')->name('temsilci.password.email');
 
         Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('temsilci.password.reset');
-        Route::post('reset-password', [NewPasswordController::class, 'store'])->name('temsilci.password.store');
+        Route::post('reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:30,1')->name('temsilci.password.store');
     });
 
     Route::middleware('auth:temsilci')->group(function () {

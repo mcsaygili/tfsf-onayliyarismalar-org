@@ -68,6 +68,8 @@ class CompetitionRegulationDefinitionRegistry
         $scoped = match ($scope) {
             'category' => [
                 'category.name' => 'Kategori adı',
+                'category.declarations' => 'Katılımcı beyan ve hikâye koşulları',
+                'category.photo_rules' => 'Fotoğrafın teknik koşulları',
                 'category.genders' => 'Cinsiyet koşulları',
                 'category.age_rule' => 'Yaş koşulu',
                 'category.member_groups' => 'Üye grupları',

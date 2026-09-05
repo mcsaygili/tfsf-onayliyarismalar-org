@@ -27,6 +27,10 @@
                 this.categories = this.categories.map(category => ({
                     id: category.id || '', tr: category.tr || { name: '' }, en: category.en || { name: '' },
                     max_photos_per_participant: category.max_photos_per_participant || 4,
+                    photo_rules: { ...@js(\App\Support\Photo\CategoryPhotoRules::defaults()), ...(category.photo_rules || {}) },
+                    photo_story_required: [true, 1, '1'].includes(category.photo_story_required),
+                    category_story_required: [true, 1, '1'].includes(category.category_story_required),
+                    photo_order_required: [true, 1, '1'].includes(category.photo_order_required),
                     locale: category.locale || 'tr', expanded: category.expanded ?? true,
                     age_eligibility_rule: category.age_eligibility_rule || '', gender_id: category.gender_id || '',
                     member_group_match_mode: category.member_group_match_mode || 'any',
@@ -39,7 +43,7 @@
             },
             addCategory() {
                 if (this.categories.length >= 20) return;
-                this.categories.push({ id: '', tr: { name: '' }, en: { name: '' }, max_photos_per_participant: 4, locale: 'tr', expanded: true, age_eligibility_rule: '', gender_id: '', member_group_match_mode: 'any', member_group_ids: [], capture_device_ids: [], processing_method_ids: [] });
+                this.categories.push({ id: '', tr: { name: '' }, en: { name: '' }, max_photos_per_participant: 4, photo_story_required: false, category_story_required: false, photo_order_required: false, photo_rules: @js(\App\Support\Photo\CategoryPhotoRules::defaults()), locale: 'tr', expanded: true, age_eligibility_rule: '', gender_id: '', member_group_match_mode: 'any', member_group_ids: [], capture_device_ids: [], processing_method_ids: [] });
             },
             duplicateCategory(index) {
                 if (this.categories.length >= 20) return;
@@ -95,6 +99,18 @@
                     </div>
 
                     <div x-show="category.expanded">
+
+                    @include('institution.competitions.partials.technical-photo-rules')
+                    <fieldset class="ip-category-section">
+                        <legend class="ia-label">{{ __('declarations.requirements') }}</legend>
+                        <p class="ip-section-hint">{{ __('declarations.requirements_hint') }}</p>
+                        <div class="ip-reference-options">
+                            @foreach (\App\Support\Photo\SubmissionDeclarations::CATEGORY_FLAGS as $flag)
+                                <input type="hidden" :name="`categories[${index}][{{ $flag }}]`" value="0">
+                                <label class="ip-reference-option"><input type="checkbox" :name="`categories[${index}][{{ $flag }}]`" value="1" x-model="category.{{ $flag }}"><span>{{ __('declarations.'.$flag) }}</span></label>
+                            @endforeach
+                        </div>
+                    </fieldset>
 
                     <div class="ip-language-tabs" role="tablist" :aria-label="@js(__('institution.competitions.category_name'))">
                         <button

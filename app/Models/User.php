@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use App\Notifications\Uye\ResetPasswordNotification;
 use App\Notifications\Uye\VerifyEmailNotification;
 use Database\Factories\UserFactory;
@@ -29,7 +30,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasSecurityStamp, HasUuids, Notifiable;
 
     /**
      * @return array<string, string>

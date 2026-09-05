@@ -9,6 +9,8 @@ use App\Models\CompetitionCategory;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
 use App\Models\ProcessingMethod;
+use App\Support\Photo\CategoryPhotoRules;
+use App\Support\Photo\SubmissionDeclarations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -42,6 +44,10 @@ class Step6 implements CompetitionStep
 
         return ['categories' => $competition->categories->map(fn (CompetitionCategory $category) => [
             'id' => $category->id,
+            'photo_rules' => CategoryPhotoRules::normalize($category->photo_rules),
+            'photo_story_required' => $category->photo_story_required,
+            'category_story_required' => $category->category_story_required,
+            'photo_order_required' => $category->photo_order_required,
             'max_photos_per_participant' => $category->max_photos_per_participant,
             'tr' => ['name' => $category->getTranslation('tr', false)?->name],
             'en' => ['name' => $category->getTranslation('en', false)?->name],
@@ -75,6 +81,14 @@ class Step6 implements CompetitionStep
                 'birth_date_from' => null,
                 'birth_date_to' => null,
             ]);
+            if (array_key_exists('photo_rules', $payload)) {
+                $category->photo_rules = CategoryPhotoRules::normalize($payload['photo_rules']);
+            }
+            foreach (SubmissionDeclarations::CATEGORY_FLAGS as $flag) {
+                if (array_key_exists($flag, $payload)) {
+                    $category->{$flag} = (bool) $payload[$flag];
+                }
+            }
             $category->save();
             $keptIds[] = $category->id;
 
@@ -112,7 +126,11 @@ class Step6 implements CompetitionStep
         };
 
         return [
+            ...$this->photoRules(),
             'categories' => [$required, 'array', $isDraftSave ? 'max:20' : 'min:1', 'max:20'],
+            'categories.*.photo_story_required' => ['sometimes', 'boolean'],
+            'categories.*.category_story_required' => ['sometimes', 'boolean'],
+            'categories.*.photo_order_required' => ['sometimes', 'boolean'],
             'categories.*.id' => ['nullable', 'uuid', $categoryId],
             'categories.*.max_photos_per_participant' => ['sometimes', 'integer', 'min:1', 'max:20'],
             'categories.*.tr.name' => [$required, 'string', 'max:255', 'distinct:ignore_case'],
@@ -129,6 +147,34 @@ class Step6 implements CompetitionStep
         ];
     }
 
+    private function photoRules(): array
+    {
+        $maxMb = config('competition-photos.max_file_size_mb');
+        $prefix = 'categories.*.photo_rules';
+
+        return [
+            $prefix => ['sometimes', 'array:formats,'.implode(',', CategoryPhotoRules::LIMITS), function (string $attribute, mixed $value, \Closure $fail) {
+                if (! is_array($value)) {
+                    return;
+                }
+                foreach ([['min_file_size_mb', 'max_file_size_mb'], ['min_short_edge', 'max_long_edge'], ['min_dpi', 'max_dpi']] as [$min, $max]) {
+                    if (is_numeric($value[$min] ?? null) && is_numeric($value[$max] ?? null)
+                        && $value[$max] > 0 && $value[$min] > $value[$max]) {
+                        $fail(__('photo_rules.invalid_range', ['min' => __('photo_rules.fields.'.$min), 'max' => __('photo_rules.fields.'.$max)]));
+                    }
+                }
+            }],
+            "$prefix.formats" => ['required_with:'.$prefix, 'array', 'min:1', 'max:3'],
+            "$prefix.formats.*" => ['required', 'distinct', Rule::in(CategoryPhotoRules::FORMATS)],
+            "$prefix.min_file_size_mb" => ['nullable', 'numeric', 'min:0', 'max:'.$maxMb, 'decimal:0,3'],
+            "$prefix.max_file_size_mb" => ['nullable', 'numeric', 'min:0', 'max:'.$maxMb, 'decimal:0,3'],
+            "$prefix.min_short_edge" => ['nullable', 'integer', 'min:0', 'max:100000'],
+            "$prefix.max_long_edge" => ['nullable', 'integer', 'min:0', 'max:100000'],
+            "$prefix.min_dpi" => ['nullable', 'integer', 'min:0', 'max:100000'],
+            "$prefix.max_dpi" => ['nullable', 'integer', 'min:0', 'max:100000'],
+        ];
+    }
+
     public function formData(Competition $competition): array
     {
         $categories = old('categories', $this->data($competition)['categories']);
@@ -136,6 +182,7 @@ class Step6 implements CompetitionStep
         return $categories ?: [[
             'id' => null, 'tr' => ['name' => ''], 'en' => ['name' => ''],
             'max_photos_per_participant' => 4,
+            'photo_rules' => CategoryPhotoRules::defaults(),
             'age_eligibility_rule' => null, 'gender_id' => null,
             'member_group_match_mode' => 'any', 'member_group_ids' => [], 'capture_device_ids' => [], 'processing_method_ids' => [],
         ]];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Institution\Auth;
 
+use App\Services\PanelAccountAccess;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,11 +44,11 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::guard('institution')->user()->status) {
+        if ($reason = app(PanelAccountAccess::class)->denialReason(Auth::guard('institution')->user())) {
             Auth::guard('institution')->logout();
 
             throw ValidationException::withMessages([
-                'email' => __('institution.account_disabled'),
+                'email' => $reason,
             ]);
         }
 

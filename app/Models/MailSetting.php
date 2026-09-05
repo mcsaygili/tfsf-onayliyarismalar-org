@@ -27,6 +27,8 @@ class MailSetting extends Model
 
     public static function current(): self
     {
-        return static::query()->firstOrCreate(['id' => 1], ['enabled' => true]);
+        // The singleton ID is internal, not user-fillable. Preserve it even
+        // when the database auto-increment sequence has advanced.
+        return static::unguarded(fn () => static::query()->firstOrCreate(['id' => 1], ['enabled' => true]));
     }
 }

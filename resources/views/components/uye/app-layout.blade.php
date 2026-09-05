@@ -759,6 +759,17 @@
         .mp-photo-sources > form { padding: 1rem; background: rgba(255,255,255,.025); border-radius: 10px; }
         .mp-photo-sources h3 { color: var(--ia-cream); margin: 0 0 .75rem; font-size: .9rem; }
         .mp-photo-sources .ia-input { margin-bottom: .75rem; }
+        .mp-declarations { margin-block: 1.5rem; }
+        .mp-declarations h3 { color: var(--ia-cream); }
+        .mp-declarations p, .mp-declaration-fields p { color: var(--ia-muted); font-size: .875rem; line-height: 1.6; }
+        .mp-declarations fieldset { min-width: 0; border: 0; padding: 0; }
+        .mp-declarations label, .mp-declaration-fields label { display: block; color: var(--ia-muted); font-size: .875rem; }
+        .mp-declarations .ia-input { margin-block: .4rem .8rem; width: 100%; }
+        .mp-declarations textarea, .mp-declaration-fields textarea { resize: vertical; min-height: 6rem; }
+        .mp-declaration-photo { margin-block: 1.25rem; }
+        .mp-declaration-photo legend { color: var(--ia-cream); font-weight: 600; margin-bottom: .6rem; }
+        .mp-declaration-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem 1rem; }
+        @media (max-width: 640px) { .mp-declaration-grid { grid-template-columns: 1fr; } .mp-declarations .ia-input, .mp-declaration-fields .ia-input { font-size: 1rem; } }
         .mp-rule-fields { display: grid; gap: .7rem; margin-bottom: .8rem; }
         .mp-rule-fields label, .mp-rule-fields legend { color: var(--ia-muted); font-size: .78rem; }
         .mp-rule-fields fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .35rem; }

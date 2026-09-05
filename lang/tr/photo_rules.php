@@ -1,0 +1,40 @@
+<?php
+
+return [
+    'title' => 'Fotoğrafın teknik koşulları',
+    'hint' => 'Boş veya 0 bırakılan sınır uygulanmaz. Alt ve üst sınırlar ayrı ayrı kullanılabilir. Dosya boyutu MiB olarak ölçülür (1 MiB = 1.048.576 bayt).',
+    'server_limit' => 'Sistem yükleme sınırı: :value MiB.',
+    'dpi_hint' => 'DPI sınırı verilirse iki eksen de denetlenir; dosyada ölçü birimiyle birlikte çözünürlük bilgisi bulunmalıdır.',
+    'accepted_formats' => 'Kabul edilen formatlar: :formats',
+    'dpi_required' => 'Ölçü birimi belli DPI bilgisi zorunlu.',
+    'invalid_range' => ':min, :max değerinden büyük olamaz.',
+    'fields' => [
+        'formats' => 'Kabul edilen formatlar',
+        'min_file_size_mb' => 'En az dosya boyutu (MiB)',
+        'max_file_size_mb' => 'En çok dosya boyutu (MiB)',
+        'min_short_edge' => 'Kısa kenar en az (px)',
+        'max_long_edge' => 'Uzun kenar en çok (px)',
+        'min_dpi' => 'En az DPI',
+        'max_dpi' => 'En çok DPI',
+    ],
+    'summary' => [
+        'min_file_size_mb' => 'En az :value MiB',
+        'max_file_size_mb' => 'En çok :value MiB',
+        'min_short_edge' => 'Kısa kenar ≥ :value px',
+        'max_long_edge' => 'Uzun kenar ≤ :value px',
+        'min_dpi' => 'Her iki eksen ≥ :value DPI',
+        'max_dpi' => 'Her iki eksen ≤ :value DPI',
+    ],
+    'errors' => [
+        'formats' => 'Bu kategori için gerçek dosya formatı :value olmalıdır.',
+        'min_file_size_mb' => 'Dosya en az :value MiB olmalıdır.',
+        'max_file_size_mb' => 'Dosya en çok :value MiB olabilir.',
+        'min_short_edge' => 'Fotoğrafın kısa kenarı en az :value piksel olmalıdır.',
+        'max_long_edge' => 'Fotoğrafın uzun kenarı en çok :value piksel olabilir.',
+        'min_dpi' => 'Her iki eksende çözünürlük en az :value DPI olmalıdır.',
+        'max_dpi' => 'Her iki eksende çözünürlük en çok :value DPI olabilir.',
+        'dpi_missing' => 'DPI veya ölçü birimi okunamadı. Fotoğrafı çözünürlük bilgisiyle dışa aktarıp yeniden deneyin.',
+        'dpi_unreadable' => 'Fotoğrafın DPI bilgisi şu anda denetlenemedi. Lütfen tekrar deneyin.',
+        'max_pixels' => 'Fotoğraf en çok :value piksel içerebilir. Lütfen piksel ölçülerini küçültün.',
+    ],
+];

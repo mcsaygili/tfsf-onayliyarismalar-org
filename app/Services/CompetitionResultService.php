@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Competition;
 use App\Models\CompetitionEvaluationRound;
 use App\Models\CompetitionPhotoResult;
 use App\Models\JuryScore;
@@ -12,14 +13,23 @@ class CompetitionResultService
     public function aggregate(CompetitionEvaluationRound $round): void
     {
         DB::transaction(function () use ($round) {
+            CompetitionMutationLock::acquire($round->competition_id);
+            $round = $round->fresh();
             $aggregates = JuryScore::query()
-                ->join('competition_category_evaluation_criteria as criteria', 'criteria.id', '=', 'jury_scores.criterion_assignment_id')
+                ->weightedTotals()
                 ->join('competition_submission_photos as photos', 'photos.id', '=', 'jury_scores.submission_photo_id')
                 ->join('competition_submissions as submissions', 'submissions.id', '=', 'photos.competition_submission_id')
+                ->join('competition_entries as entries', 'entries.id', '=', 'submissions.competition_entry_id')
+                ->join('competition_category_juror_assignments as assignments', 'assignments.id', '=', 'jury_scores.juror_assignment_id')
+                ->where('entries.competition_id', $round->competition_id)
+                ->whereColumn('criteria.competition_category_id', 'submissions.competition_category_id')
+                ->whereColumn('assignments.competition_category_id', 'submissions.competition_category_id')
+                ->whereNotNull('assignments.juror_id')
                 ->where('jury_scores.competition_evaluation_round_id', $round->id)
                 ->whereNotNull('jury_scores.submitted_at')
                 ->whereNull('photos.withdrawn_at')
-                ->selectRaw('jury_scores.submission_photo_id, submissions.competition_category_id, SUM(score * criteria.weight) as total_score, SUM(score * criteria.weight) / SUM(criteria.weight) as average_score, COUNT(*) as score_count')
+                ->where('submissions.status', 'approved')
+                ->addSelect('jury_scores.submission_photo_id', 'submissions.competition_category_id')
                 ->groupBy('jury_scores.submission_photo_id', 'submissions.competition_category_id')
                 ->orderBy('submissions.competition_category_id')
                 ->orderByDesc('total_score')
@@ -57,15 +67,19 @@ class CompetitionResultService
                 ->where('competition_evaluation_round_id', $round->id)
                 ->whereNotIn('submission_photo_id', $aggregates->pluck('submission_photo_id'))
                 ->delete();
+            $round->forceFill(['results_state_hash' => app(CompetitionResultState::class)->resultHash($round)])->save();
+            Competition::whereKey($round->competition_id)->increment('results_edit_version');
         });
     }
 
     public function aggregateCommittee(CompetitionEvaluationRound $round): void
     {
         DB::transaction(function () use ($round) {
+            CompetitionMutationLock::acquire($round->competition_id);
+            $round = $round->fresh();
             $decisions = $round->committeeDecisions()
                 ->where('decision', 'selected')
-                ->whereHas('photo', fn ($query) => $query->whereNull('withdrawn_at'))
+                ->whereHas('photo', fn ($query) => $query->whereNull('withdrawn_at')->whereHas('submission', fn ($submission) => $submission->where('status', 'approved')))
                 ->with('photo.submission')
                 ->orderByRaw('rank is null')
                 ->orderBy('rank')
@@ -88,6 +102,8 @@ class CompetitionResultService
                 ->where('competition_evaluation_round_id', $round->id)
                 ->whereNotIn('submission_photo_id', $decisions->pluck('submission_photo_id'))
                 ->delete();
+            $round->forceFill(['results_state_hash' => app(CompetitionResultState::class)->resultHash($round)])->save();
+            Competition::whereKey($round->competition_id)->increment('results_edit_version');
         });
     }
 }

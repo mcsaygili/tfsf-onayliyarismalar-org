@@ -5,7 +5,9 @@
                 ['label' => __('eys.nav.dashboard'), 'url' => route('eys.dashboard')],
                 ['label' => __('eys.users.list_title')],
             ]" />
-            <a href="{{ route('eys.users.create') }}" class="ia-btn"><x-eys.icon name="plus" />{{ __('eys.common.add') }}</a>
+            @can('create', \App\Models\EysUser::class)
+<a href="{{ route('eys.users.create') }}" class="ia-btn"><x-eys.icon name="plus" />{{ __('eys.common.add') }}</a>
+@endcan
         </div>
 
         <x-eys.filter-panel :action="route('eys.users.index')" :reset-url="route('eys.users.index')" :total="$users->total()">
@@ -45,12 +47,16 @@
                                 @endif
                             </td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <a href="{{ route('eys.users.roles.edit', $user) }}" class="ip-row-icon-btn" title="{{ __('eys.users.manage_roles') }}" aria-label="{{ __('eys.users.manage_roles') }}">
+                                @can('eys.roles.manage')
+<a href="{{ route('eys.users.roles.edit', $user) }}" class="ip-row-icon-btn" title="{{ __('eys.users.manage_roles') }}" aria-label="{{ __('eys.users.manage_roles') }}">
                                     <x-eys.icon name="role" />
                                 </a>
-                                <a href="{{ route('eys.users.edit', $user) }}" class="ip-row-icon-btn" title="{{ __('eys.users.edit_action') }}" aria-label="{{ __('eys.users.edit_action') }}">
+@endcan
+                                @can('update', $user)
+<a href="{{ route('eys.users.edit', $user) }}" class="ip-row-icon-btn" title="{{ __('eys.users.edit_action') }}" aria-label="{{ __('eys.users.edit_action') }}">
                                     <x-eys.icon name="edit" />
                                 </a>
+@endcan
                             </td>
                         </tr>
                     @empty

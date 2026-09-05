@@ -44,7 +44,8 @@ class CompetitionSubmissionPhotoController extends Controller
 
         abort_unless($allowed, 404);
 
-        $path = $submissionPhoto->jury_path ?: $submissionPhoto->disk_path;
+        abort_unless($submissionPhoto->jury_sanitized_at && $submissionPhoto->jury_path, 404);
+        $path = $submissionPhoto->jury_path;
         abort_unless(Storage::disk('local')->exists($path), 404);
 
         return Storage::disk('local')->response($path, null, [

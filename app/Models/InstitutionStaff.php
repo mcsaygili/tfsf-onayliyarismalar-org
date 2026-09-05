@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use App\Notifications\Institution\ResetPasswordNotification;
 use App\Notifications\Institution\VerifyEmailNotification;
 use Database\Factories\InstitutionStaffFactory;
@@ -25,7 +26,7 @@ use Illuminate\Notifications\Notifiable;
 class InstitutionStaff extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<InstitutionStaffFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasSecurityStamp, HasUuids, Notifiable;
 
     protected function casts(): array
     {

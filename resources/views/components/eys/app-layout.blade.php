@@ -906,10 +906,12 @@
             @endforeach
 
             <div class="ip-nav-section">{{ __('eys.nav.section_management') }}</div>
+            @can('viewAny', \App\Models\EysUser::class)
             <a href="{{ route('eys.users.index') }}" class="ip-nav-item {{ request()->routeIs('eys.users.*') ? 'is-active' : '' }}">
                 <x-eys.icon name="staff" />
                 {{ __('eys.nav.users') }}
             </a>
+            @endcan
             @can('eys.roles.manage')
                 <a href="{{ route('eys.roles.index') }}" class="ip-nav-item {{ request()->routeIs('eys.roles.*') ? 'is-active' : '' }}">
                     <x-eys.icon name="role" />

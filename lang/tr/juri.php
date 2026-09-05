@@ -229,6 +229,17 @@ return [
         ],
     ],
 
+    'tags' => [
+        'title' => 'Etiketlerim', 'private_hint' => 'Bu kategorideki etiketleri yalnızca siz görürsünüz. Etiketler puanlarınızı değiştirmez.',
+        'name' => 'Etiket adı', 'color' => 'Renk', 'create' => 'Etiket Oluştur', 'delete' => 'Sil', 'filter' => 'Etikete göre filtrele', 'all' => 'Tüm eserler',
+        'empty' => 'Henüz etiketiniz yok. Eserleri kendi gruplarınıza ayırmak için bir etiket oluşturun.',
+        'photo_tags' => 'Bu eserin etiketleri', 'create_first' => 'Yukarıdan bir etiket oluşturduğunuzda burada seçebilirsiniz.', 'added' => 'Eklendi',
+        'no_matches' => 'Bu etikette eser yok', 'no_matches_hint' => 'Tüm eserleri açıp eserlerin altındaki etiket düğmelerinden bu etiketi ekleyebilirsiniz.',
+        'javascript_hint' => 'Etiketleri kullanmak için JavaScript etkin olmalıdır. Puanlarınızı aşağıdaki formdan kaydedebilirsiniz.',
+        'messages' => ['created' => 'Etiket hazır.', 'deleted' => 'Etiket ve eser bağlantıları silindi.', 'attached' => 'Etiket esere eklendi.', 'detached' => 'Etiket eserden çıkarıldı.', 'confirmDelete' => '“:name” etiketi ve eser bağlantıları silinsin mi? Puanlarınız korunur.'],
+        'errors' => [401 => 'Oturumunuz sona erdi. Puanlarınızı not edip yeniden giriş yapın.', 403 => 'Bu işlem için erişiminiz kalmadı. Görev atamanızı kontrol edin.', 404 => 'Etiket veya eser artık bu değerlendirmede bulunmuyor. Puanlarınızı kaydettikten sonra sayfayı yenileyin.', 419 => 'Oturum süresi doldu. Puanlarınızı not edip sayfayı yenileyin.', 429 => 'Çok sık işlem yaptınız. Biraz bekleyip tekrar deneyin.', 'default' => 'Etiket kaydedilemedi. Biraz sonra yeniden deneyin.', 'network' => 'İşlem sonucu doğrulanamadı. Bağlantınızı kontrol edip tekrar deneyin; gerekirse puanlarınızı kaydettikten sonra sayfayı yenileyin.'],
+    ],
+
     'evaluation' => [
         'title' => 'Jüri Değerlendirmesi', 'open' => 'Eserleri Değerlendir', 'back' => 'Görev detayına dön', 'round' => 'Değerlendirme turu', 'work' => 'Eser :number',
         'save_draft' => 'Puanları Kaydet', 'finalize' => 'Değerlendirmeyi Tamamla', 'finalize_confirm' => 'Tüm puanları kesinleştirmek istiyor musunuz? Bu işlemden sonra puanlar değiştirilemez.',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Juri\Auth;
 
+use App\Services\PanelAccountAccess;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,11 +44,11 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::guard('juri')->user()->status) {
+        if ($reason = app(PanelAccountAccess::class)->denialReason(Auth::guard('juri')->user())) {
             Auth::guard('juri')->logout();
 
             throw ValidationException::withMessages([
-                'email' => __('Hesabınız kapalıdır.'),
+                'email' => $reason,
             ]);
         }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class JuryScore extends Model
 {
     use HasUuids;
+
+    public function scopeWeightedTotals(Builder $query): Builder
+    {
+        return $query
+            ->join('competition_category_evaluation_criteria as criteria', 'criteria.id', '=', 'jury_scores.criterion_assignment_id')
+            ->selectRaw('SUM(jury_scores.score * criteria.weight) as total_score, SUM(criteria.weight) as total_weight, 1.0 * SUM(jury_scores.score * criteria.weight) / NULLIF(SUM(criteria.weight), 0) as average_score, COUNT(*) as score_count');
+    }
 
     protected function casts(): array
     {

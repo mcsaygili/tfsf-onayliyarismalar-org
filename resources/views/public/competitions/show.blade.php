@@ -73,6 +73,8 @@
                                 @if($category->genders->isNotEmpty())<div><dt>{{ __('public.detail.gender') }}</dt><dd>{{ $category->genders->pluck('name')->filter()->join(', ') }}</dd></div>@endif
                                 @if($category->ageEligibilityRule)<div><dt>{{ __('public.detail.age_rule') }}</dt><dd>{{ $category->ageEligibilityRule->name }}@if($category->ageEligibilityRule->description)<small>{{ $category->ageEligibilityRule->description }}</small>@endif</dd></div>@endif
                                 @if($category->memberGroups->isNotEmpty())<div><dt>{{ __('public.detail.member_groups') }}</dt><dd>{{ $category->memberGroups->pluck('name')->filter()->join(', ') }}</dd></div>@endif
+                                <div><dt>{{ __('declarations.requirements') }}</dt><dd>{{ \App\Support\Photo\SubmissionDeclarations::summary($category) }}</dd></div>
+                                <div><dt>{{ __('photo_rules.title') }}</dt><dd>{{ \App\Support\Photo\CategoryPhotoRules::summary($category->photo_rules) }}</dd></div>
                                 @if($category->captureDevices->isNotEmpty())<div><dt>{{ __('public.detail.capture_devices') }}</dt><dd>{{ $category->captureDevices->pluck('name')->filter()->join(', ') }}</dd></div>@endif
                                 @if($category->processingMethods->isNotEmpty())<div><dt>{{ __('public.detail.processing_methods') }}</dt><dd>{{ $category->processingMethods->pluck('name')->filter()->join(', ') }}</dd></div>@endif
                             </dl>

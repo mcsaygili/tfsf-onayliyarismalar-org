@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use App\Notifications\Temsilci\ResetPasswordNotification;
 use App\Notifications\Temsilci\VerifyEmailNotification;
 use Database\Factories\TemsilciFactory;
@@ -27,7 +28,7 @@ use Illuminate\Notifications\Notifiable;
 class Temsilci extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<TemsilciFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasSecurityStamp, HasUuids, Notifiable;
 
     protected $table = 'representatives';
 

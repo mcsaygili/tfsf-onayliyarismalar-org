@@ -3,12 +3,14 @@
 import Alpine from 'alpinejs';
 import flatpickr from 'flatpickr';
 import { Turkish } from 'flatpickr/dist/l10n/tr.js';
+import registerJuryTags from './jury-tags';
 
 flatpickr.l10ns.tr = Turkish;
 
 window.Alpine = Alpine;
 window.flatpickr = flatpickr;
 
+registerJuryTags(Alpine);
 Alpine.start();
 
 const wizardForms = [...document.querySelectorAll('form[data-wizard-form]')];

@@ -13,6 +13,7 @@ use App\Models\ProcessingMethod;
 use App\Services\CompetitionEntryMutationPolicy;
 use App\Services\CompetitionEntryService;
 use App\Services\CompetitionPhaseService;
+use App\Services\CompetitionSubmissionDetailsService;
 use App\Services\CompetitionSubmissionPhotoService;
 use App\Services\MemberEligibilityService;
 use App\Services\MemberScorecardService;
@@ -103,7 +104,7 @@ class CompetitionController extends Controller
         $this->ownsSubmission($request, $submission);
         $validated = $this->photoRules($request, true);
         $photo = Photo::query()->where('user_id', $request->user()->id)->findOrFail($validated['photo_id']);
-        $photos->fromPortfolio($submission, $photo, $validated['capture_device_id'] ?? null, $validated['processing_method_ids'] ?? []);
+        $photos->fromPortfolio($submission, $photo, $validated['capture_device_id'] ?? null, $validated['processing_method_ids'] ?? [], $validated['declaration'] ?? null);
 
         return back()->with('status', __('uye.competitions.messages.photo_added'));
     }
@@ -112,9 +113,18 @@ class CompetitionController extends Controller
     {
         $this->ownsSubmission($request, $submission);
         $validated = $this->photoRules($request, false);
-        $photos->fromUpload($submission, $request->file('photo'), $validated['capture_device_id'] ?? null, $validated['processing_method_ids'] ?? []);
+        $photos->fromUpload($submission, $request->file('photo'), $validated['capture_device_id'] ?? null, $validated['processing_method_ids'] ?? [], $validated['declaration'] ?? null);
 
         return back()->with('status', __('uye.competitions.messages.photo_added'));
+    }
+
+    public function updateDetails(Request $request, CompetitionSubmission $submission, CompetitionSubmissionDetailsService $details): RedirectResponse
+    {
+        $this->ownsSubmission($request, $submission);
+        $validated = $request->validate(['details_version' => ['required', 'integer', 'min:0']]);
+        $details->update($submission, $request->user(), (int) $validated['details_version'], $request->only('category_story', 'photos'));
+
+        return back()->with('status', __('declarations.saved'));
     }
 
     public function removePhoto(Request $request, CompetitionSubmissionPhoto $submissionPhoto, CompetitionSubmissionPhotoService $photos): RedirectResponse
@@ -138,8 +148,13 @@ class CompetitionController extends Controller
     private function photoRules(Request $request, bool $portfolio): array
     {
         return $request->validate([
+            'declaration' => ['nullable', 'array:title,location,taken_on,story'],
+            'declaration.title' => ['nullable', 'string', 'max:255'],
+            'declaration.location' => ['nullable', 'string', 'max:255'],
+            'declaration.taken_on' => ['nullable', 'date_format:Y-m-d'],
+            'declaration.story' => ['nullable', 'string', 'max:4000'],
             'photo_id' => [$portfolio ? 'required' : 'nullable', 'uuid'],
-            'photo' => [$portfolio ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
+            'photo' => [$portfolio ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(config('competition-photos.max_file_size_mb') * 1024)],
             'capture_device_id' => ['nullable', 'uuid', Rule::exists('capture_devices', 'id')->where('status', true)->whereNull('deleted_at')],
             'processing_method_ids' => ['nullable', 'array'],
             'processing_method_ids.*' => ['uuid', Rule::exists('processing_methods', 'id')->where('status', true)->whereNull('deleted_at')],

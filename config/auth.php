@@ -69,27 +69,27 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'bound-account',
             'model' => env('AUTH_MODEL', User::class),
         ],
 
         'institution_staff' => [
-            'driver' => 'eloquent',
+            'driver' => 'bound-account',
             'model' => InstitutionStaff::class,
         ],
 
         'representatives' => [
-            'driver' => 'eloquent',
+            'driver' => 'bound-account',
             'model' => Temsilci::class,
         ],
 
         'jurors' => [
-            'driver' => 'eloquent',
+            'driver' => 'bound-account',
             'model' => Juri::class,
         ],
 
         'eys_users' => [
-            'driver' => 'eloquent',
+            'driver' => 'bound-account',
             'model' => EysUser::class,
         ],
     ],

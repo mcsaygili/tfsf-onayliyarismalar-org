@@ -3,6 +3,7 @@
 use App\Http\Middleware\AuthorizeEysCompetition;
 use App\Http\Middleware\CheckMaintenanceMode;
 use App\Http\Middleware\EnsureGuardEmailIsVerified;
+use App\Http\Middleware\EnsurePanelSession;
 use App\Http\Middleware\ResolveGuardSessionCookie;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetPermissionsTeam;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'panel.session' => EnsurePanelSession::class,
             'eys.competition' => AuthorizeEysCompetition::class,
             'verified.guard' => EnsureGuardEmailIsVerified::class,
             // EYS Roller/İzinler (Spatie laravel-permission, teams = App\Enums\Module).
@@ -58,6 +60,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             before: AuthenticatesRequests::class,
             prepend: CheckMaintenanceMode::class,
+        );
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: EnsurePanelSession::class,
         );
 
         // Laravel'in yerleşik `auth` middleware'i (Authenticate), oturum

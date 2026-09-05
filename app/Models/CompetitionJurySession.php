@@ -15,7 +15,7 @@ class CompetitionJurySession extends Model
 
     protected function casts(): array
     {
-        return ['scheduled_at' => 'datetime', 'quorum' => 'integer', 'opened_at' => 'datetime', 'closed_at' => 'datetime'];
+        return ['version' => 'integer', 'scheduled_at' => 'datetime', 'quorum' => 'integer', 'opened_at' => 'datetime', 'closed_at' => 'datetime'];
     }
 
     public function round(): BelongsTo
@@ -40,6 +40,9 @@ class CompetitionJurySession extends Model
 
     public function hasQuorum(): bool
     {
-        return $this->attendances->where('attendance_status', 'present')->where('conflict_declared', false)->count() >= $this->quorum;
+        return $this->quorum > 0 && $this->attendances()->where('attendance_status', 'present')->where('conflict_declared', false)
+            ->whereNotNull('declared_at')->whereHas('juror', fn ($query) => $query->where('status', true)
+            ->whereHas('categoryAssignments.category', fn ($categories) => $categories->where('competition_id', $this->round->competition_id)))
+            ->count() >= $this->quorum;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\EysUser;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -27,8 +28,8 @@ class NewPasswordController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'token' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:254'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -40,13 +41,13 @@ class NewPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
-                event(new PasswordReset($eysUser));
+                DB::afterCommit(fn () => event(new PasswordReset($eysUser)));
             }
         );
 
         return $status == Password::PASSWORD_RESET
                     ? redirect()->route('eys.login')->with('status', __($status))
                     : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+                        ->withErrors(['email' => __('passwords.token')]);
     }
 }

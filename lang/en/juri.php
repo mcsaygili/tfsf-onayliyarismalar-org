@@ -229,6 +229,17 @@ return [
         ],
     ],
 
+    'tags' => [
+        'title' => 'My tags', 'private_hint' => 'Only you can see your tags in this category. Tags do not change your scores.',
+        'name' => 'Tag name', 'color' => 'Color', 'create' => 'Create Tag', 'delete' => 'Delete', 'filter' => 'Filter by tag', 'all' => 'All works',
+        'empty' => 'No tags yet. Create a tag to organize works into your own groups.',
+        'photo_tags' => 'Tags for this work', 'create_first' => 'Create a tag above to select it here.', 'added' => 'Added',
+        'no_matches' => 'No works in this tag', 'no_matches_hint' => 'Open all works and use the tag buttons below each work to add this tag.',
+        'javascript_hint' => 'Enable JavaScript to use tags. You can still save scores using the form below.',
+        'messages' => ['created' => 'Tag ready.', 'deleted' => 'The tag and its work links were deleted.', 'attached' => 'Tag added to the work.', 'detached' => 'Tag removed from the work.', 'confirmDelete' => 'Delete “:name” and its work links? Your scores will be kept.'],
+        'errors' => [401 => 'Your session expired. Note your scores and sign in again.', 403 => 'You no longer have access to this action. Check your assignment.', 404 => 'This tag or work is no longer available. Save your scores before reloading.', 419 => 'Your session expired. Note your scores before reloading.', 429 => 'Too many requests. Wait a moment and retry.', 'default' => 'The tag could not be saved. Please retry shortly.', 'network' => 'The result could not be confirmed. Check your connection and retry; if needed, save your scores before reloading the page.'],
+    ],
+
     'evaluation' => [
         'title' => 'Jury Evaluation', 'open' => 'Evaluate Works', 'back' => 'Back to assignment', 'round' => 'Evaluation round', 'work' => 'Work :number',
         'save_draft' => 'Save Scores', 'finalize' => 'Finalize Evaluation', 'finalize_confirm' => 'Finalize all scores? Scores cannot be changed afterwards.',

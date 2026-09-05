@@ -1,0 +1,23 @@
+{
+  "app/Models/CompetitionCategory.php": "d335b804a5718703f3eddca89302b528c6f5e7c6530ddfd9d93272213f946a07",
+  "app/Services/CompetitionPhotoTechnicalValidator.php": "23a9cd22a6053f505d5f3550b22afa1d117fd6e924a51e047fb2486925e12281",
+  "app/Services/CompetitionSubmissionPhotoService.php": "3e6b879b865cce1f173637d499b7007c2700ff547f8069cb60971c7e1c68b683",
+  "app/Support/Photo/CategoryPhotoRules.php": "ee41c47fc6b4046f17bf3b02f4e9554bddec0a910f1b33ef96f2776e640413c5",
+  "app/Support/CompetitionWizard/Step6.php": "86b5a25d6356534053da5491b8b0b7a6ebe553e900e79b1638f987c090d5ac48",
+  "app/Http/Controllers/Uye/CompetitionController.php": "f23bdf412490bfa53f33e6283b10bf65d16d4ecd3bcfe2d5e3057d11002443d7",
+  "app/Support/CompetitionRegulations/CompetitionRegulationCompiler.php": "a97e10b892d19aa8e046e7998bf3d27c3028657b0514d23d6468caf86dd5baef",
+  "app/Support/CompetitionRegulations/CompetitionRegulationContextBuilder.php": "039e452888fc1c5aa57dfac66c3b7bf7423a79596c4dee4655f826b2ac73c6d0",
+  "app/Support/CompetitionRegulations/CompetitionRegulationDefinitionRegistry.php": "0e49fc135b6b88ff66dc41cdb369291fa2b713e3e2d002934893b3bdd97ad4ca",
+  "config/competition-photos.php": "edf2d0821b88acefe8c9a2ef29e22eca8df27d2129c1b27005889a3641b7f50c",
+  "database/migrations/2026_09_05_160000_add_category_photo_rules.php": "f942f69413913a7489abdac81c938c27a3b944168381021f1822796e529d54f9",
+  "resources/views/institution/competitions/step-6.blade.php": "e5cc813fa34dbf4460f07a00f612154afbd84c277fe2b1b8de2aa741c3bf2ef1",
+  "resources/views/institution/competitions/partials/technical-photo-rules.blade.php": "7120ffbcb55bd9c38b1c2180de4812c743a201432388050262f8af37254dc0e3",
+  "resources/views/public/competitions/show.blade.php": "900a72f7cdaf64df86b4fa66b881d356ca3583d847542ff0976bacb4cbcd87a0",
+  "resources/views/uye/competitions/entry.blade.php": "74ec0853a9bdd4e5b823ddd37b1df42c6f17374c7d8c2534429f49f3136d1705",
+  "resources/views/uye/competitions/show.blade.php": "49131ac49cca529e713e082ac26887817a3522e94cc4c7c658d99ca049ea1c84",
+  "lang/tr/photo_rules.php": "d036bf32a469223fa4c10b172017885aba22a440304e7468265449e97803202e",
+  "lang/en/photo_rules.php": "065136b1cc48e7340ab3ecc747a8ef7c09dd4562c9c0828ef153b3585e75b198",
+  "tests/Feature/CompetitionPhotoTechnicalRulesTest.php": "0a1397537f11918110a577b5b7bf6f34ab29c248dcc0d52650b160df64a29bb9",
+  "tests/Feature/CompetitionPhotoRulesIntegrationTest.php": "3fb18f6be1c277dffd1766af6e17f3be192438c59506c7091bade192a59be04e",
+  "tests/Feature/Institution/CategoryPhotoRulesStepTest.php": "57190c4e6c28900096bb9e2aa0514760d6bf79aaac4691ac3599acb00c71e6fe"
+}

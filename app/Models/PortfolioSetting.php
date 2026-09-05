@@ -30,6 +30,7 @@ class PortfolioSetting extends Model
 
     public static function current(): self
     {
-        return static::query()->firstOrCreate(['id' => 1], ['max_photos_per_user' => self::DEFAULT_MAX_PHOTOS_PER_USER]);
+        // Only this internally supplied identity bypasses mass-assignment rules.
+        return static::unguarded(fn () => static::query()->firstOrCreate(['id' => 1], ['max_photos_per_user' => self::DEFAULT_MAX_PHOTOS_PER_USER]));
     }
 }

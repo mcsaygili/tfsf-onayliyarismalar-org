@@ -21,10 +21,9 @@ class MailWebhookTest extends TestCase
     }
 
     /** @return array{payload: string, headers: array<string, string>} */
-    private function signedRequest(array $payload): array
+    private function signedRequest(array $payload, string $id = 'msg_test123'): array
     {
         $body = json_encode($payload);
-        $id = 'msg_test123';
         $timestamp = (string) time();
 
         $toSign = "{$id}.{$timestamp}.{$body}";
@@ -102,5 +101,55 @@ class MailWebhookTest extends TestCase
 
         $this->call('POST', route('webhooks.resend'), [], [], [], $this->transformHeadersToServerVars($request['headers']), $request['payload'])->assertOk();
         $this->assertDatabaseCount('mail_events', 1);
+    }
+
+    private function sendEvent(string $id, string $type, ?string $time = null, string $messageId = 'ordering-message'): void
+    {
+        $request = $this->signedRequest(['type' => $type, 'created_at' => $time, 'data' => ['email_id' => $messageId]], $id);
+        $this->call('POST', route('webhooks.resend'), [], [], [], $this->transformHeadersToServerVars($request['headers']), $request['payload'])->assertOk();
+    }
+
+    public function test_replayed_and_late_delay_events_cannot_regress_delivery(): void
+    {
+        $log = MailSendLog::create(['to' => 'test@example.test', 'provider_message_id' => 'ordering-message', 'status' => 'sent']);
+        $this->sendEvent('delay', 'email.delivery_delayed');
+        $this->sendEvent('delivered', 'email.delivered');
+        $deliveredAt = $log->fresh()->delivered_at;
+        $this->sendEvent('delay', 'email.delivery_delayed');
+        $this->sendEvent('another-delay', 'email.delivery_delayed');
+        $this->assertSame('delivered', $log->fresh()->status);
+        $this->assertEquals($deliveredAt, $log->fresh()->delivered_at);
+        $this->assertDatabaseCount('mail_events', 3);
+    }
+
+    public function test_older_terminal_event_is_recorded_without_replacing_newer_status(): void
+    {
+        $log = MailSendLog::create(['to' => 'test@example.test', 'provider_message_id' => 'ordering-message', 'status' => 'sent']);
+        $this->sendEvent('delivered', 'email.delivered', '2026-09-05T08:00:00Z');
+        $this->sendEvent('old-failure', 'email.failed', '2026-09-05T07:00:00Z');
+        $this->assertSame('delivered', $log->fresh()->status);
+        $this->sendEvent('complaint', 'email.complained', '2026-09-05T09:00:00Z');
+        $this->assertSame('complained', $log->fresh()->status);
+        $this->assertDatabaseCount('mail_events', 3);
+    }
+
+    public function test_previous_attempt_event_does_not_change_current_dispatch(): void
+    {
+        $dispatch = NotificationDispatch::create(['type' => 'jury_invitation', 'recipient_email' => 'test@example.test', 'locale' => 'tr',
+            'template_key' => 'jury_invitation', 'status' => 'sent', 'payload' => [], 'provider_message_id' => 'new-attempt']);
+        $log = MailSendLog::create(['notification_dispatch_id' => $dispatch->id, 'to' => 'test@example.test', 'provider_message_id' => 'ordering-message', 'status' => 'sent']);
+        $this->sendEvent('old-attempt-failed', 'email.failed');
+        $this->assertSame('failed', $log->fresh()->status);
+        $this->assertSame('sent', $dispatch->fresh()->status);
+    }
+
+    public function test_orphan_event_can_be_attached_when_message_record_arrives(): void
+    {
+        $this->sendEvent('early-delivery', 'email.delivered');
+        $log = MailSendLog::create(['to' => 'test@example.test', 'provider_message_id' => 'ordering-message', 'status' => 'sent']);
+        $this->sendEvent('early-delivery', 'email.delivered');
+        $this->assertSame('delivered', $log->fresh()->status);
+        $this->assertDatabaseCount('mail_events', 1);
+        $this->assertDatabaseHas('mail_events', ['provider_event_id' => 'early-delivery', 'mail_send_log_id' => $log->id]);
     }
 }

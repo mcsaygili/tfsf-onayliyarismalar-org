@@ -19,7 +19,7 @@ class MailSendLog extends Model
 
     protected function casts(): array
     {
-        return ['attempt_number' => 'integer', 'sent_at' => 'datetime', 'delivered_at' => 'datetime', 'failed_at' => 'datetime'];
+        return ['attempt_number' => 'integer', 'sent_at' => 'datetime', 'delivered_at' => 'datetime', 'failed_at' => 'datetime', 'provider_status_at' => 'datetime'];
     }
 
     public function dispatch(): BelongsTo

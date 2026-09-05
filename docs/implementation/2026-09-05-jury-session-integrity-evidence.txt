@@ -1,0 +1,112 @@
+2026-09-05 Jury session integrity — final local verification
+Full SQLite and MariaDB suites ran sequentially after the final Blade fix and render regression assertions.
+DB: SQLite :memory:, isolated MariaDB tfsf_testing. UI/migration: isolated tfsf_session_ui, separate storage.
+
+=== final-sqlite ===
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ..sss............sss............s.............................ss............
+  ..........................................................................
+
+  Tests:    26 skipped, 732 passed (3027 assertions)
+  Duration: 47.19s
+
+
+=== final-mariadb ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ..........................................................................
+
+  Tests:    758 passed (3318 assertions)
+  Duration: 148.82s
+
+
+=== focused-mariadb-before-render-assertions ===
+
+  ...............
+
+  Tests:    15 passed (124 assertions)
+  Duration: 15.43s
+
+
+=== final-ui-regression ===
+
+  .....................
+
+  Tests:    21 passed (305 assertions)
+  Duration: 2.95s
+
+
+=== pint ===
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .........................................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 589 files  
+
+
+=== build ===
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Ck1sm6xt.css  84.72 kB │ gzip: 15.81 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 398ms
+
+=== migration-rollback-reapply ===
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_190000_version_jury_sessions ........................ 8.07ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_190000_version_jury_sessions ........................ 6.66ms DONE
+
+
+=== browser ===
+{
+  "checks": [
+    "EYS opens planned session and saves attendance",
+    "Undeclared juror cannot satisfy quorum; failed close visibly retains input",
+    "Juror explicitly declares no conflict",
+    "Declaration invalidates stale EYS form without losing newer state",
+    "Closed minutes, attendance, decisions and juror declaration are read-only",
+    "Session forms remain within desktop/mobile viewport"
+  ],
+  "errors": []
+}
+git diff --check: passed.
+14 source file SHA-256 hashes verified after tests.
+Mobile screenshots reviewed in two batches; final versions are in workspace reports/jury-session-qa.

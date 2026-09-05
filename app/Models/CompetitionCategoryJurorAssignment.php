@@ -13,6 +13,11 @@ class CompetitionCategoryJurorAssignment extends Model
 {
     use HasUuids;
 
+    protected function casts(): array
+    {
+        return ['evaluation_version' => 'integer'];
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(CompetitionCategory::class, 'competition_category_id');

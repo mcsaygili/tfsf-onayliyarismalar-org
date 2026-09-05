@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSecurityStamp;
 use App\Notifications\Juri\ResetPasswordNotification;
 use App\Notifications\Juri\VerifyEmailNotification;
 use Database\Factories\JuriFactory;
@@ -24,7 +25,7 @@ use Illuminate\Notifications\Notifiable;
 class Juri extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<JuriFactory> */
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasSecurityStamp, HasUuids, Notifiable;
 
     protected $table = 'jurors';
 

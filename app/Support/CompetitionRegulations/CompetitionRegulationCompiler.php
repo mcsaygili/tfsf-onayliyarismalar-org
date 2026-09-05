@@ -148,6 +148,8 @@ class CompetitionRegulationCompiler
         if ($value === null && $key === 'competition.categories') {
             $value = collect($context['categories'] ?? [])->map(fn (array $category) => collect([
                 $category['name'] ?? null,
+                $category['photo_rules'] ?? null,
+                $category['declarations'] ?? null,
                 ...($category['genders'] ?? []),
                 $category['age_rule'] ?? null,
                 ...($category['member_groups'] ?? []),

@@ -44,7 +44,7 @@ use Tests\TestCase;
 
 class CompetitionParticipationLifecycleTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, \Tests\Concerns\ReadsResultContext;
 
     protected function setUp(): void
     {
@@ -187,11 +187,11 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $criterion = $category->evaluationCriteria()->firstOrFail();
         $this->openEvaluation($competition);
         $this->actingAs($firstJuror, 'juri')
-            ->put(route('juri.evaluations.finalize', [$competition, $category]), [
+            ->put(route('juri.evaluations.finalize', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
                 'scores' => [$submissionPhoto->id => [$criterion->id => 7]],
             ])->assertRedirect();
         $this->actingAs($secondJuror, 'juri')
-            ->put(route('juri.evaluations.finalize', [$competition, $category]), [
+            ->put(route('juri.evaluations.finalize', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
                 'scores' => [$submissionPhoto->id => [$criterion->id => 9]],
             ])->assertRedirect();
         $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $submissionPhoto->id, 'score' => 7]);
@@ -215,22 +215,30 @@ class CompetitionParticipationLifecycleTest extends TestCase
         // 8. EYS final kurul oturumunu açar ve ortak kararı kaydeder.
         $this->actingAs($reviewer, 'eys')
             ->post(route('eys.competitions.create-final-round', $competition), [
+                'result_context' => $this->resultContextFor($competition),
                 'photo_result_ids' => [$firstRoundResult->id],
             ])->assertRedirect();
         $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
         $decision = $finalRound->committeeDecisions()->firstOrFail();
         $session = $finalRound->jurySession()->with('attendances')->firstOrFail();
+        foreach ($session->attendances as $attendance) {
+            $this->actingAs($attendance->juror, 'juri')->post(route('juri.sessions.declaration', $competition), [
+                'session_version' => $session->fresh()->version, 'conflict_declared' => false,
+            ])->assertSessionHasNoErrors();
+        }
         $attendances = $session->attendances->mapWithKeys(fn ($attendance) => [
             $attendance->id => 'present',
         ])->all();
         $this->actingAs($reviewer, 'eys')
             ->put(route('eys.competitions.jury-session.update', $competition), [
+                'session_version' => $session->fresh()->version,
                 'quorum' => 2,
                 'attendances' => $attendances,
                 'action' => 'open',
             ])->assertRedirect();
         $this->actingAs($reviewer, 'eys')
             ->put(route('eys.competitions.save-final-round', $competition), [
+                'session_version' => $session->fresh()->version,
                 'decisions' => [$decision->id => [
                     'decision' => 'selected',
                     'score' => 8,
@@ -240,6 +248,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ])->assertRedirect();
         $this->actingAs($reviewer, 'eys')
             ->put(route('eys.competitions.jury-session.update', $competition), [
+                'session_version' => $session->fresh()->version,
                 'quorum' => 2,
                 'minutes' => 'Final kurulu değerlendirmeyi oy birliğiyle tamamladı.',
                 'attendances' => $attendances,
@@ -251,6 +260,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $finalResult = $finalRound->results()->where('submission_photo_id', $submissionPhoto->id)->firstOrFail();
         $this->actingAs($reviewer, 'eys')
             ->put(route('eys.competitions.save-result-awards', $competition), [
+                'result_context' => $this->resultContextFor($competition),
                 'award_assignments' => [$award->id => [1 => $finalResult->id]],
             ])->assertRedirect();
         $this->assertDatabaseHas('competition_result_awards', [
@@ -263,6 +273,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         Notification::fake();
         $this->actingAs($reviewer, 'eys')
             ->post(route('eys.competitions.publish-results', $competition), [
+                'result_context' => $this->resultContextFor($competition),
                 'publication_note' => 'Ana kabul testi sonuç yayını.',
             ])->assertRedirect();
         $this->assertNotNull($competition->refresh()->results_published_at);
@@ -437,19 +448,19 @@ class CompetitionParticipationLifecycleTest extends TestCase
 
         $invalidScores = ['scores' => [$photo->id => [$criterion->id => 2]]];
         $this->actingAs($juror, 'juri')
-            ->put(route('juri.evaluations.save', [$competition, $category]), $invalidScores)
+            ->put(route('juri.evaluations.save', [$competition, $category]), $invalidScores + ['evaluation_context' => $this->evaluationContextFor($competition, $category)])
             ->assertSessionHasErrors('scores');
 
         $validScores = ['scores' => [$photo->id => [$criterion->id => 9]]];
         $this->actingAs($juror, 'juri')
-            ->put(route('juri.evaluations.finalize', [$competition, $category]), $validScores)
+            ->put(route('juri.evaluations.finalize', [$competition, $category]), $validScores + ['evaluation_context' => $this->evaluationContextFor($competition, $category)])
             ->assertRedirect();
 
         $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $photo->id, 'score' => 9]);
         $this->assertDatabaseCount('jury_evaluation_submissions', 1);
 
         $this->actingAs($juror, 'juri')
-            ->put(route('juri.evaluations.save', [$competition, $category]), [
+            ->put(route('juri.evaluations.save', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
                 'scores' => [$photo->id => [$criterion->id => 3]],
             ])->assertSessionHasErrors('scores');
         $this->assertDatabaseHas('jury_scores', ['submission_photo_id' => $photo->id, 'score' => 9]);
@@ -480,18 +491,18 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $reviewer = $this->reviewer();
 
         $this->actingAs($reviewer, 'eys')
-            ->post(route('eys.competitions.publish-results', $competition))
+            ->post(route('eys.competitions.publish-results', $competition), ['result_context' => $this->resultContextFor($competition)])
             ->assertSessionHasErrors('results');
 
-        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), [
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
             'scores' => [$photo->id => [$criterion->id => 7]],
         ])->assertRedirect();
-        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $secondCategory]), [
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $secondCategory]), ['evaluation_context' => $this->evaluationContextFor($competition, $secondCategory),
             'scores' => [$secondPhoto->id => [$secondCriterion->id => 9]],
         ])->assertRedirect();
 
         $this->actingAs($reviewer, 'eys')
-            ->post(route('eys.competitions.publish-results', $competition))
+            ->post(route('eys.competitions.publish-results', $competition), ['result_context' => $this->resultContextFor($competition)])
             ->assertSessionHasErrors('results');
 
         $this->actingAs($reviewer, 'eys')
@@ -504,12 +515,13 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $this->assertSame(1, $secondResult->rank);
 
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-result-awards', $competition), [
+            'result_context' => $this->resultContextFor($competition),
             'award_assignments' => [$award->id => [1 => $result->id]],
         ])->assertRedirect();
 
         Notification::fake();
         $this->actingAs($reviewer, 'eys')
-            ->post(route('eys.competitions.publish-results', $competition))
+            ->post(route('eys.competitions.publish-results', $competition), ['result_context' => $this->resultContextFor($competition)])
             ->assertRedirect();
 
         $this->assertNotNull($competition->refresh()->results_published_at);
@@ -559,7 +571,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $this->assertDatabaseHas('competition_entry_events', ['competition_entry_id' => $entry->id, 'event' => 'photo_withdrawn_during_evaluation']);
 
         $criterion = $category->evaluationCriteria()->firstOrFail();
-        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), [
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
             'scores' => [$replacement->id => [$criterion->id => 8]],
         ])->assertRedirect();
 
@@ -594,7 +606,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $juror = Juri::factory()->create();
         $category->jurorAssignments()->create(['juror_id' => $juror->id, 'sort_order' => 10]);
         $this->openEvaluation($competition);
-        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), [
+        $this->actingAs($juror, 'juri')->put(route('juri.evaluations.finalize', [$competition, $category]), ['evaluation_context' => $this->evaluationContextFor($competition, $category),
             'scores' => [$photo->id => [$criterion->id => 7]],
         ])->assertRedirect();
 
@@ -602,23 +614,32 @@ class CompetitionParticipationLifecycleTest extends TestCase
         $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.aggregate-results', $competition))->assertRedirect();
         $firstResult = $competition->evaluationRounds()->firstOrFail()->results()->firstOrFail();
         $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.create-final-round', $competition), [
+            'result_context' => $this->resultContextFor($competition),
             'photo_result_ids' => [$firstResult->id],
         ])->assertRedirect();
         $finalRound = $competition->evaluationRounds()->where('is_final', true)->firstOrFail();
         $decision = $finalRound->committeeDecisions()->firstOrFail();
         $session = $finalRound->jurySession()->with('attendances')->firstOrFail();
+        foreach ($session->attendances as $attendance) {
+            $this->actingAs($attendance->juror, 'juri')->post(route('juri.sessions.declaration', $competition), [
+                'session_version' => $session->fresh()->version, 'conflict_declared' => false,
+            ])->assertSessionHasNoErrors();
+        }
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.jury-session.update', $competition), [
+            'session_version' => $session->fresh()->version,
             'quorum' => 1,
             'attendances' => [$session->attendances->firstOrFail()->id => 'present'],
             'action' => 'open',
         ])->assertRedirect();
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-final-round', $competition), [
+            'session_version' => $session->fresh()->version,
             'decisions' => [$decision->id => ['decision' => 'selected', 'score' => 8, 'rank' => 1, 'note' => 'Kurul ortak kararı']],
         ])->assertRedirect();
         $finalResult = $finalRound->results()->firstOrFail();
         $this->assertSame(8, (int) $finalResult->average_score);
 
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.jury-session.update', $competition), [
+            'session_version' => $session->fresh()->version,
             'quorum' => 1,
             'minutes' => 'Kurul ortak değerlendirmesini tamamladı.',
             'attendances' => [$session->attendances->firstOrFail()->id => 'present'],
@@ -626,6 +647,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
         ])->assertRedirect();
 
         $this->actingAs($reviewer, 'eys')->put(route('eys.competitions.save-result-awards', $competition), [
+            'result_context' => $this->resultContextFor($competition),
             'award_assignments' => [$award->id => [1 => $finalResult->id]],
         ])->assertRedirect();
         $this->actingAs($reviewer, 'eys')->get(route('eys.competitions.preview-results', $competition))
@@ -637,6 +659,7 @@ class CompetitionParticipationLifecycleTest extends TestCase
             ->assertOk();
         Notification::fake();
         $this->actingAs($reviewer, 'eys')->post(route('eys.competitions.publish-results', $competition), [
+            'result_context' => $this->resultContextFor($competition),
             'publication_note' => 'Kurul tarafından onaylanan ilk sonuç yayını.',
         ])->assertRedirect();
 
@@ -757,5 +780,10 @@ class CompetitionParticipationLifecycleTest extends TestCase
     private function fixture(): string
     {
         return file_get_contents(base_path('tests/Fixtures/photo-without-exif.jpg'));
+    }
+
+    private function evaluationContextFor(Competition $competition, CompetitionCategory $category): string
+    {
+        return $this->get(route('juri.evaluations.show', [$competition, $category]))->assertOk()->viewData('evaluationContext');
     }
 }
