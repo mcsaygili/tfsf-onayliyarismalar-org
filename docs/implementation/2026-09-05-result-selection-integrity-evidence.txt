@@ -1,0 +1,113 @@
+Package 11 verification. Synthetic isolated databases only.
+PHP 8.5.10; MariaDB 11.8. No production migration or deployment.
+
+
+Source: /tmp/tfsf-results-final-sqlite.log
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  .....sss....................................................................
+  ............................................................................
+  .....................sss............sss............s........................
+  .....ss.....................................................................
+  .................
+
+  Tests:    29 skipped, 748 passed (3157 assertions)
+  Duration: 51.62s
+
+
+
+Source: /tmp/tfsf-results-final-mariadb.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .................
+
+  Tests:    777 passed (3490 assertions)
+  Duration: 174.18s
+
+
+
+Source: /tmp/tfsf-results-final-pint.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .................................................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 597 files  
+
+
+
+Source: /tmp/tfsf-results-build.log
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Ck1sm6xt.css  84.72 kB │ gzip: 15.81 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 321ms
+
+
+Source: /tmp/tfsf-results-migration.log
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_200000_version_result_selection .................... 10.64ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_200000_version_result_selection .................... 12.20ms DONE
+
+
+
+Source: /tmp/tfsf-results-browser-results.json
+{
+  "checks": [
+    "All selection forms carry context; stale award tab is rejected with its input preserved",
+    "Member revision and renewed jury scores require explicit result recalculation",
+    "Changed result cannot be published until award assignments are reviewed",
+    "Review message and award selector remain visible at desktop/mobile widths",
+    "Reviewed current awards publish successfully; published assignments are read-only"
+  ],
+  "errors": []
+}
+
+Source: /tmp/tfsf-results-final-browser-results.json
+{
+  "checks": [
+    "Existing award reset notice is visible before final creation",
+    "Selected finalist creates one committee decision and a planned session",
+    "First-round finalist selector disappears after transition"
+  ]
+}
+
+git diff --check: exit 0
+
+
+Finalist browser check initially matched both finalist and committee forms, which share an action URL. Selector corrected to photo_result_ids inputs; rerun passed without application changes.

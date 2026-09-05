@@ -19,3 +19,5 @@ Geliştirme durumu, doğrulama sonuçları ve mevcut fotoğrafların güvenli ge
 [Jüri form sürümü, atomik kesinleştirme ve ortak revizyon kilidi](docs/implementation/2026-09-05-evaluation-revision-locking.md).
 
 [Kurul oturumu, çıkar çatışması beyanı ve karar bütünlüğü](docs/implementation/2026-09-05-jury-session-integrity.md).
+
+[Finalist seçimi, ödül dağıtımı ve sonuç yayımlama bütünlüğü](docs/implementation/2026-09-05-result-selection-integrity.md).

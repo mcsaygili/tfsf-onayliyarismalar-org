@@ -1,0 +1,17 @@
+{
+  "app/Services/CompetitionResultState.php": "1b6d644c06e610ad266f9cfdfecbae67aa78dcbd1b79cdbe0b5a12f2daf73db2",
+  "app/Services/CompetitionResultService.php": "d796957ba70545ca9c64f37fb6ed00e47b600648eb7edad7ceac9dc3ec9be728",
+  "app/Http/Controllers/Eys/CompetitionReviewController.php": "7e3fbcd74d7b650cfb45a007c4932842c26652692367f8cdc129fecc0157c603",
+  "resources/views/eys/competitions/show.blade.php": "b0b15bad69aa49d1dacd8f855336fa8bc524cfae999c05ac8c9bba1fad75a5d8",
+  "database/migrations/2026_09_05_200000_version_result_selection.php": "396b422cdd7e4fe440e8269da82dd5538497489f31c82eb8f6109b25864e8d22",
+  "lang/tr/result_selection.php": "80f61573f3e0d1db5321c506cdf6f63a987fdba47f94e7349bcd54b5a5058440",
+  "lang/en/result_selection.php": "03e4e5d7ab9f7639cdd6131fcd265bb16e5820e42db11016ca2eff86258600c5",
+  "tests/Concerns/CreatesResultSelection.php": "04120ff2f5cf06a620132533575e2c254b2281caa10cf04065242ec1f6c0c14a",
+  "tests/Concerns/ReadsResultContext.php": "b42016563acde752d7a4e181b288c0a9ba025df8c66c2a2e63aefef2b796d63b",
+  "tests/Feature/Eys/ResultSelectionTest.php": "b95a08182deee7272474c0fb86937aff1acb87ef1c24dbfb28906a301341eb0c",
+  "tests/Feature/Eys/ResultSelectionConcurrencyTest.php": "7d7c09c8abeb3709466f2f566aa15420449f1b8363638a4d0dcdfd7a249f0ccc",
+  "tests/Feature/CompetitionParticipationLifecycleTest.php": "f7fb2c9033c1d9de91f710d4dc75efe265c03b1e905aec986cee28b58bb8dd00",
+  "tests/Feature/Eys/CompetitionPublicationLifecycleTest.php": "ffb445e0019e2b24b69e630b6e545b481c82e19d2973efdef0ba712eb947a2d8",
+  "tests/Feature/Juri/EvaluationRevisionConcurrencyTest.php": "5a15aeb9126895164624844e235b620b69f2c82374b12f430d28d053c6666e09",
+  "tests/Feature/WeightedScoreConsistencyTest.php": "70b00a24be0a36920c0982da24ebbb370baa2585ac6aa1a0c990bce7e1c0f37e"
+}
