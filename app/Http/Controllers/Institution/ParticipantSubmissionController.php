@@ -17,7 +17,7 @@ class ParticipantSubmissionController extends Controller
     {
         $approvals = CompetitionSubmissionApproval::query()
             ->where('approval_type', 'institution')
-            ->whereHas('submission.entry.competition', fn ($query) => $query->where('institution_id', $request->user('institution')->institution_id))
+            ->whereHas('submission.entry.competition', fn ($query) => app(\App\Services\InstitutionCompetitionAccess::class)->scope($query, $request->user('institution')))
             ->with(['submission.entry.user', 'submission.entry.competition.translations', 'submission.category.translations'])
             ->orderByRaw("CASE status WHEN 'pending' THEN 1 ELSE 2 END")
             ->latest()->paginate(20);

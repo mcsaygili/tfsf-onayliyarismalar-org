@@ -1,0 +1,114 @@
+Package 13 verification. PHP 8.5.10, MariaDB 11.8. Tests use tfsf_testing; browser uses separate tfsf_results_ui and isolated storage. No real application database migration/deployment.
+
+Source: /tmp/tfsf-publication-final-sqlite.log
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  .................sss........................................................
+  ....s.......................................................................
+  ........................................sss............sss............s.....
+  ........................ss..................................................
+  ....................................
+
+  Tests:    30 skipped, 766 passed (3352 assertions)
+  Duration: 53.65s
+
+
+
+Source: /tmp/tfsf-publication-final-mariadb.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ....................................
+
+  Tests:    796 passed (3692 assertions)
+  Duration: 160.03s
+
+
+
+Source: /tmp/tfsf-publication-final-pint.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  .........................................................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 605 files  
+
+
+
+Source: /tmp/tfsf-publication-maria-focused.log
+
+  ...............
+
+  Tests:    15 passed (190 assertions)
+  Duration: 17.46s
+
+
+
+Source: /tmp/tfsf-publication-build.log
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Y2fgDCiW.css  86.21 kB │ gzip: 16.15 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 324ms
+
+
+Source: /tmp/tfsf-publication-migration.log
+Stored snapshot digest: 37a66c8f6857da67f7ef07ed715c7bdc44a417627fedf8160b61e2fb4446da86
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_220000_freeze_result_publication_assets ............ 14.86ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_220000_freeze_result_publication_assets ............ 25.43ms DONE
+
+Existing snapshots preserved; legacy marker and search backfill verified for 1 publication(s).
+
+
+Source: /tmp/tfsf-publication-browser-results.json
+{
+  "browser": "Chrome/Playwright; Browser plugin not available",
+  "checks": [
+    "Award selection and publication through real EYS forms",
+    "Public text and image checksum stay unchanged after live names change and live image files are deleted",
+    "Archive search uses announced title",
+    "Public layout fits desktop and mobile",
+    "EYS historical version opens frozen text and image",
+    "Withdrawal closes public page and frozen image while historical EYS view remains available"
+  ],
+  "imageSha256": "ec9e9136f55135c11dcd6e82467b488d2cfbd7c5a393c08244e958966c9b4358",
+  "publication": "01a07149-c5be-702a-984d-f57ab41e3e29",
+  "errors": []
+}
+
+git diff --check: exit 0

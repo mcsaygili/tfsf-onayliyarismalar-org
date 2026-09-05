@@ -6,6 +6,8 @@ use App\Models\Juri;
 use App\Models\Temsilci;
 use App\Models\User;
 use App\Services\PanelSession;
+use App\Services\RegistrationDocumentScanService;
+use App\Support\Documents\PdfDocumentScanner;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Contracts\Http\Kernel;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\PassingDocumentScanner;
 
 require __DIR__.'/../../vendor/autoload.php';
 $app = require __DIR__.'/../../bootstrap/app.php';
@@ -53,6 +56,20 @@ while (! is_file($argv[2])) {
         exit(2);
     }
     usleep(10000);
+}
+if (isset($input['scan_document_id'])) {
+    app()->instance(PdfDocumentScanner::class, new class extends PassingDocumentScanner
+    {
+        public function scan(string $path): array
+        {
+            usleep(250000);
+
+            return parent::scan($path);
+        }
+    });
+    $result = app(RegistrationDocumentScanService::class)->scan($input['scan_document_id']);
+    echo 'result:'.json_encode(['status' => 200, 'scan_result' => $result])."\n";
+    exit(0);
 }
 $request = Request::create($input['url'], $input['method'], $input['payload'] ?? []);
 $response = $kernel->handle($request);

@@ -20,6 +20,10 @@ class SubmissionDeclarations
             }
         }
 
+        if ($category->photos_grouped) {
+            $parts[] = __('series.requirement', [], $locale);
+        }
+
         return implode(' · ', $parts);
     }
 
@@ -45,7 +49,7 @@ class SubmissionDeclarations
             'photos.*.location' => [$required, 'string', 'max:255'],
             'photos.*.taken_on' => [$required, 'date_format:Y-m-d'],
             'photos.*.story' => [$complete && $category->photo_story_required ? 'required' : 'nullable', 'string', 'max:4000'],
-            'photos.*.position' => [$category->photo_order_required ? 'required' : 'nullable', 'integer', 'min:1', 'max:20', 'distinct'],
+            'photos.*.position' => [$category->requiresPhotoOrder() ? 'required' : 'nullable', 'integer', 'min:1', 'max:20', 'distinct'],
         ];
     }
 
@@ -75,7 +79,7 @@ class SubmissionDeclarations
             $names['photos.*.'.$key] = __('declarations.'.$key);
         }
         $validated = Validator::make($payload, self::rules($category, $complete), [], $names)->validate();
-        if ($category->photo_order_required) {
+        if ($category->requiresPhotoOrder()) {
             $positions = array_column($validated['photos'], 'position');
             sort($positions, SORT_NUMERIC);
             if (array_map('intval', $positions) !== range(1, count($validated['photos']))) {

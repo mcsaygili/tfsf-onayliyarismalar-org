@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'publication_history' => 'Publication and correction history',
+    'publication_note' => 'Publication note',
+    'correction_note' => 'Correction note',
+
+    'archive_image_missing' => 'The safe image for participating work :code is missing or invalid. Restore it before publishing.',
+    'archive_partial' => 'Some images and additional details are unavailable in this announcement archive.',
+    'image_unavailable' => 'The archived image of this work is unavailable.',
+
     'federation' => 'Turkish Photographic Art Federation', 'site_name' => 'Competition Results', 'navigation' => 'Results site navigation', 'all_results' => 'All Results', 'main_site' => 'Main Site', 'footer' => 'The official archive of TFSF-approved competition results.',
     'meta_description' => 'Official results, awarded works, and statistics for TFSF-approved photography competitions.', 'meta_description_competition' => 'Official results, awarded works, and competition statistics for :competition.',
     'archive_kicker' => 'TFSF Results Archive', 'archive_title' => 'Competitions with published results', 'archive_intro' => 'Explore category results, awarded works, and key statistics for TFSF-approved competitions.', 'search' => 'Search competitions', 'search_placeholder' => 'Competition or organizing institution', 'search_action' => 'Search', 'approved_competition' => 'TFSF-Approved Competition',

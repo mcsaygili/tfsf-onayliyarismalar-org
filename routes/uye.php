@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CompetitionRegistrationController;
 use App\Http\Controllers\CompetitionSubmissionPhotoController;
+use App\Http\Controllers\Result\ResultPhotoController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Uye\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Uye\Auth\ConfirmablePasswordController;
@@ -77,6 +79,14 @@ Route::domain(config('domains.uye'))->middleware(['maintenance:uye', 'panel.sess
             Route::get('/', [CompetitionController::class, 'index'])->name('index');
             Route::get('katilimlarim', [CompetitionController::class, 'entries'])->name('entries');
             Route::get('{competition}', [CompetitionController::class, 'show'])->name('show');
+            Route::get('{competition}/on-kayit', [CompetitionRegistrationController::class, 'show'])->name('registration.show');
+            Route::post('{competition}/on-kayit', [CompetitionRegistrationController::class, 'register'])->middleware('throttle:10,1')->name('registration.store');
+            Route::post('on-kayit/{registration}/belge', [CompetitionRegistrationController::class, 'upload'])->middleware('throttle:10,1')->name('registration.upload');
+            Route::post('on-kayit/{registration}/gonder', [CompetitionRegistrationController::class, 'submit'])->middleware('throttle:10,1')->name('registration.submit');
+            Route::get('on-kayit-belgeleri/{document}', [CompetitionRegistrationController::class, 'download'])->middleware('throttle:30,1')->name('registration.documents.show');
+            Route::delete('on-kayit-belgeleri/{document}', [CompetitionRegistrationController::class, 'remove'])->middleware('throttle:10,1')->name('registration.documents.destroy');
+            Route::get('{competition}/sonucum', [CompetitionController::class, 'myResults'])->name('results.mine');
+            Route::get('{competition}/yayinlar/{publication}/fotograflar/{photoId}', ResultPhotoController::class)->middleware('throttle:120,1')->name('result-photos.show');
             Route::post('{competition}/katil', [CompetitionController::class, 'start'])->middleware('throttle:10,1')->name('start');
             Route::get('katilim/{entry}', [CompetitionController::class, 'entry'])->name('entry.show');
             Route::post('katilim/{entry}/kategori', [CompetitionController::class, 'addCategory'])->middleware('throttle:30,1')->name('entry.categories.store');

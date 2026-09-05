@@ -3,6 +3,7 @@ export default function registerJuryTags(Alpine) {
         tags: config.tags,
         selected: config.selected,
         photoIds: config.photoIds,
+        photoGroups: config.photoGroups || [],
         name: '',
         color: '#6576ff',
         busy: false,
@@ -21,7 +22,8 @@ export default function registerJuryTags(Alpine) {
         destroy() { window.removeEventListener('beforeunload', this.unloadHandler); },
         has(tag, photoId) { return tag.photo_ids.includes(photoId); },
         visible(photoId) {
-            return !this.selected || this.tags.some((tag) => tag.id === this.selected && this.has(tag, photoId));
+            const group = this.photoGroups.find((ids) => ids.includes(photoId)) || [photoId];
+            return !this.selected || this.tags.some((tag) => tag.id === this.selected && group.some((id) => this.has(tag, id)));
         },
         get visibleCount() { return this.photoIds.filter((id) => this.visible(id)).length; },
         filter(id) {

@@ -9,11 +9,13 @@ use App\Models\CompetitionCategory;
 use App\Models\MemberGroup;
 use App\Models\ParticipantGender;
 use App\Models\ProcessingMethod;
+use App\Services\CompetitionMutationLock;
 use App\Support\Photo\CategoryPhotoRules;
 use App\Support\Photo\SubmissionDeclarations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /** Adım 6 — Kategori bazlı katılımcı ve fotoğraf uygunluk kuralları. */
 class Step6 implements CompetitionStep
@@ -48,6 +50,7 @@ class Step6 implements CompetitionStep
             'photo_story_required' => $category->photo_story_required,
             'category_story_required' => $category->category_story_required,
             'photo_order_required' => $category->photo_order_required,
+            'photos_grouped' => $category->photos_grouped,
             'max_photos_per_participant' => $category->max_photos_per_participant,
             'tr' => ['name' => $category->getTranslation('tr', false)?->name],
             'en' => ['name' => $category->getTranslation('en', false)?->name],
@@ -66,12 +69,28 @@ class Step6 implements CompetitionStep
             return;
         }
 
+        DB::transaction(function () use ($competition, $validated): void {
+            $competition = CompetitionMutationLock::acquire($competition->id);
+            $this->persistCategories($competition, $validated);
+        });
+        $competition->unsetRelation('categories');
+    }
+
+    private function persistCategories(Competition $competition, array $validated): void
+    {
         $keptIds = [];
         foreach ($validated['categories'] as $index => $payload) {
             $category = isset($payload['id'])
                 ? $competition->categories()->whereKey($payload['id'])->firstOrFail()
                 : new CompetitionCategory(['competition_id' => $competition->id]);
 
+            if (array_key_exists('photos_grouped', $payload)) {
+                $grouped = (bool) $payload['photos_grouped'];
+                if ($category->exists && $grouped !== (bool) $category->photos_grouped && $category->submissions()->exists()) {
+                    throw ValidationException::withMessages(['categories' => __('series.mode_locked')]);
+                }
+                $category->photos_grouped = $grouped;
+            }
             $category->fill([
                 'sort_order' => ($index + 1) * 10,
                 'max_photos_per_participant' => $payload['max_photos_per_participant'] ?? 4,
@@ -131,6 +150,7 @@ class Step6 implements CompetitionStep
             'categories.*.photo_story_required' => ['sometimes', 'boolean'],
             'categories.*.category_story_required' => ['sometimes', 'boolean'],
             'categories.*.photo_order_required' => ['sometimes', 'boolean'],
+            'categories.*.photos_grouped' => ['sometimes', 'boolean'],
             'categories.*.id' => ['nullable', 'uuid', $categoryId],
             'categories.*.max_photos_per_participant' => ['sometimes', 'integer', 'min:1', 'max:20'],
             'categories.*.tr.name' => [$required, 'string', 'max:255', 'distinct:ignore_case'],

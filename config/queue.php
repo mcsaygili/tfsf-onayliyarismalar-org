@@ -30,6 +30,14 @@ return [
     */
 
     'connections' => [
+        'document_scans' => [
+            'driver' => 'database',
+            'connection' => env('DB_QUEUE_CONNECTION'),
+            'table' => 'jobs',
+            'queue' => 'document-scans',
+            'retry_after' => 240,
+            'after_commit' => true,
+        ],
 
         'sync' => [
             'driver' => 'sync',

@@ -30,6 +30,11 @@
             @endif
         </div>
 
+        @can('institution.secretariats.manage')<p><a href="{{ route('eys.competitions.secretariat', $competition) }}">{{ __('secretariat.assignment') }}</a></p>@endcan
+        @can('manageRegistrationExceptions', $competition)
+            <p><a href="{{ route('eys.competitions.registration-permissions', $competition) }}">{{ __('registration.exception_permissions') }}</a></p>
+        @endcan
+
         @if($competition->status === \App\Enums\CompetitionStatus::Approved)
             <section class="ip-card">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
@@ -262,8 +267,8 @@
         <div class="ip-card">
             <div class="ip-toolbar"><div><div class="ip-toolbar-title">{{ __('eys.competitions.results_title') }}</div><div class="ip-toolbar-hint">{{ __('eys.competitions.results_hint') }}</div></div><div style="display:flex;gap:.5rem;"><a class="ia-btn ia-btn-secondary" href="{{ route('eys.competitions.reports.entries', $competition) }}">Katılım CSV</a>@if($evaluationRound)<a class="ia-btn ia-btn-secondary" href="{{ route('eys.competitions.reports.results', $competition) }}">Sonuç CSV</a>@endif</div></div>
             @if($evaluationRound)
-                @unless($competition->results_published_at || $resultFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __('result_selection.recalculate') }}</div>@endunless
-                @if(!$competition->results_published_at && $competition->categories->flatMap->awards->sum('quantity') > 0 && !$awardFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __('result_selection.review_awards') }}</div>@endif
+                @unless($competition->results_published_at || $resultFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __($evaluationRound->results_state_hash ? 'result_selection.recalculate' : 'result_selection.prepare') }}</div>@endunless
+                @if(!$competition->results_published_at && $competition->categories->flatMap->awards->sum('quantity') > 0 && !$awardFreshness->get($evaluationRound->id))<div class="ip-alert ip-alert-warning" role="status">{{ __($evaluationRound->awards_context_hash ? 'result_selection.review_awards' : 'result_selection.assign') }}</div>@endif
                 <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin:1rem 0;"><span>{{ __('eys.competitions.active_result_round') }}: <strong>{{ $evaluationRound->round_number }} · {{ $evaluationRound->name }}</strong></span><span>{{ __('eys.competitions.completed_jury_evaluations') }}: <strong>{{ $individualRound?->evaluationSubmissions->count() ?? 0 }}</strong></span><span>{{ __('eys.competitions.calculated_results') }}: <strong>{{ $evaluationRound->results->count() }}</strong></span></div>
 
                 @if(!$finalRound && $individualRound?->results->isNotEmpty() && !$competition->results_published_at)
@@ -272,9 +277,12 @@
                         <div class="ip-section-title" style="font-size:1rem;">{{ __('eys.competitions.create_final_round') }}</div>
                         <div class="ip-section-hint">{{ __('eys.competitions.create_final_round_hint') }}</div>
                         @if($resultAwardAssignments->isNotEmpty())<p class="ip-section-hint">{{ __('result_selection.final_resets_awards') }}</p>@endif
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.55rem;margin-top:.85rem;">
+                        <div class="ip-finalist-grid">
                             @foreach($individualRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
-                                <label style="display:flex;gap:.55rem;align-items:center;padding:.65rem;border:1px solid var(--ia-surface-border);border-radius:.55rem;"><input type="checkbox" name="photo_result_ids[]" value="{{ $result->id }}" @checked(in_array($result->id, (array) old('photo_result_ids', []), true))><span><strong style="color:var(--ia-cream);">#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><small style="display:block;color:var(--ia-muted-dim);">{{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</small></span></label>
+                                <div class="ip-finalist-work">
+                                    <x-eys.work-preview :photo="$result->photo" :competition="$competition" />
+                                    <label class="ip-finalist-choice"><input type="checkbox" name="photo_result_ids[]" value="{{ $result->id }}" @checked(in_array($result->id, (array) old('photo_result_ids', []), true))><span><strong>{{ __('result_selection.work') }} {{ $result->photo->workCode() }}</strong><span>#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</span><small>{{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</small></span></label>
+                                </div>
                             @endforeach
                         </div>
                         @error('photo_result_ids')<small style="color:#e0857a;">{{ $message }}</small>@enderror
@@ -311,7 +319,7 @@
                         <div class="ip-section-hint">{{ __('eys.competitions.committee_evaluation_hint') }}</div>
                         <div class="ip-table-wrap" style="margin-top:.85rem;"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.committee_decision') }}</th><th>{{ __('eys.competitions.committee_score') }}</th><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.committee_note') }}</th></tr></thead><tbody>
                             @foreach($finalRound->committeeDecisions as $decision)
-                                <tr><td>{{ $decision->photo->submission->category->name }}</td><td><select class="ia-input" name="decisions[{{ $decision->id }}][decision]">@foreach(['finalist','selected','not_selected'] as $status)<option value="{{ $status }}" @selected(old('decisions.'.$decision->id.'.decision', $decision->decision->value) === $status)>{{ __('eys.competitions.committee_decisions.'.$status) }}</option>@endforeach</select></td><td><input class="ia-input" type="number" min="3" max="9" name="decisions[{{ $decision->id }}][score]" value="{{ old('decisions.'.$decision->id.'.score', $decision->score) }}"></td><td><input class="ia-input" type="number" min="1" name="decisions[{{ $decision->id }}][rank]" value="{{ old('decisions.'.$decision->id.'.rank', $decision->rank) }}">@error('decisions.'.$decision->id.'.rank')<small style="color:#e0857a;">{{ $message }}</small>@enderror</td><td><input class="ia-input" type="text" maxlength="2000" name="decisions[{{ $decision->id }}][note]" value="{{ old('decisions.'.$decision->id.'.note', $decision->note) }}"></td></tr>
+                                <tr><td><x-eys.work-preview :photo="$decision->photo" :competition="$competition" />{{ $decision->photo->submission->category->name }}</td><td><select class="ia-input" name="decisions[{{ $decision->id }}][decision]">@foreach(['finalist','selected','not_selected'] as $status)<option value="{{ $status }}" @selected(old('decisions.'.$decision->id.'.decision', $decision->decision->value) === $status)>{{ __('eys.competitions.committee_decisions.'.$status) }}</option>@endforeach</select></td><td><input class="ia-input" type="number" min="3" max="9" name="decisions[{{ $decision->id }}][score]" value="{{ old('decisions.'.$decision->id.'.score', $decision->score) }}"></td><td><input class="ia-input" type="number" min="1" name="decisions[{{ $decision->id }}][rank]" value="{{ old('decisions.'.$decision->id.'.rank', $decision->rank) }}">@error('decisions.'.$decision->id.'.rank')<small style="color:#e0857a;">{{ $message }}</small>@enderror</td><td><input class="ia-input" type="text" maxlength="2000" name="decisions[{{ $decision->id }}][note]" value="{{ old('decisions.'.$decision->id.'.note', $decision->note) }}"></td></tr>
                             @endforeach
                         </tbody></table></div>
                         <div style="display:flex;justify-content:flex-end;margin-top:.85rem;">@if($jurySession?->status === 'open')<button class="ia-btn">{{ __('eys.competitions.save_committee_evaluation') }}</button>@endif</div>
@@ -321,7 +329,7 @@
                 @if($evaluationRound->results->isNotEmpty())
                     <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>{{ __('eys.competitions.result_rank') }}</th><th>{{ __('eys.competitions.result_category') }}</th><th>{{ __('eys.competitions.result_total') }}</th><th>{{ __('eys.competitions.result_average') }}</th><th>{{ __('eys.competitions.result_score_count') }}</th><th>{{ __('eys.competitions.result_awards') }}</th></tr></thead><tbody>
                     @foreach($evaluationRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)
-                        <tr><td>{{ $result->rank }}</td><td>{{ $result->photo->submission->category->name }}</td><td>{{ $result->total_score }}</td><td>{{ $result->average_score }}</td><td>{{ $result->score_count }}</td><td>@forelse($result->awards as $assignment)<span class="ip-badge is-approved">{{ $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text }}</span>@empty—@endforelse</td></tr>
+                        <tr><td>{{ $result->rank }}</td><td><x-eys.work-preview :photo="$result->photo" :competition="$competition" />{{ $result->photo->submission->category->name }}</td><td>{{ $result->total_score }}</td><td>{{ $result->average_score }}</td><td>{{ $result->score_count }}</td><td>@forelse($result->awards as $assignment)<span class="ip-badge is-approved">{{ $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text }}</span>@empty—@endforelse</td></tr>
                     @endforeach
                     </tbody></table></div>
 
@@ -333,10 +341,13 @@
                             <div style="display:grid;gap:1rem;margin-top:1rem;">
                                 @foreach($competition->categories as $category)
                                     @if($category->awards->isNotEmpty())
-                                        @php $categoryResults = $evaluationRound->results->filter(fn ($result) => $result->photo->submission->competition_category_id === $category->id)->sortBy('rank'); @endphp
+                                        @php
+                                            $categoryResults = $evaluationRound->results->filter(fn ($result) => $result->photo->submission->competition_category_id === $category->id)->sortBy('rank');
+                                            $previewOptions = $categoryResults->mapWithKeys(fn ($result) => [$result->id => ['code' => $result->photo->workCode(), 'url' => $result->photo->jury_sanitized_at && $result->photo->jury_path && !$result->photo->withdrawn_at && $result->photo->submission->status->value === 'approved' ? route('eys.competitions.results.photos.show', [$competition, $result->photo]) : null]]);
+                                        @endphp
                                         <section style="padding:1rem;border:1px solid var(--ia-surface-border);border-radius:.75rem;">
                                             <strong style="color:var(--ia-cream);">{{ $category->name }}</strong>
-                                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.85rem;margin-top:.85rem;">
+                                            <div class="ip-award-grid">
                                                 @foreach($category->awards as $categoryAward)
                                                     @for($slot = 1; $slot <= $categoryAward->quantity; $slot++)
                                                         @php
@@ -344,16 +355,32 @@
                                                             $selectedResultId = old('award_assignments.'.$categoryAward->id.'.'.$slot, $resultAwardAssignments->get($assignmentKey)?->competition_photo_result_id);
                                                             $awardName = $categoryAward->awardReference?->name ?: $categoryAward->special_award_text;
                                                         @endphp
+                                                        <div class="ip-award-choice" x-data="{ selected: @js(is_string($selectedResultId) ? $selectedResultId : ''), works: @js($previewOptions), failed: false }" x-effect="selected; failed = false">
                                                         <label class="ia-field" style="margin:0;">
                                                             <span>{{ $awardName }} @if($categoryAward->quantity > 1)<small>({{ $slot }}/{{ $categoryAward->quantity }})</small>@endif</span>
-                                                            <select class="ia-input" name="award_assignments[{{ $categoryAward->id }}][{{ $slot }}]" @disabled($competition->results_published_at)>
+                                                            <select class="ia-input" x-model="selected" name="award_assignments[{{ $categoryAward->id }}][{{ $slot }}]" @disabled($competition->results_published_at)>
                                                                 <option value="">{{ __('eys.competitions.result_award_unassigned') }}</option>
                                                                 @foreach($categoryResults as $result)
-                                                                    <option value="{{ $result->id }}" @selected($selectedResultId === $result->id)>#{{ $result->rank }} · {{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</option>
+                                                                    <option value="{{ $result->id }}" @selected($selectedResultId === $result->id)>{{ $result->photo->workCode() }}@if($result->photo->submission->category->photos_grouped) · {{ $result->photo->submission->seriesCode() }}@endif · #{{ $result->rank }} · {{ __('eys.competitions.result_score_option', ['score' => $result->average_score]) }}</option>
                                                                 @endforeach
                                                             </select>
                                                             @error('award_assignments.'.$categoryAward->id.'.'.$slot)<small style="color:#e0857a;">{{ $message }}</small>@enderror
                                                         </label>
+                                                        <template x-if="works[selected]">
+                                                            <div class="ip-work-preview">
+                                                                <strong class="ip-work-code" x-text="@js(__('result_selection.work')).concat(' ', works[selected].code)"></strong>
+                                                                <template x-if="works[selected].url && !failed">
+                                                                    <a class="ip-work-image" :href="works[selected].url" target="_blank" rel="noopener">
+                                                                        <img :src="works[selected].url" :alt="@js(__('result_selection.work')).concat(' ', works[selected].code)" loading="lazy" decoding="async" x-on:error="failed = true">
+                                                                        <span>{{ __('result_selection.preview') }}</span>
+                                                                    </a>
+                                                                </template>
+                                                                <span class="ip-work-unavailable" x-show="!works[selected].url || failed">{{ __('result_selection.unavailable') }}</span>
+                                                            </div>
+                                                        </template>
+                                                        <p class="ip-section-hint" x-show="!works[selected]">{{ __('result_selection.choose') }}</p>
+                                                        <noscript><p class="ip-section-hint">{{ __('result_selection.work') }}: {{ $categoryResults->firstWhere('id', $selectedResultId)?->photo->workCode() ?? '—' }}</p></noscript>
+                                                        </div>
                                                     @endfor
                                                 @endforeach
                                             </div>
@@ -382,7 +409,7 @@
             <div class="ip-card">
                 <div class="ip-section-title">Sonuç yayın geçmişi</div><div class="ip-section-hint">Her yayın ayrı ve değişmez bir sonuç snapshot’ı olarak saklanır.</div>
                 <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>Versiyon</th><th>Yayın</th><th>Yayımlayan</th><th>Yayın notu</th><th>Düzeltme</th></tr></thead><tbody>
-                    @foreach($competition->resultPublications as $publication)<tr><td class="ip-cell-name">v{{ $publication->version }}</td><td>{{ $publication->published_at->format('d.m.Y H:i') }}@if($publication->withdrawn_at)<small style="display:block;color:var(--ia-muted-dim);">{{ $publication->withdrawn_at->format('d.m.Y H:i') }} tarihinde geri çekildi</small>@endif</td><td>{{ trim(($publication->publisher?->first_name ?? '').' '.($publication->publisher?->last_name ?? '')) ?: '—' }}</td><td>{{ $publication->publication_note ?: '—' }}</td><td>{{ $publication->correction_note ?: '—' }}</td></tr>@endforeach
+                    @foreach($competition->resultPublications as $publication)<tr><td class="ip-cell-name"><a href="{{ route('eys.competitions.preview-results', [$competition, 'version' => $publication->version]) }}">v{{ $publication->version }}</a></td><td>{{ $publication->published_at->format('d.m.Y H:i') }}@if($publication->withdrawn_at)<small style="display:block;color:var(--ia-muted-dim);">{{ $publication->withdrawn_at->format('d.m.Y H:i') }} tarihinde geri çekildi</small>@endif</td><td>{{ trim(($publication->publisher?->first_name ?? '').' '.($publication->publisher?->last_name ?? '')) ?: '—' }}</td><td>{{ $publication->publication_note ?: '—' }}</td><td>{{ $publication->correction_note ?: '—' }}</td></tr>@endforeach
                 </tbody></table></div>
             </div>
         @endif

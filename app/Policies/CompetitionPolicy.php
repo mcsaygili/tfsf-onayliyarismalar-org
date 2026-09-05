@@ -13,9 +13,27 @@ use Spatie\Permission\PermissionRegistrar;
 
 class CompetitionPolicy
 {
+    public function manageRegistrationExceptions(EysUser $user, Competition $competition): bool
+    {
+        if (! $user->status) {
+            return false;
+        }
+        $permissions = app(PermissionRegistrar::class);
+        $previousTeam = $permissions->getPermissionsTeamId();
+        $permissions->setPermissionsTeamId(Module::Institution->value);
+        try {
+            $user = $user->fresh();
+
+            return $user->checkPermissionTo('institution.competitions.manage', 'eys')
+                && $user->checkPermissionTo('institution.registration_exceptions.manage', 'eys');
+        } finally {
+            $permissions->setPermissionsTeamId($previousTeam);
+        }
+    }
+
     public function update(InstitutionStaff $staff, Competition $competition): Response
     {
-        return $staff->institution_id === $competition->institution_id
+        return ! $staff->isSecretariat() && $staff->institution_id === $competition->institution_id
             ? Response::allow()
             : Response::denyAsNotFound();
     }

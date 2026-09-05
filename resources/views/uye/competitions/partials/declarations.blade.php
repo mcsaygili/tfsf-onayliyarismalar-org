@@ -10,9 +10,9 @@
     <h3>{{ __('declarations.heading') }}</h3>
     @if($canModifyPhotos)<p>{{ __('declarations.hint') }}</p>@endif
     <p>{{ __('declarations.date_hint') }}</p>
-    @if($submission->category->photo_story_required || $submission->category->category_story_required)<p>{{ __('declarations.privacy_hint') }}</p>@endif
+    @if($submission->category->photos_grouped || $submission->category->photo_story_required || $submission->category->category_story_required)<p>{{ __('declarations.privacy_hint') }}</p>@endif
     <fieldset @disabled(!$canModifyPhotos)>
-        @if($submission->category->category_story_required || filled($submission->category_story))
+        @if($submission->category->photos_grouped || $submission->category->category_story_required || filled($submission->category_story))
             <label for="category-story-{{ $submission->id }}">{{ __('declarations.category_story') }} · {{ $submission->category->category_story_required ? __('declarations.required') : __('declarations.optional') }}</label>
             <textarea class="ia-input" id="category-story-{{ $submission->id }}" name="category_story" rows="4" maxlength="4000">{{ $useOldDetails ? old('category_story', $submission->category_story) : $submission->category_story }}</textarea>
         @endif
@@ -27,7 +27,7 @@
                             <input class="ia-input" id="declaration-{{ $photo->id }}-{{ $field }}" type="{{ $type }}" name="photos[{{ $index }}][{{ $field }}]" value="{{ $declaration[$field] ?? '' }}" @if($type === 'text') maxlength="255" @endif>
                         </label>
                     @endforeach
-                    @if($submission->category->photo_order_required)
+                    @if($submission->category->requiresPhotoOrder())
                         <label for="declaration-{{ $photo->id }}-position">{{ __('declarations.position') }}
                             <input class="ia-input" id="declaration-{{ $photo->id }}-position" type="number" min="1" max="{{ $activePhotos->count() }}" step="1" name="photos[{{ $index }}][position]" value="{{ $declaration['position'] ?? $index + 1 }}">
                         </label>

@@ -19,6 +19,7 @@ class SubmissionApprovalService
         DB::transaction(function () use ($competitionId, $approval, $actor, $approved, $note) {
             $competition = CompetitionMutationLock::acquire($competitionId);
             $approval = CompetitionSubmissionApproval::query()->whereKey($approval->id)->lockForUpdate()->firstOrFail();
+            \Illuminate\Support\Facades\Gate::forUser($actor->fresh())->authorize('decide', $approval);
             if ($approval->status !== SubmissionApprovalStatus::Pending) {
                 return;
             }

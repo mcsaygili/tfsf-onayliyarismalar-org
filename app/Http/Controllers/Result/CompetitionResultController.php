@@ -4,45 +4,31 @@ namespace App\Http\Controllers\Result;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Models\CompetitionResultPublication;
 use App\Services\CompetitionResultPresentationService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CompetitionResultController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, CompetitionResultPresentationService $presentation): View
     {
-        $search = trim((string) $request->input('q'));
-        $competitions = Competition::query()
-            ->publiclyVisible()
-            ->whereNotNull('results_published_at')
-            ->where('results_published_at', '<=', now())
-            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
-                $query->whereHas('translations', fn ($translations) => $translations->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('institution', fn ($institution) => $institution->where('name', 'like', "%{$search}%"));
-            }))
-            ->with(['translations', 'institution', 'competitionType.translations'])
-            ->withCount(['categories', 'entries as participant_count' => fn ($query) => $query->whereNotNull('submitted_at')])
-            ->orderByDesc('results_published_at')
-            ->paginate(18)
-            ->withQueryString();
+        $input = $request->validate(['q' => ['nullable', 'string', 'max:200']]);
+        $search = trim($input['q'] ?? '');
+        $publications = CompetitionResultPublication::query()->currentPublic()
+            ->when($search !== '', fn ($query) => $query->where('search_text', 'like', '%'.$search.'%'))
+            ->orderByDesc('published_at')->paginate(18)->withQueryString();
 
-        return view('result.competitions.index', compact('competitions', 'search'));
+        return view('result.competitions.index', compact('publications', 'search', 'presentation'));
     }
 
     public function show(Competition $competition, CompetitionResultPresentationService $presentation): View
     {
-        abort_unless(
-            $competition->newQuery()->whereKey($competition->getKey())->publiclyVisible()->exists()
-                && $competition->results_published_at?->lte(now()),
-            404,
-        );
+        $publication = CompetitionResultPublication::query()->currentPublic()->where('competition_id', $competition->id)->firstOrFail();
 
-        $competition->load('resultPublications.publisher');
-
-        return view('result.competitions.show', $presentation->forCompetition($competition) + [
+        return view('result.competitions.show', $presentation->forPublication($publication) + [
             'preview' => false,
-            'publicationHistory' => $competition->resultPublications,
+            'publicationHistory' => $competition->resultPublications()->where('published_at', '<=', now())->get(),
         ]);
     }
 }

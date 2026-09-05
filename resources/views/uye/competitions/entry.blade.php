@@ -4,6 +4,11 @@
 
     @if($errors->any())<div class="mp-callout is-error"><strong>{{ __('uye.competitions.errors.title') }}</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 
+    @if($archiveMode)
+        @include('uye.competitions.partials.published-scorecards', ['archive' => $memberArchive])
+        <details class="mp-application-details"><summary>{{ __('result_archive.application_details') }}</summary>
+    @endif
+
     @if($editable)
         <section class="mp-entry-step">
             <header><span>1</span><div><h2>{{ __('uye.competitions.select_category') }}</h2><p>{{ __('uye.competitions.select_category_hint') }}</p></div></header>
@@ -21,12 +26,13 @@
         @endphp
         <section class="mp-entry-step">
             <header><span>{{ $loop->iteration + 1 }}</span><div><h2>{{ $submission->category->name }}</h2><p>{{ trans_choice('uye.competitions.photo_usage', $activePhotos->count(), ['used' => $activePhotos->count(), 'max' => $submission->category->max_photos_per_participant]) }}</p></div><span class="mp-state is-{{ $submission->status->value }}">{{ __('uye.competitions.entry_status.'.$submission->status->value) }}</span></header>
+            @if($submission->category->photos_grouped)<p class="mp-callout"><strong>{{ __('series.identity', ['code' => $submission->seriesCode()]) }}</strong><br>{{ __('series.member_hint') }}</p>@endif
             <p class="mp-callout">{{ \App\Support\Photo\CategoryPhotoRules::summary($submission->category->photo_rules) }}</p>
             <div class="mp-selected-photos">
                 @foreach($activePhotos as $photo)
                     <article><img src="{{ route('competitions.photos.show', $photo) }}" alt=""><div><strong>{{ __('uye.competitions.work_number', ['number' => $loop->iteration]) }}</strong><span>{{ $photo->captureDevice?->name }}</span></div>
                         @if($canModifyPhotos)<form method="POST" action="{{ route('competitions.submission.photos.destroy', $photo) }}">@csrf @method('DELETE')<button type="submit">{{ $editable ? __('uye.common.delete_action') : __('uye.competitions.withdraw_photo') }}</button></form>@endif
-                        @foreach($scorecards[$photo->id] ?? [] as $scorecard)
+                        @foreach(($archiveMode ? [] : ($scorecards[$photo->id] ?? [])) as $scorecard)
                             <div class="mp-scorecard">
                                 <div><strong>{{ __('uye.competitions.scorecard_title', ['round' => $scorecard['round_number']]) }}</strong><span>{{ __('uye.competitions.scorecard_average', ['score' => number_format($scorecard['average'], 2, ',', '.')]) }}</span></div>
                                 <div class="mp-scorecard-values">@foreach($scorecard['scores'] as $score)<span>{{ $score['label'] }} <b>{{ $score['score'] }}</b></span>@endforeach</div>
@@ -78,4 +84,5 @@
     @else
         <div class="mp-callout is-warning"><strong>{{ __('uye.competitions.entry_closed') }}</strong><p>{{ __('uye.competitions.violations.applications_not_open') }}</p></div>
     @endif
+    @if($archiveMode)</details>@endif
 </x-uye.app-layout>

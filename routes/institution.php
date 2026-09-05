@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionRegistrationController;
 use App\Http\Controllers\CompetitionSubmissionPhotoController;
 use App\Http\Controllers\Institution\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Institution\Auth\EmailVerificationNotificationController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Institution\ParticipantSubmissionController;
 use App\Http\Controllers\Institution\PasswordController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StaffController;
+use App\Http\Controllers\RegistrationExceptionController;
 use App\Http\Controllers\SetLanguageController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,8 +51,20 @@ Route::domain(config('domains.institution'))->middleware(['maintenance:instituti
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('institution.logout');
     });
 
-    Route::middleware(['auth:institution', 'verified.guard:institution'])->group(function () {
+    Route::middleware(['auth:institution', 'verified.guard:institution', \App\Http\Middleware\RestrictSecretariatRoutes::class])->group(function () {
+        Route::prefix('on-kayitlar')->name('institution.registrations.')->group(function () {
+            Route::get('/', [CompetitionRegistrationController::class, 'index'])->name('index');
+            Route::get('dogrudan/{competition}', [RegistrationExceptionController::class, 'create'])->name('direct.create');
+            Route::post('dogrudan/{competition}/ara', [RegistrationExceptionController::class, 'lookup'])->middleware('throttle:10,1')->name('direct.lookup');
+            Route::post('dogrudan/{competition}', [RegistrationExceptionController::class, 'store'])->middleware('throttle:10,1')->name('direct.store');
+            Route::get('belgeler/{document}', [CompetitionRegistrationController::class, 'download'])->middleware('throttle:30,1')->name('documents.show');
+            Route::get('{registration}', [CompetitionRegistrationController::class, 'review'])->name('show');
+            Route::post('{registration}/karar', [CompetitionRegistrationController::class, 'decide'])->middleware('throttle:20,1')->name('decide');
+        });
+
         Route::get('/', [DashboardController::class, 'index'])->name('institution.dashboard');
+        Route::get('sekreterya/hesabim', [\App\Http\Controllers\SecretariatController::class, 'profile'])->name('institution.secretariat.profile');
+        Route::patch('sekreterya/hesabim', [\App\Http\Controllers\SecretariatController::class, 'updateProfile'])->name('institution.secretariat.profile.update');
 
         Route::get('kurum-bilgileri', [ProfileController::class, 'edit'])->name('institution.profile.edit');
         Route::patch('kurum-bilgileri', [ProfileController::class, 'update'])->name('institution.profile.update');

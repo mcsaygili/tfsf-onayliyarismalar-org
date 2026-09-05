@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'work' => 'Eser',
+    'preview' => 'Önizlemeyi aç (yeni sekme)',
+    'unavailable' => 'Güvenli önizleme kullanılamıyor.',
+    'choose' => 'Seçtiğiniz eserin önizlemesi burada görünür.',
+    'prepare' => 'Bu tur için henüz sonuç hesaplanmadı. Kararlar tamamlandığında puanları hesaplayın.',
+    'assign' => 'Bu turun ödül dağıtımını belirleyip kaydedin.',
+
     'final_resets_awards' => 'Final turuna geçildiğinde önceki turdaki ödül atamaları kaldırılır; geçmiş atamalar denetim kaydında korunur.',
     'stale' => 'Sonuçlar veya ödül dağıtımı başka bir işlemle değişti. Sayfayı yenileyip güncel listeyi inceleyin.',
     'recalculate' => 'Puanlar veya eserler değişti. Devam etmeden önce sonuçları yeniden hesaplayın.',

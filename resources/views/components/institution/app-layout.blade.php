@@ -1040,6 +1040,7 @@
                 <x-institution.icon name="dashboard" />
                 {{ __('institution.nav.dashboard') }}
             </a>
+            @unless($staff->isSecretariat())
             <div x-data="{ o: {{ request()->routeIs('institution.profile.*') || request()->routeIs('institution.password.edit') ? 'true' : 'false' }} }">
                 <button type="button" class="ip-nav-group-btn {{ request()->routeIs('institution.profile.*') || request()->routeIs('institution.password.edit') ? 'is-active' : '' }}" @click="o = !o" :aria-expanded="o.toString()">
                     <x-institution.icon name="institution" />
@@ -1063,6 +1064,11 @@
                 <x-institution.icon name="competitions" />
                 {{ __('institution.nav.competitions') }}
             </a>
+            @else
+                <a href="{{ route('institution.secretariat.profile') }}" class="ip-nav-item">{{ __('secretariat.profile') }}</a>
+                <a href="{{ route('institution.password.edit') }}" class="ip-nav-item">{{ __('institution.nav.password') }}</a>
+            @endunless
+            <a href="{{ route('institution.registrations.index') }}" class="ip-nav-item {{ request()->routeIs('institution.registrations.*') ? 'is-active' : '' }}">{{ __('registration.heading') }}</a>
             <a href="{{ route('institution.participant-submissions.index') }}" class="ip-nav-item {{ request()->routeIs('institution.participant-submissions.*') ? 'is-active' : '' }}">
                 <x-institution.icon name="staff" />
                 {{ __('institution.nav.participant_approvals') }}
@@ -1095,7 +1101,7 @@
                     <div class="ip-dropdown" x-show="open" x-cloak x-transition>
                         <div class="ip-dropdown-email">{{ $staff->email }}</div>
 
-                        <a href="{{ route('institution.staff.edit', $staff) }}" class="ip-dropdown-item">
+                        <a href="{{ $staff->isSecretariat() ? route('institution.secretariat.profile') : route('institution.staff.edit', $staff) }}" class="ip-dropdown-item">
                             <x-institution.icon name="account" />
                             {{ __('institution.nav.account') }}
                         </a>

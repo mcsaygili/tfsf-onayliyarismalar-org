@@ -288,6 +288,7 @@ return [
         'approval_status' => ['pending' => 'Bekliyor', 'approved' => 'Onaylandı', 'rejected' => 'Reddedildi'],
         'messages' => ['category_added' => 'Kategori katılıma eklendi.', 'photo_added' => 'Fotoğraf yarışma başvurusuna eklendi.', 'photo_removed' => 'Fotoğraf başvurudan kaldırıldı veya geri çekildi.', 'submitted' => 'Başvurunuz kesin olarak gönderildi.'],
         'violations' => [
+            'registration_required' => 'Fotoğraf göndermeden önce yarışma ön kaydınız onaylanmalıdır.',
             'applications_not_open' => 'Yarışmanın başvuru dönemi açık değil.', 'account_inactive' => 'Üye hesabınız aktif değil.', 'member_restricted' => 'Üyeliğiniz için aktif bir yarışma katılım kısıtı bulunuyor.', 'email_not_verified' => 'E-posta adresiniz doğrulanmalı.',
             'profile_birth_date_missing' => 'Doğum tarihinizi profilinize ekleyin.', 'profile_gender_missing' => 'Cinsiyet bilginizi profilinize ekleyin.', 'national_identity_required' => 'Ulusal yarışmalar için geçerli bir T.C. kimlik numarası gereklidir.',
             'gender_not_eligible' => 'Cinsiyet bilgisi kategori koşullarına uymuyor.', 'age_not_eligible' => 'Yaşınız kategori koşullarına uymuyor.', 'birth_date_required' => 'Yaş kontrolü için doğum tarihi gereklidir.',

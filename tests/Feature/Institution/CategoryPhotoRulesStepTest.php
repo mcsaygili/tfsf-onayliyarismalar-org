@@ -105,4 +105,22 @@ class CategoryPhotoRulesStepTest extends TestCase
         $payload['photo_story_required'] = 'false-but-truthy';
         $this->put($url, ['categories' => [$payload], 'action' => 'draft'])->assertSessionHasErrors('categories.0.photo_story_required');
     }
+
+    public function test_series_setting_round_trips_preserves_older_forms_and_is_in_regulation(): void
+    {
+        [$competition, $url] = $this->context();
+        $payload = ['tr' => ['name' => 'Series'], 'photos_grouped' => true];
+        $this->put($url, ['categories' => [$payload], 'action' => 'draft'])->assertSessionHasNoErrors();
+        $category = $competition->categories()->sole();
+        $this->assertTrue($category->photos_grouped);
+        $this->assertTrue((new Step6)->data($competition)['categories'][0]['photos_grouped']);
+        $this->put($url, ['categories' => [['id' => $category->id, 'tr' => ['name' => 'Series']]], 'action' => 'draft'])->assertSessionHasNoErrors();
+        $this->assertTrue($category->fresh()->photos_grouped);
+        $context = app(CompetitionRegulationContextBuilder::class)->build($competition->fresh(), 'en');
+        $this->assertTrue($context['categories'][0]['photos_grouped']);
+        $this->assertStringContainsString('ordered photo series', $context['categories'][0]['declarations']);
+        $this->put($url, ['categories' => [['id' => $category->id, 'photos_grouped' => false]], 'action' => 'draft'])->assertSessionHasNoErrors();
+        $this->assertFalse($category->fresh()->photos_grouped);
+        $this->put($url, ['categories' => [['id' => $category->id, 'photos_grouped' => 'not-a-boolean']], 'action' => 'draft'])->assertSessionHasErrors('categories.0.photos_grouped');
+    }
 }

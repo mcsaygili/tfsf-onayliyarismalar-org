@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['competition_id', 'sort_order', 'max_photos_per_participant', 'photo_rules', 'photo_story_required', 'category_story_required', 'photo_order_required', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
+#[Fillable(['competition_id', 'sort_order', 'max_photos_per_participant', 'photo_rules', 'photos_grouped', 'photo_story_required', 'category_story_required', 'photo_order_required', 'age_eligibility_rule_id', 'member_group_match_mode', 'birth_date_restricted', 'birth_date_from', 'birth_date_to'])]
 class CompetitionCategory extends Model
 {
     use HasTranslations, HasUuids, SoftDeletes;
@@ -20,7 +20,12 @@ class CompetitionCategory extends Model
 
     protected function casts(): array
     {
-        return ['photo_story_required' => 'boolean', 'category_story_required' => 'boolean', 'photo_order_required' => 'boolean', 'photo_rules' => 'array', 'sort_order' => 'integer', 'max_photos_per_participant' => 'integer', 'birth_date_restricted' => 'boolean', 'birth_date_from' => 'date:Y-m-d', 'birth_date_to' => 'date:Y-m-d'];
+        return ['photos_grouped' => 'boolean', 'photo_story_required' => 'boolean', 'category_story_required' => 'boolean', 'photo_order_required' => 'boolean', 'photo_rules' => 'array', 'sort_order' => 'integer', 'max_photos_per_participant' => 'integer', 'birth_date_restricted' => 'boolean', 'birth_date_from' => 'date:Y-m-d', 'birth_date_to' => 'date:Y-m-d'];
+    }
+
+    public function requiresPhotoOrder(): bool
+    {
+        return $this->photos_grouped || $this->photo_order_required;
     }
 
     public function competition(): BelongsTo

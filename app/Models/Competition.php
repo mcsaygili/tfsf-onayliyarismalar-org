@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'institution_id', 'institution_staff_id', 'audience', 'infrastructure_provider',
     'external_provider_name', 'external_entry_url', 'external_responsibility_accepted_at',
+    'registration_required', 'registration_document_min', 'registration_reviewer',
     'competition_type_id', 'country_id', 'city_id', 'participant_approval_process_id', 'partners',
     'application_starts_at', 'application_ends_at', 'competition_ends_at',
     'evaluation_starts_at', 'evaluation_ends_at',
@@ -40,6 +41,9 @@ class Competition extends Model
     protected function casts(): array
     {
         return [
+            'registration_required' => 'boolean',
+            'registration_document_min' => 'integer',
+            'registration_sequence' => 'integer',
             'audience' => CompetitionAudience::class,
             'infrastructure_provider' => CompetitionInfrastructureProvider::class,
             'application_starts_at' => 'datetime',
@@ -48,6 +52,7 @@ class Competition extends Model
             'evaluation_starts_at' => 'datetime',
             'evaluation_ends_at' => 'datetime',
             'results_published_at' => 'datetime',
+            'secretariat_version' => 'integer',
             'results_publication_version' => 'integer',
             'external_responsibility_accepted_at' => 'datetime',
             'status' => CompetitionStatus::class,

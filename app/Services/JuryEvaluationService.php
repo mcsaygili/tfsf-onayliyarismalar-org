@@ -58,7 +58,7 @@ class JuryEvaluationService
     private function data(CompetitionCategoryJurorAssignment $assignment, CompetitionEvaluationRound $round, Competition $competition): array
     {
         $submissions = $assignment->category->submissions()->where('status', CompetitionSubmissionStatus::Approved)
-            ->orderBy('id')->with(['photos' => fn ($query) => $query->whereNull('withdrawn_at')->orderBy('id')])->get();
+            ->orderBy($assignment->category->photos_grouped ? 'series_code' : 'id')->with(['photos' => fn ($query) => $query->whereNull('withdrawn_at')->orderBy('id')])->get();
         $photos = $submissions->flatMap(fn ($submission) => $submission->photos->each(fn ($photo) => $photo->setRelation('submission', $submission)))->values();
         $scores = JuryScore::where('competition_evaluation_round_id', $round->id)->where('juror_assignment_id', $assignment->id)
             ->get()->keyBy(fn ($score) => $score->submission_photo_id.':'.$score->criterion_assignment_id);
@@ -67,14 +67,15 @@ class JuryEvaluationService
             'round' => [$round->id, $round->status->value, $round->method->value, $round->is_final],
             'competition' => $competition->only(['status', 'application_ends_at', 'evaluation_starts_at', 'evaluation_ends_at', 'competition_ends_at', 'results_published_at']),
             'criteria' => $assignment->category->evaluationCriteria->sortBy('id')->map->only(['id', 'evaluation_criterion_id', 'min_score', 'max_score', 'weight'])->values()->all(),
-            'category' => $assignment->category->only(['photo_story_required', 'category_story_required', 'photo_order_required', 'photo_rules']),
-            'submissions' => $submissions->map->only(['id', 'details_version', 'category_story'])->all(),
+            'category' => $assignment->category->only(['photo_story_required', 'category_story_required', 'photo_order_required', 'photos_grouped', 'photo_rules']),
+            'submissions' => $submissions->map->only(['id', 'details_version', 'category_story', 'series_code'])->all(),
             'photos' => $photos->map->only(['id', 'sha256', 'sort_order', 'declaration'])->all(),
         ];
 
         return ['assignment' => $assignment, 'round' => $round, 'competition' => $competition,
             'phase' => app(CompetitionPhaseService::class)->phase($competition),
             'photos' => $photos, 'scores' => $scores,
+            'photoGroups' => $assignment->category->photos_grouped ? $submissions->map(fn ($submission) => $submission->photos->pluck('id')->all())->values()->all() : [],
             'evaluationLocked' => $round->status !== EvaluationRoundStatus::Open || $round->method !== EvaluationRoundMethod::Individual || $round->is_final
                 || $competition->evaluationRounds()->where(fn ($query) => $query->where('is_final', true)->orWhere('round_number', '>', 1))->exists(),
             'evaluationContext' => hash_hmac('sha256', json_encode($state, JSON_THROW_ON_ERROR), config('app.key')),

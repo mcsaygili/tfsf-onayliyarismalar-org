@@ -3,39 +3,66 @@
 namespace App\Services;
 
 use App\Models\Competition;
-use App\Models\CompetitionEvaluationRound;
+use App\Models\CompetitionResultPublication;
 
 class CompetitionResultPresentationService
 {
-    /** @return array<string, mixed> */
+    public function translated(mixed $value): string
+    {
+        if (! is_array($value)) {
+            return (string) ($value ?? '');
+        }
+
+        return (string) ($value[app()->getLocale()] ?? $value[config('app.fallback_locale')] ?? $value['tr'] ?? reset($value) ?: '');
+    }
+
     public function forCompetition(Competition $competition): array
     {
-        $competition->load([
-            'translations', 'institution', 'competitionType.translations', 'categories.translations',
-            'evaluationRounds.results.photo.submission.category.translations',
-            'evaluationRounds.results.photo.submission.entry.user',
-            'evaluationRounds.results.awards.categoryAward.translations',
-            'evaluationRounds.results.awards.categoryAward.awardReference.translations',
-        ]);
-        /** @var CompetitionEvaluationRound|null $round */
-        $round = $competition->evaluationRounds->firstWhere('is_final', true)
-            ?? $competition->evaluationRounds->sortByDesc('round_number')->first();
-        abort_unless($round, 404);
-        $results = $round->results->filter(fn ($result) => ! $result->photo->withdrawn_at);
-        $awardedResults = $results->filter(fn ($result) => $result->awards->isNotEmpty());
-        $participants = $awardedResults->map(fn ($result) => $result->photo->submission->entry->user)->unique('id')->values();
+        $round = $competition->evaluationRounds()->where('is_final', true)->first() ?? $competition->evaluationRounds()->orderByDesc('round_number')->firstOrFail();
+
+        return $this->present($competition, app(ResultSnapshotBuilder::class)->build($competition, $round), null, true);
+    }
+
+    public function forPublication(CompetitionResultPublication $publication, bool $preview = false): array
+    {
+        return $this->present($publication->competition, $publication->snapshot, $publication, $preview);
+    }
+
+    private function present(Competition $competition, array $snapshot, ?CompetitionResultPublication $publication, bool $preview): array
+    {
+        $allResults = collect($snapshot['results'] ?? []);
+        $assets = $publication?->assets->keyBy('source_photo_id') ?? collect();
+        $categories = collect($snapshot['categories'] ?? $allResults->map(fn ($row) => ['id' => $row['category_id'], 'name' => $row['category']])->unique('id')->values()->all());
+        $results = $allResults->filter(fn ($row) => ! empty($row['awards']))->map(function ($row) use ($publication, $preview, $competition, $assets) {
+            $row['awards_text'] = collect($row['awards'])->map(fn ($award) => $this->translated($award['name'] ?? []))->filter()->join(' · ');
+            $row['photo_url'] = $publication
+                ? ($assets->has($row['photo_id']) ? ($preview
+                    ? route('eys.competitions.publication-photos.show', [$competition, $publication, $row['photo_id']])
+                    : route('result.publications.photos.show', [$publication, $row['photo_id']])) : null)
+                : route('eys.competitions.results.photos.show', [$competition, $row['photo_id']]);
+
+            return $row;
+        });
 
         return [
             'competition' => $competition,
-            'round' => $round,
-            'resultsByCategory' => $awardedResults->groupBy(fn ($result) => $result->photo->submission->competition_category_id),
-            'participants' => $participants,
-            'participantCount' => $competition->entries()->whereNotNull('submitted_at')->count(),
-            'photoCount' => $competition->entries()->whereNotNull('competition_entries.submitted_at')
-                ->join('competition_submissions', 'competition_submissions.competition_entry_id', '=', 'competition_entries.id')
-                ->join('competition_submission_photos', 'competition_submission_photos.competition_submission_id', '=', 'competition_submissions.id')
-                ->whereNull('competition_submission_photos.withdrawn_at')
-                ->count('competition_submission_photos.id'),
+            'display' => [
+                'name' => $this->translated(data_get($snapshot, 'competition.name', [])),
+                'subject' => $this->translated(data_get($snapshot, 'competition.subject', [])),
+                'institution' => data_get($snapshot, 'competition.institution', ''),
+                'type' => $this->translated(data_get($snapshot, 'competition.type', [])),
+                'categories' => $categories->map(fn ($category) => ['id' => $category['id'], 'name' => $this->translated($category['name'])]),
+                'category_count' => $categories->count(),
+                'participant_count' => $snapshot['participant_count'] ?? null,
+                'photo_count' => $snapshot['photo_count'] ?? null,
+                'results' => $results->groupBy('category_id'),
+                'awarded_count' => $results->count(),
+                'participants' => $results->unique(fn ($row) => $row['participant_id'] ?? $row['participant'])->pluck('participant'),
+                'round' => data_get($snapshot, 'round.name', ''),
+                'version' => $publication?->version,
+                'published_at' => $publication?->published_at,
+                'partial' => $publication && $publication->snapshot_version < 2,
+            ],
         ];
     }
 }

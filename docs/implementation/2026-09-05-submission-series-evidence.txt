@@ -1,0 +1,128 @@
+Package 17 / 2026-09-05 / PHP 8.5.10 / MariaDB 11.8
+No production migration, import or deployment. Legacy sources unchanged.
+
+Commands: php artisan test --compact
+Both full runs: DOCUMENT_SCAN_INTEGRATION=1 DOCUMENT_CLAMD_CONFIG=/scan-runtime/clamd.conf
+MariaDB overrides: DB_CONNECTION=mysql DB_HOST=tfsf-codex-security-tests DB_DATABASE=tfsf_testing DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=<temporary-test-only-password> DB_URL=
+Antivirus integration uses harmless synthetic signatures, not a production virus database.
+vendor/bin/pint --test
+npm run build
+git diff --check: passed
+
+FULL SQLITE — isolated SQLite, real qpdf/ClamAV integration enabled
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................sss.............................
+  ............................................................................
+  ............................................................................
+  .......s.............................sss....................................
+  ........................s...................................................
+  .............................................................sss............
+  sss............s........................................................s..s
+  s..................s........................................................
+  ........................
+
+  Tests:    36 skipped, 824 passed (3757 assertions)
+  Duration: 54.84s
+
+
+
+FULL MARIADB — tfsf_testing only, real qpdf/ClamAV integration enabled
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ........................
+
+  Tests:    860 passed (4159 assertions)
+  Duration: 235.12s
+
+
+
+INTERMEDIATE FOCUSED SQLITE — series and category rules; final source coverage is the full run
+
+  ...........................
+
+  Tests:    27 passed (118 assertions)
+  Duration: 1.78s
+
+
+
+FOCUSED MARIADB — series and migration
+
+  .............
+
+  Tests:    13 passed (73 assertions)
+  Duration: 5.90s
+
+
+
+PINT
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ...............................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 639 files  
+
+
+
+VITE
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-DFEICOt0.css  87.89 kB │ gzip: 16.45 kB
+public/build/assets/app-D3jIom87.js   99.26 kB │ gzip: 31.75 kB
+
+✓ built in 1.05s
+
+
+BROWSER
+{
+  "checks": [
+    "Institution series option persists in category wizard.",
+    "Member edits optional shared story and required series order; anonymous identity survives.",
+    "Tag matching one image shows its entire series in member order and hides the other series.",
+    "Separate photo scores save and finalize across two series.",
+    "EYS identifies series during award selection; publication preserves member series and does not publish private shared story.",
+    "English identity and desktop/mobile layouts verified."
+  ],
+  "errors": [],
+  "screenshots": 6
+}
+
+MIGRATION — synthetic tfsf_results_ui
+{
+    "rollback_reapply": "passed",
+    "submission_fields_preserved": true,
+    "photo_rows_preserved": true,
+    "publication_snapshots_preserved": true,
+    "backfilled_unique_codes": 2,
+    "reapply_generates_new_codes": true,
+    "reapply_resets_grouping": true
+}
+

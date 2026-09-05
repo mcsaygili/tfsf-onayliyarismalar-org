@@ -507,6 +507,7 @@
                 <x-temsilci.icon name="dashboard" />
                 {{ __('temsilci.nav.dashboard') }}
             </a>
+            <a href="{{ route('temsilci.registrations.index') }}" class="ip-nav-item {{ request()->routeIs('temsilci.registrations.*') ? 'is-active' : '' }}">{{ __('registration.heading') }}</a>
             <a href="{{ route('temsilci.participant-submissions.index') }}" class="ip-nav-item {{ request()->routeIs('temsilci.participant-submissions.*') ? 'is-active' : '' }}">
                 <x-temsilci.icon name="staff" />
                 {{ __('temsilci.nav.participant_approvals') }}

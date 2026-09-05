@@ -14,6 +14,27 @@ class CompetitionSubmissionPhoto extends Model
 {
     use HasUuids;
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $photo): void {
+            do {
+                $code = strtoupper(bin2hex(random_bytes(8)));
+            } while (self::query()->where('anonymous_code', $code)->exists());
+            // A copied photo is a new competition work, so never copy its code.
+            $photo->anonymous_code = $code;
+        });
+        static::updating(function (self $photo): void {
+            if ($photo->isDirty('anonymous_code')) {
+                throw new \LogicException('A competition work code cannot be changed.');
+            }
+        });
+    }
+
+    public function workCode(): string
+    {
+        return implode('-', str_split($this->anonymous_code, 4));
+    }
+
     protected function casts(): array
     {
         return [

@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'publication_history' => 'Yayın ve düzeltme geçmişi',
+    'publication_note' => 'Yayın notu',
+    'correction_note' => 'Düzeltme notu',
+
+    'archive_image_missing' => ':code kodlu katılım eserinin güvenli görseli eksik veya geçersiz. Görseli tamamlayıp yayını yeniden deneyin.',
+    'archive_partial' => 'Bu ilanın bazı görselleri ve ek bilgileri arşivde bulunmuyor.',
+    'image_unavailable' => 'Bu eserin arşiv görseli kullanılamıyor.',
+
     'federation' => 'Türkiye Fotoğraf Sanatı Federasyonu', 'site_name' => 'Yarışma Sonuçları', 'navigation' => 'Sonuç sitesi menüsü', 'all_results' => 'Tüm Sonuçlar', 'main_site' => 'Ana Site', 'footer' => 'TFSF onaylı yarışmaların resmî sonuç arşivi.',
     'meta_description' => 'TFSF onaylı fotoğraf yarışmalarının resmî sonuçları, ödüllü eserleri ve istatistikleri.', 'meta_description_competition' => ':competition resmî sonuçları, ödül alan eserleri ve yarışma istatistikleri.',
     'archive_kicker' => 'TFSF Sonuç Arşivi', 'archive_title' => 'Sonuçları açıklanan yarışmalar', 'archive_intro' => 'TFSF onaylı yarışmaların kategori sonuçlarını, ödül alan eserlerini ve temel istatistiklerini inceleyin.', 'search' => 'Yarışma ara', 'search_placeholder' => 'Yarışma veya düzenleyen kurum adı', 'search_action' => 'Ara', 'approved_competition' => 'TFSF Onaylı Yarışma',

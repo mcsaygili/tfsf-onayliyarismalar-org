@@ -3,6 +3,7 @@
         'tags' => $privateTags,
         'selected' => $selectedTag,
         'photoIds' => $photos->pluck('id')->values(),
+        'photoGroups' => $photoGroups,
         'baseUrl' => route('juri.tags.store', [$competition, $assignment->category]),
         'errors' => __('juri.tags.errors'),
         'messages' => __('juri.tags.messages'),
@@ -14,6 +15,7 @@
     @if($finalized)<div class="je-notice is-success"><strong>{{ __('juri.evaluation.finalized_title') }}</strong><span>{{ __('juri.evaluation.finalized_hint') }}</span></div>
     @elseif($evaluationLocked || $phase->value !== 'evaluation_open')<div class="je-notice"><strong>{{ __('juri.evaluation.closed_title') }}</strong><span>{{ __('juri.evaluation.closed_hint') }}</span></div>@endif
 
+    @if($assignment->category->photos_grouped)<p class="je-series-hint">{{ __('series.jury_hint') }}</p>@endif
     @include('juri.evaluations.tags')
     <div class="je-empty" x-show="selected && visibleCount === 0" x-cloak><strong>{{ __('juri.tags.no_matches') }}</strong><p>{{ __('juri.tags.no_matches_hint') }}</p><button type="button" class="ia-btn ia-btn-secondary" @click="filter('')">{{ __('juri.tags.all') }}</button></div>
     @if($photos->isEmpty())
@@ -23,15 +25,22 @@
             <input type="hidden" name="evaluation_context" value="{{ old('evaluation_context', $evaluationContext) }}">
             <div class="je-photo-list">
                 @foreach($photos as $photo)
+                    @if($assignment->category->photos_grouped && ($loop->first || $photos[$loop->index - 1]->competition_submission_id !== $photo->competition_submission_id))
+                        <header class="je-series-heading" x-show="visible(@js($photo->id))" data-series-code="{{ $photo->submission->seriesCode() }}">
+                            <h2>{{ __('series.identity', ['code' => $photo->submission->seriesCode()]) }}</h2>
+                            <p>{{ trans_choice('series.photo_count', $photo->submission->photos->count(), ['count' => $photo->submission->photos->count()]) }}</p>
+                            @if(filled($photo->submission->category_story))<details><summary>{{ __('declarations.category_story') }}</summary><p>{{ $photo->submission->category_story }}</p></details>@endif
+                        </header>
+                    @endif
                     <article class="je-photo-row" x-show="visible(@js($photo->id))">
-                        <figure><img src="{{ route('juri.evaluations.photos.show', $photo) }}" alt="{{ __('juri.evaluation.work', ['number' => str_pad((string)$loop->iteration, 3, '0', STR_PAD_LEFT)]) }}"><figcaption>{{ __('juri.evaluation.work', ['number' => str_pad((string)$loop->iteration, 3, '0', STR_PAD_LEFT)]) }}</figcaption></figure>
+                        <figure><img src="{{ route('juri.evaluations.photos.show', $photo) }}" alt="{{ __('juri.evaluation.work', ['number' => $photo->workCode()]) }}"><figcaption>{{ __('juri.evaluation.work', ['number' => $photo->workCode()]) }}@if($assignment->category->photos_grouped)<span class="je-series-position">{{ __('series.position', ['position' => $photo->submission->photos->search(fn ($item) => $item->id === $photo->id) + 1]) }}</span>@endif</figcaption></figure>
                         <div class="je-score-area">
                             @if($assignment->category->photo_story_required || $assignment->category->category_story_required)
                                 <div class="je-work-stories">
                                     @if($assignment->category->photo_story_required && filled($photo->declarationData()['story']))
                                         <details><summary>{{ __('declarations.jury_story') }}</summary><p>{{ $photo->declarationData()['story'] }}</p></details>
                                     @endif
-                                    @if($assignment->category->category_story_required && filled($photo->submission->category_story))
+                                    @if(!$assignment->category->photos_grouped && $assignment->category->category_story_required && filled($photo->submission->category_story))
                                         <details><summary>{{ __('declarations.category_story') }}</summary><p>{{ $photo->submission->category_story }}</p></details>
                                     @endif
                                 </div>

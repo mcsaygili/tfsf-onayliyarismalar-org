@@ -14,6 +14,26 @@ class CompetitionSubmission extends Model
 {
     use HasUuids;
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $submission): void {
+            do {
+                $code = strtoupper(bin2hex(random_bytes(8)));
+            } while (self::query()->where('series_code', $code)->exists());
+            $submission->series_code = $code;
+        });
+        static::updating(function (self $submission): void {
+            if ($submission->isDirty('series_code')) {
+                throw new \LogicException('A submission series code cannot be changed.');
+            }
+        });
+    }
+
+    public function seriesCode(): string
+    {
+        return 'S-'.implode('-', str_split($this->series_code, 4));
+    }
+
     protected function casts(): array
     {
         return [

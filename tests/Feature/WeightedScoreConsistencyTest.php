@@ -8,6 +8,7 @@ use App\Models\JuryScore;
 use App\Services\CompetitionResultService;
 use App\Services\CompetitionSubmissionPhotoService;
 use App\Services\MemberScorecardService;
+use App\Services\ResultSnapshotBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -58,5 +59,9 @@ class WeightedScoreConsistencyTest extends TestCase
         $this->assertEquals($expected, $round->results()->firstOrFail()->average_score);
         $this->assertEquals($expected, $card['average']);
         $this->assertCount(count($votes), $card['scores']);
+        $snapshot = app(ResultSnapshotBuilder::class)->build($submission->entry->competition, $round, true);
+        $archived = $snapshot['member_entries'][0]['photos'][0]['scorecards'][0];
+        $this->assertEquals($expected, $archived['average']);
+        $this->assertEquals(array_column($card['scores'], 'score'), array_column($archived['scores'], 'score'));
     }
 }

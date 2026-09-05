@@ -1,0 +1,31 @@
+{
+  "package": 17,
+  "files": {
+    "database/migrations/2026_09_05_260000_group_submission_photos_as_series.php": "d4f4ecb58bdf700f2779c465e107703f6fbe6dcb63ce84a1026b4c2cd57f9a08",
+    "app/Models/CompetitionCategory.php": "9fa1675a4c04c13fc1712ad05e497fd320c3ce5055a55be2c3e389a109c9c01a",
+    "app/Models/CompetitionSubmission.php": "740eab7d769bd3dfc3d4c77d24130cf64ded431c6155fa1701fd23b1f6a8ab44",
+    "app/Support/CompetitionWizard/Step6.php": "6060a1f778694f90c274b1917caf4beff357af0ed36c56a61047f6705fde37b4",
+    "app/Support/Photo/SubmissionDeclarations.php": "992008f88e1fdba6470a2d2d0685ae430b1b8ac531a6ce659b615690156c93df",
+    "app/Support/CompetitionRegulations/CompetitionRegulationContextBuilder.php": "643e32218a63c0f80519f65ae86ec7de58352a705f31b4f5dd9f2d1ad7dff0e9",
+    "app/Services/CompetitionSubmissionDetailsService.php": "6b8eb0eb23d370737c8284a844a516dec5036a14a0950cf77a7ffb6d1f397e86",
+    "app/Services/JuryEvaluationService.php": "6c7a58614706db579b907a2e41fb7ea1bb62c74813fcbf76cffa15fcaf3d9710",
+    "app/Services/CompetitionResultState.php": "379fb660b86984bf45609e6a20ed186e37e74fe7210586442092e8c57d617879",
+    "app/Services/ResultSnapshotBuilder.php": "29d9eff2001ebc5285300f0953c7fdf1993dafc0a83da3f39654b5b82b408de4",
+    "resources/js/jury-tags.js": "a3b326df9ba928359e5fa34f523c1dba6c7c1eb4c86ab2f3d1dd396ac59d4991",
+    "resources/css/app.css": "c1a3b62574ab3452835640e2664dadb8ce6168b1f301894ac7d6afd3f7d7fd9b",
+    "resources/views/institution/competitions/step-6.blade.php": "83a0775d20855d8969845e9146024f92d9801f2242e4afd026d0fc8f9cde393f",
+    "resources/views/juri/evaluations/show.blade.php": "38d75ec80e6650bdd735e8eaf3471976d622e83c1207208e89a59f2703b8504d",
+    "resources/views/uye/competitions/entry.blade.php": "32d0968d59a938fd9c485575138c6d809885dd13fde6c5850eff17264feeda03",
+    "resources/views/uye/competitions/partials/declarations.blade.php": "14c9ff1879754dba8f43a98bf9fa5577b958199d6ce3d4f92a23b9047215a925",
+    "resources/views/uye/competitions/partials/published-scorecards.blade.php": "a0e8f3adc2e53bd9adf0bd7b47e3c821da5985e07c49d128dfa17644792834cd",
+    "resources/views/uye/competitions/show.blade.php": "709bc51146d9ef716ed3618f529cb1a0836ee0ad6af6c0d5fae011aebb22f22b",
+    "resources/views/result/competitions/show.blade.php": "04deb776d43a1dd1780f98184dbd5b8d717518c3da91a1b48e5a0b37431c150d",
+    "resources/views/components/eys/work-preview.blade.php": "aed0f5171dae70b3e0a3bd9209ea3fdbb05736a1c9bd45f5e1490a31df8b11ad",
+    "resources/views/eys/competitions/show.blade.php": "9b5939f8125acac1e6ae34a3a8aae5f648d2f8fe0ff9e27fd2fc148aa337d448",
+    "lang/tr/series.php": "92552e04c0f4aae9d2a1966e63491dd6bba80307eea60743eb6b322725f6dcc1",
+    "lang/en/series.php": "006fc665ded7f1d47c622dd3dacf06a09195c3bee372f686f118e57cd0b76082",
+    "tests/Feature/SubmissionSeriesTest.php": "78d94d5519ed283a2f2bde3bb0848fa23163c34dad0439b49d7dfedd6c98fe67",
+    "tests/Feature/SubmissionSeriesMigrationTest.php": "0bedcb77271cca97ff193a0663a47c9419620dc9081a6e71ad7f47451d4ef261",
+    "tests/Feature/Institution/CategoryPhotoRulesStepTest.php": "fb5992227cb7793329c56dc91e6f9b8b25f5732005e5d520a494f9814c4dcd02"
+  }
+}

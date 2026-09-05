@@ -107,8 +107,16 @@ class CompetitionReviewController extends Controller
         return back()->with('status', __('eys.competitions.representative_assigned'));
     }
 
-    public function previewResults(Competition $competition, CompetitionResultPresentationService $presentation): View
+    public function previewResults(Request $request, Competition $competition, CompetitionResultPresentationService $presentation): View
     {
+        $input = $request->validate(['version' => ['nullable', 'integer', 'min:1']]);
+        $version = $input['version'] ?? ($competition->results_published_at ? $competition->results_publication_version : null);
+        if ($version) {
+            $publication = $competition->resultPublications()->where('version', $version)->firstOrFail();
+
+            return view('result.competitions.show', $presentation->forPublication($publication, true) + ['preview' => true]);
+        }
+
         return view('result.competitions.show', $presentation->forCompetition($competition) + ['preview' => true]);
     }
 

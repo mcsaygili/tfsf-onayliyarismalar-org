@@ -39,6 +39,8 @@ use App\Http\Controllers\Eys\SystemSettingsController;
 use App\Http\Controllers\Eys\TemsilciController;
 use App\Http\Controllers\Eys\UserController;
 use App\Http\Controllers\Eys\UserRoleController;
+use App\Http\Controllers\RegistrationExceptionController;
+use App\Http\Controllers\Result\ResultPhotoController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Middleware\SerializeCompetitionMutation;
 use Illuminate\Support\Facades\Route;
@@ -293,16 +295,29 @@ Route::domain(config('domains.eys'))->middleware('panel.session:eys')->group(fun
             Route::delete('{staff}', [InstitutionStaffController::class, 'destroy'])->name('destroy');
         });
 
+        Route::prefix('sekreteryalar')->name('eys.secretariats.')->middleware(['team:Institution', 'permission:institution.secretariats.manage'])->group(function () {
+            Route::get('/', [\App\Http\Controllers\SecretariatController::class, 'index'])->name('index');
+            Route::get('yeni', [\App\Http\Controllers\SecretariatController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\SecretariatController::class, 'store'])->middleware('throttle:10,1')->name('store');
+            Route::get('{account}', [\App\Http\Controllers\SecretariatController::class, 'edit'])->name('edit');
+            Route::patch('{account}', [\App\Http\Controllers\SecretariatController::class, 'update'])->middleware('throttle:20,1')->name('update');
+        });
+
         Route::prefix('yarismalar')->name('eys.competitions.')->middleware(['team:Institution', 'permission:institution.competitions.manage'])->group(function () {
             Route::get('/', [CompetitionReviewController::class, 'index'])->name('index');
             Route::middleware('eys.competition')->group(function () {
                 Route::get('{competition}', [CompetitionReviewController::class, 'show'])->name('show');
+                Route::get('{competition}/sekreterya', [\App\Http\Controllers\SecretariatController::class, 'assignment'])->name('secretariat');
+                Route::post('{competition}/sekreterya', [\App\Http\Controllers\SecretariatController::class, 'assign'])->middleware('throttle:20,1')->name('secretariat.store');
+                Route::get('{competition}/on-kayit-yetkileri', [RegistrationExceptionController::class, 'permissions'])->name('registration-permissions');
+                Route::post('{competition}/on-kayit-yetkileri', [RegistrationExceptionController::class, 'grant'])->middleware('throttle:20,1')->name('registration-permissions.store');
                 Route::post('{competition}/incelemeyi-baslat', [CompetitionReviewController::class, 'start'])->middleware(SerializeCompetitionMutation::class)->name('start');
                 Route::patch('{competition}/temsilci', [CompetitionReviewController::class, 'assignRepresentative'])->middleware(SerializeCompetitionMutation::class)->name('assign-representative');
                 Route::post('{competition}/sonuclar/hesapla', [CompetitionReviewController::class, 'aggregateResults'])->middleware(SerializeCompetitionMutation::class)->name('aggregate-results');
                 Route::get('{competition}/sonuclar/onizleme', [CompetitionReviewController::class, 'previewResults'])->name('preview-results');
                 Route::get('{competition}/raporlar/katilimlar.csv', [CompetitionReportController::class, 'entries'])->name('reports.entries');
                 Route::get('{competition}/raporlar/sonuclar.csv', [CompetitionReportController::class, 'results'])->name('reports.results');
+                Route::get('{competition}/yayinlar/{publication}/fotograflar/{photoId}', ResultPhotoController::class)->name('publication-photos.show');
                 Route::get('{competition}/sonuclar/fotograflar/{submissionPhoto}', CompetitionSubmissionPhotoController::class)->name('results.photos.show');
                 Route::post('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'createFinalRound'])->middleware(SerializeCompetitionMutation::class)->name('create-final-round');
                 Route::put('{competition}/sonuclar/final-turu', [CompetitionReviewController::class, 'saveFinalRound'])->middleware(SerializeCompetitionMutation::class)->name('save-final-round');

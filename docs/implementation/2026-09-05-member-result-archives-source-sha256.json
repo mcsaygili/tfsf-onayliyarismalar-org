@@ -1,0 +1,29 @@
+{
+  "package": 14,
+  "scope": "member result and score archives",
+  "files": {
+    "app/Services/MemberScorecardService.php": "c1d5ee0edc9bde5db3e8cf707cc981c3c62ad66afda736947cfb3b752e32bdae",
+    "app/Services/MemberResultArchiveService.php": "c04a8ec524759065e35bef4bdc91952891db55559e1da324436376f3d5c66fcb",
+    "app/Services/ResultSnapshotBuilder.php": "870aff0eb5d2b3cfb56b42e0a2c93a6f29534326200631db5b8f483f68f339f1",
+    "app/Services/ResultPublicationService.php": "e2bc39f7570283c0a945af5414a44ece8691bab40172d7700649d689c297afd4",
+    "app/Models/CompetitionResultAsset.php": "059a2c509b39914ea3ecc98e9d46e9b42f73d5aaa1585e27712501d08ede046a",
+    "app/Http/Controllers/Result/ResultPhotoController.php": "31b97cbfe56c36cca9574c9d7c6af079aa28c9d2294788e2c5943385aa41aa7f",
+    "app/Http/Controllers/Uye/CompetitionController.php": "f678430b60c7128b725e5d30fe175bc49e72c98e93e45b0455c7aefdb40b2157",
+    "app/Console/Commands/AuditResultArchives.php": "22c398cbe1163c78147eb55f198f28961833719c7f782ade691e6feb920c3317",
+    "database/migrations/2026_09_05_230000_scope_private_result_assets.php": "b42f9ac534b507233b4ecdef0fddb1a866420034fa8a95e5f046f3cef46b6d2e",
+    "routes/uye.php": "e244b1fe1bcaae180dacd91f7c5b03e772538a01142158a9151754f908e3f149",
+    "resources/views/uye/competitions/show.blade.php": "6ddaaefc9f21feaf742e9f5e5878613cdabf297922a4e51b26b9c35e7ea57d5f",
+    "resources/views/uye/competitions/entry.blade.php": "b313475c3718629a1c46393bbd7e60cb0f63ddcdf46ecd183a5110bcf013d70f",
+    "resources/views/uye/competitions/my-results.blade.php": "f442b30c01b0e0df3c37440e61e14b99089f3bba046eb6b9140a965059408d96",
+    "resources/views/uye/competitions/partials/published-scorecards.blade.php": "0407b8d00367e410b3034baeeb33be627c5af2754665b6f460fa4b9790fe267c",
+    "resources/css/app.css": "b97f1747eecc3b46beba0652ad03edd3b3240319d4aed68acc9344a2fc5b51dd",
+    "lang/en/result_archive.php": "c15fb6bd40577f768a31ca369e4b3bf2c015d50c6d78cb14e243dbc2db2e722d",
+    "lang/tr/result_archive.php": "72703653f38fcf242e4116c65ee80af519eaea1ba5c6ae33b4ef1dc4ad6880a2",
+    "lang/en/result.php": "f3b87189b810c4c1dd7e3a386653ec7bed87f1147780924eff67261333d1b7e7",
+    "lang/tr/result.php": "0e07783bf4069acad6fb69ed4a2ce1786f9d7fca7f31827e04554c8abd77a560",
+    "tests/Feature/MemberResultArchiveTest.php": "0e69f7c818c87f3dac1a99cce6f4bafdb65a997a56683db65128cab190e693f1",
+    "tests/Feature/WeightedScoreConsistencyTest.php": "c37dde472c2c17fd5adab96b87817e1dedca817d7b189963b5885c03b24e2d56",
+    "tests/Feature/Eys/PrivateResultAssetMigrationTest.php": "581860f93dd94f0288afe547a90c76c52d58b2773cf95444da8ab961078d9e40",
+    "tests/Feature/Eys/ResultPublicationArchiveTest.php": "24f7e5b8c38e17d427c5605b224100eed06dc61ddb1db3f47912d394c03b52fc"
+  }
+}

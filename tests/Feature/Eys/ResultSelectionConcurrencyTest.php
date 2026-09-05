@@ -25,7 +25,7 @@ class ResultSelectionConcurrencyTest extends TestCase
 
     private function awardRequest(array $f, ?string $resultId = null): array
     {
-        return ['guard' => 'eys', 'user_id' => $f['reviewer']->id, 'method' => 'PUT',
+        return ['storage_root' => $f['storageRoot'], 'guard' => 'eys', 'user_id' => $f['reviewer']->id, 'method' => 'PUT',
             'url' => route('eys.competitions.save-result-awards', $f['competition']), 'payload' => $this->awardPayload($f, $resultId)];
     }
 
@@ -40,7 +40,7 @@ class ResultSelectionConcurrencyTest extends TestCase
 
     private function publishRequest(array $f): array
     {
-        return ['guard' => 'eys', 'user_id' => $f['reviewer']->id, 'method' => 'POST',
+        return ['storage_root' => $f['storageRoot'], 'guard' => 'eys', 'user_id' => $f['reviewer']->id, 'method' => 'POST',
             'url' => route('eys.competitions.publish-results', $f['competition']), 'payload' => ['result_context' => $f['context']]];
     }
 

@@ -16,6 +16,7 @@ use App\Services\CompetitionPhaseService;
 use App\Services\CompetitionSubmissionDetailsService;
 use App\Services\CompetitionSubmissionPhotoService;
 use App\Services\MemberEligibilityService;
+use App\Services\MemberResultArchiveService;
 use App\Services\MemberScorecardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,11 +42,10 @@ class CompetitionController extends Controller
     public function show(Request $request, Competition $competition, CompetitionPhaseService $phases, MemberEligibilityService $eligibility): View
     {
         $this->published($competition);
-        $competition->load(['translations', 'institution', 'competitionType.translations', 'categories.translations', 'categories.genders.translations', 'categories.ageEligibilityRule.translations', 'categories.memberGroups.translations', 'regulationSnapshots', 'evaluationRounds.results.photo.submission.category.translations', 'evaluationRounds.results.awards.categoryAward.translations', 'evaluationRounds.results.awards.categoryAward.awardReference.translations']);
+        $competition->load(['translations', 'institution', 'competitionType.translations', 'categories.translations', 'categories.genders.translations', 'categories.ageEligibilityRule.translations', 'categories.memberGroups.translations', 'regulationSnapshots']);
         $categoryChecks = $competition->categories->mapWithKeys(fn ($category) => [$category->id => $eligibility->forCategory($category, $request->user())]);
         $entry = $competition->entries()->where('user_id', $request->user()->id)->first();
-        $resultRound = $competition->evaluationRounds->firstWhere('is_final', true)
-            ?? $competition->evaluationRounds->sortByDesc('round_number')->first();
+        $publishedResults = app(MemberResultArchiveService::class)->resultList($competition, $request->user());
 
         return view('uye.competitions.show', [
             'competition' => $competition,
@@ -53,7 +53,16 @@ class CompetitionController extends Controller
             'competitionCheck' => $eligibility->forCompetition($competition, $request->user()),
             'categoryChecks' => $categoryChecks,
             'entry' => $entry,
-            'resultRound' => $resultRound,
+            'publishedResults' => $publishedResults,
+        ]);
+    }
+
+    public function myResults(Request $request, Competition $competition): View
+    {
+        $this->published($competition);
+
+        return view('uye.competitions.my-results', [
+            'archive' => app(MemberResultArchiveService::class)->forMember($competition, $request->user()),
         ]);
     }
 
@@ -79,11 +88,15 @@ class CompetitionController extends Controller
         $this->ownsEntry($request, $entry);
         $entry->load(['competition.translations', 'competition.categories.translations', 'competition.regulationSnapshots', 'submissions.category.translations', 'submissions.photos.captureDevice.translations', 'submissions.approvals']);
 
+        $archiveMode = $scorecards->hasPublicationHistory($entry->competition);
+
         return view('uye.competitions.entry', [
             'entry' => $entry,
             'editable' => $entry->status->isEditable() && $phases->acceptsApplications($entry->competition),
             'submissionMutability' => $entry->submissions->mapWithKeys(fn ($submission) => [$submission->id => $mutations->allows($submission)]),
             'scorecards' => $scorecards->forEntry($entry),
+            'archiveMode' => $archiveMode,
+            'memberArchive' => $archiveMode ? app(MemberResultArchiveService::class)->forMember($entry->competition, $request->user()) : null,
             'portfolioPhotos' => $request->user()->photos()->latest()->get(),
             'captureDevices' => CaptureDevice::active()->ordered()->with('translations')->get(),
             'processingMethods' => ProcessingMethod::active()->ordered()->with('translations')->get(),

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CompetitionRegistrationController;
 use App\Http\Controllers\CompetitionSubmissionPhotoController;
+use App\Http\Controllers\RegistrationExceptionController;
 use App\Http\Controllers\SetLanguageController;
 use App\Http\Controllers\Temsilci\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Temsilci\Auth\EmailVerificationNotificationController;
@@ -48,6 +50,16 @@ Route::domain(config('domains.temsilci'))->middleware(['maintenance:temsilci', '
     });
 
     Route::middleware(['auth:temsilci', 'verified.guard:temsilci'])->group(function () {
+        Route::prefix('on-kayitlar')->name('temsilci.registrations.')->group(function () {
+            Route::get('/', [CompetitionRegistrationController::class, 'index'])->name('index');
+            Route::get('dogrudan/{competition}', [RegistrationExceptionController::class, 'create'])->name('direct.create');
+            Route::post('dogrudan/{competition}/ara', [RegistrationExceptionController::class, 'lookup'])->middleware('throttle:10,1')->name('direct.lookup');
+            Route::post('dogrudan/{competition}', [RegistrationExceptionController::class, 'store'])->middleware('throttle:10,1')->name('direct.store');
+            Route::get('belgeler/{document}', [CompetitionRegistrationController::class, 'download'])->middleware('throttle:30,1')->name('documents.show');
+            Route::get('{registration}', [CompetitionRegistrationController::class, 'review'])->name('show');
+            Route::post('{registration}/karar', [CompetitionRegistrationController::class, 'decide'])->middleware('throttle:20,1')->name('decide');
+        });
+
         Route::get('/', [DashboardController::class, 'index'])->name('temsilci.dashboard');
 
         Route::prefix('yarismalarim')->name('temsilci.competitions.')->group(function () {

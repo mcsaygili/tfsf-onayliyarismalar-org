@@ -14,6 +14,7 @@ class AccountSecurityContext
             $account->getAuthPassword(), $account->email, $account->phone_number ?? $account->phone, $account->status];
         $locking = $account->getConnection()->transactionLevel() > 0;
         if ($account instanceof InstitutionStaff) {
+            $parts[] = $account->account_kind;
             $query = $account->institution();
             if ($locking) {
                 $query->lockForUpdate();

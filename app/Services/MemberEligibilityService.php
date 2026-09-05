@@ -19,7 +19,7 @@ class MemberEligibilityService
     ) {}
 
     /** @return array{eligible: bool, state: string, violations: array<int, string>} */
-    public function forCompetition(Competition $competition, User $user): array
+    public function forCompetition(Competition $competition, User $user, bool $requireRegistration = true): array
     {
         $violations = [];
         if (! $this->phases->acceptsApplications($competition)) {
@@ -42,6 +42,10 @@ class MemberEligibilityService
         }
         if ($competition->audience === CompetitionAudience::National && ! TurkishIdentityNumber::isValid($user->tckimlikno)) {
             $violations[] = 'national_identity_required';
+        }
+
+        if ($requireRegistration && ! app(CompetitionRegistrationService::class)->isApproved($competition, $user->id)) {
+            $violations[] = 'registration_required';
         }
 
         return $this->result($violations);

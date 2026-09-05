@@ -5,6 +5,7 @@ namespace App\Support\CompetitionWizard;
 use App\Enums\CompetitionInfrastructureProvider;
 use App\Models\Competition;
 use App\Models\CompetitionType;
+use App\Services\CompetitionRegistrationService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
 
@@ -33,11 +34,19 @@ class Step4 implements CompetitionStep
 
     public function data(Competition $competition): array
     {
-        return ['competition_type' => $competition->competition_type_id];
+        return ['competition_type' => $competition->competition_type_id, ...$competition->only(['registration_required', 'registration_document_min', 'registration_reviewer'])];
     }
 
     public function persist(Competition $competition, array $validated): void
     {
+        if (array_key_exists('registration_required', $validated)) {
+            app(CompetitionRegistrationService::class)->configure($competition, [
+                'registration_required' => $validated['registration_required'],
+                'registration_document_min' => $validated['registration_document_min'] ?? 0,
+                'registration_reviewer' => $validated['registration_reviewer'] ?? 'institution',
+            ]);
+            $competition->refresh();
+        }
         if (array_key_exists('competition_type', $validated)) {
             $attributes = ['competition_type_id' => $validated['competition_type']];
             $type = CompetitionType::query()->find($validated['competition_type']);
@@ -58,6 +67,9 @@ class Step4 implements CompetitionStep
     public function rules(bool $isDraftSave, Competition $competition): array
     {
         return [
+            'registration_required' => ['sometimes', 'boolean'],
+            'registration_document_min' => ['nullable', 'integer', 'between:0,3'],
+            'registration_reviewer' => ['nullable', 'in:institution,representative'],
             'competition_type' => [
                 $isDraftSave ? 'nullable' : 'required',
                 'uuid',

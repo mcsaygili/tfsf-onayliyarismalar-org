@@ -1,0 +1,14 @@
+{
+  "app/Http/Controllers/CompetitionSubmissionPhotoController.php": "a6e6e5ba3c0fdeaa46fc86da3cc974ecfc550fe9d63296859ee9d86a3a782e1a",
+  "app/Models/CompetitionSubmissionPhoto.php": "3c24b92019cac485eb7885c710cd42960cdb23b69e99ef45c283264e7df46231",
+  "app/Services/CompetitionResultState.php": "09e857375003a9eafb1d210d9d7cc6171667fd2a272365ba5155b7c36b6ec32a",
+  "lang/en/result_selection.php": "5799c54928e5d2d61296d1a55a7b48349bc17409e9912a8a8cfbf4db3073ae87",
+  "lang/tr/result_selection.php": "b4cf2a0d26b3b1b0bfd213698fd47eb1085376158ce2abcc6a8389507d057be5",
+  "resources/css/app.css": "3feffff1c218a608e8402451d159a180ba15c7528a013df788840e446db7ac24",
+  "resources/views/eys/competitions/show.blade.php": "af221b8e00b9ed2f148e5c1e6930c71456af9e8259f5fab71bc98d3907647976",
+  "resources/views/juri/evaluations/show.blade.php": "16b6ce7b965222232f0765d6062a08581aaf9aac02494e81c8bed610e37e72ec",
+  "database/migrations/2026_09_05_210000_identify_submission_photos_anonymously.php": "66ef5609e545320aa725693333dd240d2b640677fb0028b511e7b1e40484e6ab",
+  "resources/views/components/eys/work-preview.blade.php": "68aa29250f77cfb3fd2b91222c95dad73385bacc3f68dcd1b869142344f21fb0",
+  "tests/Feature/Eys/ResultWorkPreviewTest.php": "ec4a9b2a4ea8386a0cedf916e281a524c50e8f9586315cbc545be942e5c8a44f",
+  "tests/Feature/Eys/WorkCodeMigrationTest.php": "de59c0e19ab28ceecaec9518f38bc1ff8be22f187e9ef9a98febc8ca08de334f"
+}

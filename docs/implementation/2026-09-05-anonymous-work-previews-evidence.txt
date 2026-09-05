@@ -1,0 +1,125 @@
+Package 12 final verification; PHP 8.5.10 and MariaDB 11.8. Synthetic isolated databases only. No production migration/deployment.
+
+Source: /tmp/tfsf-work-final-sqlite.log
+
+  .sss...................................sssssssss............................
+  ............................................................................
+  .............................s..............................................
+  .....ssss...................................................................
+  ............................................................................
+  ............................................................................
+  .....sss............................................................s.......
+  ............................................................................
+  ............................sss............sss............s.................
+  ............ss..............................................................
+  ........................
+
+  Tests:    30 skipped, 754 passed (3203 assertions)
+  Duration: 47.48s
+
+
+
+Source: /tmp/tfsf-work-final-mariadb.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ........................
+
+  Tests:    784 passed (3543 assertions)
+  Duration: 150.25s
+
+
+
+Source: /tmp/tfsf-work-final-pint.log
+
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ............................................................................
+  ....................................................................
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ......................................................... 600 files  
+
+
+
+Source: /tmp/tfsf-work-build.log
+
+> build
+> vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json             0.33 kB │ gzip:  0.16 kB
+public/build/assets/app-Y2fgDCiW.css  86.21 kB │ gzip: 16.15 kB
+public/build/assets/app-CjUJC1y_.js   99.17 kB │ gzip: 31.71 kB
+
+✓ built in 309ms
+
+
+Source: /tmp/tfsf-work-maria-focused.log
+
+  .......
+
+  Tests:    7 passed (53 assertions)
+  Duration: 7.29s
+
+
+
+Source: /tmp/tfsf-work-migration.log
+
+   INFO  Rolling back migrations.  
+
+  2026_09_05_210000_identify_submission_photos_anonymously ...... 13.59ms DONE
+
+
+   INFO  Running migrations.  
+
+  2026_09_05_210000_identify_submission_photos_anonymously ...... 21.50ms DONE
+
+
+
+Source: /tmp/tfsf-work-browser-results.json
+{
+  "browser": "Chrome via Playwright; Browser plugin not available",
+  "codes": [
+    "Eser DC2C-2306-B2DA-58E4",
+    "Eser 296C-A345-8481-5E7F"
+  ],
+  "checks": [
+    "Distinct stable codes and safe thumbnails in finalist list",
+    "Award selection immediately updates the matching preview",
+    "Preview opens safe image in a new tab",
+    "Unavailable image and empty selection have explicit fallback",
+    "Award save keeps selected code",
+    "Desktop/mobile finalist layout has no horizontal overflow",
+    "Final committee retains selected work reference"
+  ],
+  "errors": []
+}
+
+Source: /tmp/tfsf-work-mobile-jury-results.json
+{
+  "checks": [
+    "Mobile award selector and preview fit the form",
+    "Finalist checkbox can be selected with keyboard Space",
+    "Jury uses the same work code and fits mobile width"
+  ],
+  "errors": []
+}
+
+git diff --check: exit 0

@@ -1,0 +1,30 @@
+{
+  "package": 16,
+  "files": {
+    ".env.example": "f9ba97d06fb8457bb163358c1a8379971335572dff3656bbdd28b97101f10b7a",
+    ".github/workflows/ci.yml": "6dd79e2e9d81093b3917489b28537c3de1815b0779253008e540429f11962f80",
+    "config/queue.php": "80da8f3bbc13cdaafeb09ee5e6556a3514c5624c47854a63ddac8e8a9b970724",
+    "config/registration-documents.php": "5ae0fed0e98731ef34a99a2de15ae4a087024b8ab3bb7c1f4fb7743ba4b8fa6f",
+    "database/migrations/2026_09_05_250000_quarantine_registration_documents.php": "efd93bce53bcca29e787c0d26965848d9b764c87a360c4ae9cb331512347a2d2",
+    "app/Support/Documents/PdfDocumentScanner.php": "3982b4a9d6887ff431607a14f80a8cea9b13b2d4d6a7e86826605095ed9a4dd9",
+    "app/Services/RegistrationDocumentScanService.php": "47504737078bf1aadef7abc0b428652568b378bc7a72c3078bc061aec2b5fa90",
+    "app/Jobs/ScanRegistrationDocument.php": "52cb3cf7180f2667f7d8d1e750d034b2a6ec9904ff5255d847383016b12ecf1e",
+    "app/Console/Commands/ScanRegistrationDocuments.php": "73be129eae0e96ff9e470f61118080ca344b5e989967adc9332876bc1a9692f2",
+    "app/Models/CompetitionRegistrationDocument.php": "14b36fef91dbea5dfe6885d1f5b0008c205d43476b859a011dbc95b714e66082",
+    "app/Services/CompetitionRegistrationService.php": "5e83b8de085ddab9850d8c80d640e88de315050cb31596c62c908b61354735b8",
+    "app/Http/Controllers/CompetitionRegistrationController.php": "ad33e17a8b493484e27cdf9e464ada0c3dc36ee4f1b2677dae1970ec25110591",
+    "resources/views/uye/competitions/registration.blade.php": "33433ac478748c93defa080c641c89af923bfa0fbdc5ae450370367369579975",
+    "resources/views/registrations/review.blade.php": "09ab754bdf2394cb5c907b88cc23d54e548fdc2a6b4d4e3e1067e53c9f2f66ce",
+    "resources/css/app.css": "c2c8d0830e7b30b820794448f9c878aa6e94861699fc55f9c4d57ff90524fdee",
+    "lang/tr/registration.php": "38874dcb7d84cf4f339cfc8b51afab868f36c9f9f1a58e94de9f6dfeb44a8baf",
+    "lang/en/registration.php": "8bc8b13444a0b0521d8932b3b517c6afc24c221ae7495644328d9d7e1d825e23",
+    "tests/Feature/CompetitionRegistrationTest.php": "3010640b634737c4606585a6fdb85851b1adb1f61b8bd2800900934b33c28521",
+    "tests/Feature/RegistrationDocumentQuarantineTest.php": "dd32a2f6d26ad03c9829b63b77bcb992bff9656edc7b6e7c731ef643aa918a1d",
+    "tests/Feature/PdfDocumentScannerIntegrationTest.php": "5da77f13e33c33b41a1207a8472ca1df016e033e7da2203b9190ed86df2c401a",
+    "tests/Feature/RegistrationDocumentScanConcurrencyTest.php": "6dd1cee7730a8c897e4e176bd4d1b132ef23279c626e5f44ffd670a7d883a10e",
+    "tests/Support/account-http-worker.php": "f225fab1753007963aa17d595fbb8afcfbc99daf3d7670a53d9c3f15edb38a35",
+    "tests/Support/PassingDocumentScanner.php": "6969f2e73f1510de31678cee4560a9ea4c5c5dacf3fdba085b6a5dad88ea6d65",
+    "tests/Support/PdfScanFixtures.php": "4fce832c3ad5ac495c634b5bbb68c49f44b64bf473b79ca6344d922b64c9125c",
+    "tests/Support/start-document-scan-test-daemon.sh": "077b14e465f98ceb060ac7a3f208baa3e1b0a2358da9f74ab53d4749809daed1"
+  }
+}

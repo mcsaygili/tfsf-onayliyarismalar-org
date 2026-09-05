@@ -23,6 +23,10 @@
         </div>
     @endif
 
+    @if($competition->registration_required)
+        <section class="mp-callout"><h2>{{ __('registration.heading') }}</h2><p>{{ __('registration.requirement', ['min' => $competition->registration_document_min]) }}</p><a class="ia-btn ia-btn-secondary" href="{{ route('competitions.registration.show', $competition) }}">{{ __('registration.open') }}</a></section>
+    @endif
+
     <section class="mp-category-section">
         <header><h2>{{ __('uye.competitions.categories') }}</h2><p>{{ __('uye.competitions.categories_hint') }}</p></header>
         <div class="mp-category-list">
@@ -39,10 +43,22 @@
         </div>
     </section>
 
-    @if($phase->value === 'results_published' && $resultRound?->results->isNotEmpty())
-        <section class="mp-category-section"><header><h2>{{ __('uye.competitions.results') }}</h2><p>{{ __('uye.competitions.results_hint') }}</p></header><div class="mp-selected-photos">
-            @foreach($resultRound->results->sortBy(fn ($result) => sprintf('%s-%05d', $result->photo->submission->competition_category_id, $result->rank)) as $result)<article><img src="{{ route('competitions.photos.show', $result->photo) }}" alt=""><div><strong>#{{ $result->rank }} · {{ $result->photo->submission->category->name }}</strong><span>{{ __('uye.competitions.result_score', ['score' => $result->average_score]) }}</span>@if($result->awards->isNotEmpty())<span style="color:var(--ia-copper-bright);font-weight:700;">{{ $result->awards->map(fn ($assignment) => $assignment->categoryAward->awardReference?->name ?: $assignment->categoryAward->special_award_text)->filter()->join(' · ') }}</span>@endif</div></article>@endforeach
-        </div></section>
+    @if($phase->value === 'results_published')
+        <section class="mp-category-section" id="published-results">
+            <header><h2>{{ __('uye.competitions.results') }}</h2><p>{{ $publishedResults['name'] }}</p></header>
+            @if($publishedResults['publication'])
+                <p>{{ __('result_archive.version', ['version' => $publishedResults['publication']->version]) }} · {{ $publishedResults['publication']->published_at->format('d.m.Y H:i') }}</p>
+                @if($publishedResults['has_record'])<a class="ia-btn ia-btn-secondary" href="{{ route('competitions.results.mine', $competition) }}">{{ __('result_archive.my_results') }}</a>@endif
+                <div class="mp-selected-photos">
+                @foreach($publishedResults['rows'] as $result)
+                    <article>
+                        @if($result['image_url'])<img src="{{ $result['image_url'] }}" alt="{{ $result['work_code'] ?? __('result_archive.work') }}" loading="lazy">@else<div class="mp-archive-placeholder">{{ __('result_archive.private_photo') }}</div>@endif
+                        <div><strong>{{ $result['work_code'] ?? __('result_archive.work') }} · #{{ $result['rank'] }} · {{ $result['category_name'] }}</strong>@if($result['series_code'] ?? null)<span>{{ __('series.identity', ['code' => $result['series_code']]) }}</span>@endif<span>{{ __('uye.competitions.result_score', ['score' => $result['average_score']]) }}</span>@if($result['award_names'])<span>{{ $result['award_names'] }}</span>@endif</div>
+                    </article>
+                @endforeach
+                </div>
+            @else<p class="mp-callout is-warning">{{ __('result_archive.unavailable') }}</p>@endif
+        </section>
     @endif
 
     <footer class="mp-action-bar">

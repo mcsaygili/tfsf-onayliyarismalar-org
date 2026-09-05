@@ -18,7 +18,7 @@ trait HasSecurityStamp
             $model->security_stamp = Str::random(64);
         });
         static::updating(function ($model) {
-            $fields = $model instanceof Institution ? ['status'] : ['password', 'email', 'phone', 'phone_number', 'status', 'institution_id'];
+            $fields = $model instanceof Institution ? ['status'] : ['password', 'email', 'phone', 'phone_number', 'status', 'institution_id', 'account_kind'];
             if ($model->isDirty($fields)) {
                 // One SQL update persists both identity/access changes and revocation.
                 $model->security_stamp = Str::random(64);

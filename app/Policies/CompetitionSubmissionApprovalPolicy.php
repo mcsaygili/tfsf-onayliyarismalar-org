@@ -15,7 +15,7 @@ class CompetitionSubmissionApprovalPolicy
         $competition = $approval->submission->entry->competition;
         $allowed = match (true) {
             $actor instanceof InstitutionStaff => $approval->approval_type === 'institution'
-                && $competition->institution_id === $actor->institution_id,
+                && app(\App\Services\InstitutionCompetitionAccess::class)->allows($competition, $actor),
             $actor instanceof Temsilci => $approval->approval_type === 'representative'
                 && $competition->representative_id === $actor->id,
         };

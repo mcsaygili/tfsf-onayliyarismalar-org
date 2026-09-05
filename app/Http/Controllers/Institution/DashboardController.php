@@ -10,6 +10,9 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
+        if (Auth::guard('institution')->user()->isSecretariat()) {
+            return app(\App\Http\Controllers\SecretariatController::class)->dashboard(request(), app(\App\Services\InstitutionCompetitionAccess::class));
+        }
         $institution = Auth::guard('institution')->user()->institution;
 
         return view('institution.dashboard', [

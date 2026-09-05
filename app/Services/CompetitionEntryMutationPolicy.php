@@ -16,6 +16,10 @@ class CompetitionEntryMutationPolicy
         $submission->loadMissing('entry.competition');
         $competition = $submission->entry->competition;
 
+        if (! app(CompetitionRegistrationService::class)->isApproved($competition, $submission->entry->user_id)) {
+            return false;
+        }
+
         if ($submission->status->isEditable() && $this->phases->acceptsApplications($competition)) {
             return true;
         }

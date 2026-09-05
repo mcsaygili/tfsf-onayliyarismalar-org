@@ -59,6 +59,15 @@
             <div class="ip-alert-text">{{ __('institution.competitions.competition_type_change_warning') }}</div>
         </div>
 
+        <section class="ip-card">
+            <h2>{{ __('registration.heading') }}</h2><p>{{ __('registration.settings_hint') }}</p>
+            <input type="hidden" name="registration_required" value="0">
+            <label><input type="checkbox" name="registration_required" value="1" @checked(old('registration_required', $competition->registration_required))> {{ __('registration.required') }}</label>
+            <div class="ia-field"><label for="registration_document_min">{{ __('registration.minimum') }}</label><select class="ia-input" id="registration_document_min" name="registration_document_min">@foreach(range(0, 3) as $count)<option value="{{ $count }}" @selected((int) old('registration_document_min', $competition->registration_document_min) === $count)>{{ $count }}</option>@endforeach</select></div>
+            <div class="ia-field"><label for="registration_reviewer">{{ __('registration.reviewer') }}</label><select class="ia-input" id="registration_reviewer" name="registration_reviewer">@foreach(['institution', 'representative'] as $reviewer)<option value="{{ $reviewer }}" @selected(old('registration_reviewer', $competition->registration_reviewer) === $reviewer)>{{ __('registration.'.$reviewer) }}</option>@endforeach</select></div>
+            @foreach(['registration', 'registration_required', 'registration_document_min', 'registration_reviewer'] as $field)<x-institution.input-error :messages="$errors->get($field)" />@endforeach
+        </section>
+
         <div class="ip-form-actions ip-form-actions-sticky">
             <span class="ip-save-meta">{{ __('institution.competitions.last_saved_at', ['time' => $competition->updated_at->format('d.m.Y H:i')]) }}</span>
             <button type="submit" name="action" value="draft" class="ia-btn ia-btn-secondary">{{ __('institution.competitions.save_draft') }}</button>

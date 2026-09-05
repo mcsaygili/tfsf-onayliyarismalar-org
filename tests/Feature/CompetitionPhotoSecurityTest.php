@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\AwardReference;
 use App\Models\CompetitionSubmission;
 use App\Models\CompetitionSubmissionPhoto;
+use App\Models\EysUser;
 use App\Models\Juri;
 use App\Services\CompetitionSubmissionPhotoService;
 use App\Services\JuryPhotoRenderer;
+use App\Services\ResultPublicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -84,10 +86,14 @@ class CompetitionPhotoSecurityTest extends TestCase
         $result = $round->results()->create(['submission_photo_id' => $photo->id, 'total_score' => 9, 'average_score' => 9, 'score_count' => 1, 'rank' => 1]);
         $award = $submission->category->awards()->create(['award_reference_id' => AwardReference::create(['code' => 'security-award', 'status' => true])->id, 'quantity' => 1, 'sort_order' => 10]);
         $result->awards()->create(['competition_category_award_id' => $award->id, 'slot_number' => 1]);
+        $submission->update(['status' => 'approved']);
+        $publication = app(ResultPublicationService::class)->create($competition, $round, EysUser::factory()->create());
+        $competition->forceFill(['results_publication_version' => $publication->version])->save();
         $this->get(route('result.photos.show', $photo))->assertOk();
-        $photo->update(['jury_sanitized_at' => null]);
+        $asset = $publication->assets()->sole();
+        Storage::disk('local')->delete($asset->disk_path);
         $this->get(route('result.photos.show', $photo))->assertNotFound();
-        $photo->update(['jury_sanitized_at' => now(), 'jury_path' => null]);
+        Storage::disk('local')->put($asset->disk_path, Storage::disk('local')->get($photo->disk_path));
         $this->get(route('result.photos.show', $photo))->assertNotFound();
     }
 

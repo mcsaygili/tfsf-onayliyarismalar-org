@@ -16,7 +16,7 @@ class PanelAccountAccess
         if (! $account->status) {
             return __('auth.account_inactive');
         }
-        if ($account instanceof InstitutionStaff && ! $account->institution()->where('status', true)->exists()) {
+        if ($account instanceof InstitutionStaff && ! $account->isSecretariat() && ! $account->institution()->where('status', true)->exists()) {
             return __('auth.institution_inactive');
         }
 

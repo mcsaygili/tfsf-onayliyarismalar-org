@@ -40,10 +40,11 @@ class CompetitionResultState
     {
         $id = $round->competition_id;
         $queries = [
+            'category_grouping' => DB::table('competition_categories')->where('competition_id', $id)->select('id', 'photos_grouped'),
             'category_names' => DB::table('competition_category_translations')->whereIn('competition_category_id', $this->categoryIds($id))->select('id', 'competition_category_id', 'locale', 'name'),
-            'submissions' => $this->submissions($id)->select('id', 'competition_category_id', 'status', 'details_version', 'category_story'),
+            'submissions' => $this->submissions($id)->select('id', 'competition_category_id', 'status', 'details_version', 'category_story', 'series_code'),
             'photos' => DB::table('competition_submission_photos')->whereIn('competition_submission_id', $this->submissions($id)->select('id'))
-                ->select('id', 'competition_submission_id', 'sha256', 'withdrawn_at', 'sort_order', 'declaration'),
+                ->select('id', 'competition_submission_id', 'sha256', 'anonymous_code', 'withdrawn_at', 'sort_order', 'declaration'),
         ];
         if ($round->method->value === 'individual') {
             $queries += [

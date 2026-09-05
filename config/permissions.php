@@ -126,6 +126,11 @@ return [
                     'label' => 'Yarışma Başvurusu Yönetimi',
                     'actions' => ['view', 'manage', 'approve', 'reject', 'request_info'],
                 ],
+                'secretariats' => ['label' => 'Sekreterya Hesapları ve Atamaları', 'actions' => ['manage']],
+                'registration_exceptions' => [
+                    'label' => 'Ön Kayıt İstisna Yetkileri',
+                    'actions' => ['manage'],
+                ],
             ],
         ],
 

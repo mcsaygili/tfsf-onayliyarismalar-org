@@ -1,0 +1,30 @@
+{
+  "package": 18,
+  "files": {
+    "database/migrations/2026_09_05_270000_authorize_registration_exceptions.php": "5ce88e20995634e881177a7f43f37dffa64f25d84937382119adf46a774b89cd",
+    "app/Models/RegistrationExceptionGrant.php": "e7de456c47423d1d8bd16ca1d410b58d48860e6a47485f6d520591855fc2f9d7",
+    "app/Models/CompetitionRegistration.php": "29bfcc14f735c8b03afd03568aff3902d34d33e820758abd5d3eaa2a12689e20",
+    "app/Policies/CompetitionPolicy.php": "7048d7c8c78b817a764718eacaf63ef4fd1581bdaeb8c2ef0f18f54bacd6957a",
+    "app/Services/RegistrationExceptionService.php": "96275b1e72e7daa6a1a43b8cabbbfffaa7a04b6dff04c866c01b16377be7bd23",
+    "app/Services/CompetitionRegistrationService.php": "eeccc7cb2346de17ae286dc43fd340a1bd8cb39f657e54874769e30090d1c01c",
+    "app/Http/Controllers/RegistrationExceptionController.php": "e08795cf728e63e471ce79c2948334b5b372e48ae1f010bf31cc0cb64dbeb42e",
+    "app/Http/Controllers/CompetitionRegistrationController.php": "51574040ffa2260459742d55dce237a353a71a7422d3045fe0cbf7b3dbe664e8",
+    "config/permissions.php": "0f0f9595d6df7e01db90fb7c0a4d78692ae08f741615d7c33c2b721480a0bc22",
+    "routes/eys.php": "04cbeb1749a76bb86114a1172eb795d0386331d4be3ad036ba377d2062ce0f8e",
+    "routes/institution.php": "634c153ae47588e7a68483efd20fbdac1ce491c65a9375c27b999d759f65dac4",
+    "routes/temsilci.php": "c6ad4d98f9c1a14e503ad2fad2dd6be4f7ada7def9642559949b535df348104f",
+    "lang/tr/registration.php": "813171a2f4d40c1b34d52d8c0fd45bd285cceee4f442d8d3f82844a20c749982",
+    "lang/en/registration.php": "23da78020d3e012c693fd290d2e9a1c569a5fc61c15bd1ffbb391297730252d5",
+    "resources/views/registrations/direct.blade.php": "b15d73d24211b52dea01e5080d731769da6d75bfff54925e1ce0b1932026ec9a",
+    "resources/views/registrations/permissions.blade.php": "cda9648951b291f2d3251e476b92c054188a33cf413b3a8a9592235486752b68",
+    "resources/views/registrations/index.blade.php": "cc91d5d19ed0b2099352d37aa1122a69c97d503027ec877aa218f20ad666e415",
+    "resources/views/registrations/review.blade.php": "508625a0f790f62f0c92d9f0a816bc7d4094e01827c0025c96a6d85c92ffb852",
+    "resources/views/uye/competitions/registration.blade.php": "f4699b9c8a70123aec0ea3f75003b3e20e48cdc7a8967c259cf1e31c297e5462",
+    "resources/views/eys/competitions/show.blade.php": "af66c1a953084cab5e99a130a05a7cf38a1d29e441e27cb99474d23498641429",
+    "resources/css/app.css": "d659d2c5d5718c7e759d4e1be059113a3dcee6d2cf42beb9897122e0543dbba3",
+    "tests/Concerns/CreatesRegistrationException.php": "6c1fb813b09ccc42e8b38a7ec66421c85b0ef5774d38355e611c81f7e3d77643",
+    "tests/Feature/RegistrationExceptionTest.php": "065545e1fd709f47965b10c754ca504facfee7cffb80c29663ff753fc1ee5ff4",
+    "tests/Feature/RegistrationExceptionConcurrencyTest.php": "67e06d8c3d8042a0d8132c3e896caf0696f12a8e3bf9d3960c560da9ebce9f90",
+    "tests/Feature/RegistrationExceptionMigrationTest.php": "65d45a671552c6aab99252db536a400b01190faced748f5729c898439824913f"
+  }
+}

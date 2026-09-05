@@ -33,6 +33,9 @@
                 'activePatterns' => ['eys.'.strtolower($m->name).'.dashboard'],
             ];
         }
+        if ($m === \App\Enums\Module::Institution && $eysUser->checkPermissionTo('institution.secretariats.manage', 'eys')) {
+            $links[] = ['route' => 'eys.secretariats.index', 'label' => __('secretariat.title'), 'icon' => 'institution', 'activePatterns' => ['eys.secretariats.*']];
+        }
         if ($m === \App\Enums\Module::Institution && \Illuminate\Support\Facades\Route::has('eys.institutions.index') && $eysUser->can('institution.institutions.manage')) {
             $links[] = [
                 'route' => 'eys.institutions.index',

@@ -47,7 +47,9 @@ jobs:
       - name: Install EXIF tooling
         run: |
           sudo apt-get update
-          sudo apt-get install --yes libimage-exiftool-perl
+          sudo apt-get install --yes libimage-exiftool-perl qpdf clamav-daemon clamdscan
+      - name: Start isolated PDF test scanner
+        run: bash tests/Support/start-document-scan-test-daemon.sh
       - run: composer install --no-interaction --prefer-dist
       - run: composer audit --locked
       - run: npm ci

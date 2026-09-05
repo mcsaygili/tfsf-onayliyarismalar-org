@@ -38,7 +38,7 @@ class CompetitionSubmissionDetailsService
             foreach ($validated['photos'] as $item) {
                 $photo = $photos->firstWhere('id', $item['id']);
                 $photo->declaration = collect($item)->only(['title', 'location', 'taken_on', 'story'])->all();
-                if ($submission->category->photo_order_required) {
+                if ($submission->category->requiresPhotoOrder()) {
                     $photo->sort_order = (int) $item['position'] * 10;
                 }
                 $changed = $photo->isDirty() || $changed;

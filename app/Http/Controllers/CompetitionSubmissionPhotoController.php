@@ -31,14 +31,16 @@ class CompetitionSubmissionPhotoController extends Controller
             $request->routeIs('competitions.photos.show') => Auth::guard('web')->check()
                 && $entry->user_id === Auth::guard('web')->id(),
             $request->routeIs('institution.participant-submissions.photos.show') => Auth::guard('institution')->check()
-                && $competition->institution_id === Auth::guard('institution')->user()->institution_id,
+                && app(\App\Services\InstitutionCompetitionAccess::class)->allows($competition, Auth::guard('institution')->user()),
             $request->routeIs('temsilci.participant-submissions.photos.show') => Auth::guard('temsilci')->check()
                 && $competition->representative_id === Auth::guard('temsilci')->id(),
             $request->routeIs('juri.evaluations.photos.show') => Auth::guard('juri')->check()
                 && ! $submissionPhoto->withdrawn_at
                 && $submission->category->jurorAssignments()->where('juror_id', Auth::guard('juri')->id())->exists(),
             $request->routeIs('eys.competitions.results.photos.show') => Auth::guard('eys')->check()
-                && $routeCompetition?->is($competition),
+                && $routeCompetition?->is($competition)
+                && $submission->status->value === 'approved'
+                && ! $submissionPhoto->withdrawn_at,
             default => false,
         };
 
